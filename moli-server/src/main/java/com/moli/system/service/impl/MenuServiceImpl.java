@@ -1,0 +1,264 @@
+package com.moli.system.service.impl;
+
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.moli.common.constant.CommonConstant;
+import com.moli.common.domain.entity.Menu;
+import com.moli.common.domain.entity.RoleMenu;
+import com.moli.common.domain.entity.User;
+import com.moli.common.domain.entity.UserRole;
+import com.moli.common.domain.vo.MenuMetaVo;
+import com.moli.common.domain.vo.MenuVo;
+import com.moli.system.mapper.MenuMapper;
+import com.moli.system.mapper.RoleMenuMapper;
+import com.moli.system.mapper.UserMapper;
+import com.moli.system.mapper.UserRoleMapper;
+import com.moli.system.service.MenuService;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+public class MenuServiceImpl implements MenuService {
+
+    @Autowired
+    private UserMapper userMapper;
+
+    @Autowired
+    private MenuMapper menuMapper;
+
+    @Autowired
+    private RoleMenuMapper roleMenuMapper;
+
+    @Autowired
+    private UserRoleMapper userRoleMapper;
+
+
+    @Override
+    public Boolean insert(Menu menu) {
+        menuMapper.insert(menu);
+        return Boolean.TRUE;
+    }
+
+    @Override
+    public Boolean update(Menu menu) {
+        menuMapper.updateById(menu);
+        return Boolean.TRUE;
+    }
+
+    @Override
+    public List<MenuVo> selectMenuTreeByUserId(Long userId) {
+        List<MenuVo> menuVoList = new ArrayList<>();
+        MenuVo menuVo = new MenuVo();
+        menuVo.setUserId(userId);
+        menuVoList = this.selectMenuListByUserId(menuVo);
+        return createTree(menuVoList);
+    }
+
+    @Override
+    public List<MenuVo> selectMenuListByUserId(MenuVo menuVo) {
+        User user = userMapper.selectById(menuVo.getUserId());
+        //超级管理员
+        if (StringUtils.isNotBlank(user.getUserName()) && user.getUserName().equals("admin")) {
+            LambdaQueryWrapper<Menu> lambdaQueryWrapper = new LambdaQueryWrapper();
+            if (StringUtils.isNotBlank(menuVo.getMenuName())) {
+                lambdaQueryWrapper.like(Menu::getMenuName, menuVo.getMenuName());
+            }
+            if (menuVo.getStatus() != null) {
+                lambdaQueryWrapper.eq(Menu::getStatus, menuVo.getStatus());
+            }
+            lambdaQueryWrapper.orderByAsc(Menu::getOrderNum);
+            List<Menu> menuList = menuMapper.selectList(lambdaQueryWrapper);
+            List<MenuVo> menuVoList = new ArrayList<>();
+            menuList.forEach(e -> {
+                MenuVo htgMenuVo = new MenuVo();
+                BeanUtils.copyProperties(e, htgMenuVo);
+                htgMenuVo.setHidden("1".equals(e.getStatus()));
+                //路由名称
+                htgMenuVo.setName(getRouteName(htgMenuVo));
+                htgMenuVo.setPath(getRouterPath(htgMenuVo));
+                htgMenuVo.setComponent(getComponent(htgMenuVo));
+                htgMenuVo.setRedirect(CommonConstant.NO_REDIRECT);
+                menuVoList.add(htgMenuVo);
+            });
+            return menuVoList;
+        }
+        List<UserRole> userRoleList = userRoleMapper.selectList(new QueryWrapper<UserRole>().lambda().eq(UserRole::getUserId, menuVo.getUserId()));
+        if (CollectionUtils.isEmpty(userRoleList)) {
+            return new ArrayList<>();
+        }
+        List<Long> roleIdList = userRoleList.stream().map(e -> e.getRoleId()).collect(Collectors.toList());
+        List<RoleMenu> roleMenuList = roleMenuMapper.selectList(new QueryWrapper<RoleMenu>().lambda().in(RoleMenu::getRoleId, roleIdList));
+        List<Long> menuIdList = roleMenuList.stream().map(e -> e.getMenuId()).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(menuIdList)) {
+            return new ArrayList<>();
+        }
+        List<Menu> menuList = menuMapper.selectList(new QueryWrapper<Menu>().lambda().in(Menu::getId, menuIdList));
+        List<MenuVo> menuVoList = new ArrayList<>();
+        menuList.forEach(e -> {
+            MenuVo htgMenuVo = new MenuVo();
+            BeanUtils.copyProperties(e, htgMenuVo);
+            htgMenuVo.setHidden("1".equals(e.getStatus()));
+            htgMenuVo.setName(getRouteName(htgMenuVo));
+            htgMenuVo.setPath(getRouterPath(htgMenuVo));
+            htgMenuVo.setComponent(getComponent(htgMenuVo));
+            htgMenuVo.setRedirect(CommonConstant.NO_REDIRECT);
+            menuVoList.add(htgMenuVo);
+        });
+        return menuVoList;
+    }
+
+    @Override
+    public List<MenuVo> selectMenuTreeByRoleId(String roleId) {
+
+        List<RoleMenu> roleMenuList = roleMenuMapper.selectList(new QueryWrapper<RoleMenu>().lambda().eq(RoleMenu::getRoleId, roleId));
+        List<Long> menuIdList = roleMenuList.stream().map(e -> e.getMenuId()).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(menuIdList)) {
+            return new ArrayList<>();
+        }
+        List<Menu> menuList = menuMapper.selectList(new QueryWrapper<Menu>().lambda().in(Menu::getId, menuIdList));
+        List<MenuVo> menuVoList = new ArrayList<>();
+        menuList.forEach(e -> {
+            MenuVo htgMenuVo = new MenuVo();
+            BeanUtils.copyProperties(e, htgMenuVo);
+            htgMenuVo.setHidden("1".equals(e.getStatus()));
+            htgMenuVo.setName(getRouteName(htgMenuVo));
+            htgMenuVo.setPath(getRouterPath(htgMenuVo));
+            htgMenuVo.setComponent(getComponent(htgMenuVo));
+            htgMenuVo.setRedirect(CommonConstant.NO_REDIRECT);
+            menuVoList.add(htgMenuVo);
+        });
+        return menuVoList;
+    }
+
+    @Override
+    public List<MenuVo> getMenuTreeAll() {
+        List<Menu> menuList = menuMapper.selectList(new QueryWrapper<>());
+        List<MenuVo> menuVoList = new ArrayList<>();
+        menuList.forEach(e -> {
+            MenuVo htgMenuVo = new MenuVo();
+            BeanUtils.copyProperties(e, htgMenuVo);
+            htgMenuVo.setHidden("1".equals(e.getStatus()));
+            htgMenuVo.setName(getRouteName(htgMenuVo));
+            htgMenuVo.setPath(getRouterPath(htgMenuVo));
+            htgMenuVo.setComponent(getComponent(htgMenuVo));
+            htgMenuVo.setRedirect(CommonConstant.NO_REDIRECT);
+            menuVoList.add(htgMenuVo);
+        });
+        return menuVoList;
+    }
+
+    /**
+     * 递归查询一级节点
+     */
+    private static List<MenuVo> createTree(List<MenuVo> deptList) {
+        List<MenuVo> list = new ArrayList<>();
+        for (MenuVo treeNode : deptList) {
+            MenuMetaVo menuMetaVo = new MenuMetaVo();
+            if (treeNode.getParentId().longValue() == 0) {
+                menuMetaVo.setTitle(treeNode.getMenuName());
+                menuMetaVo.setIcon(treeNode.getIcon());
+                menuMetaVo.setNoCache(false);
+                treeNode.setMeta(menuMetaVo);
+                treeNode.setAlwaysShow(true);
+                list.add(findChildrenTree(treeNode, deptList));
+            } else {
+                menuMetaVo.setTitle(treeNode.getMenuName());
+                menuMetaVo.setIcon(treeNode.getIcon());
+                menuMetaVo.setNoCache(false);
+                treeNode.setMeta(menuMetaVo);
+            }
+        }
+        return list;
+    }
+
+    /**
+     * 递归查找当前节点下的所有子节点
+     *
+     * @param htgMenuVo 当前节点
+     * @param deptList  所有节点
+     * @return
+     */
+    private static MenuVo findChildrenTree(MenuVo htgMenuVo, List<MenuVo> deptList) {
+        List<MenuVo> childrenList = new ArrayList<>();
+        for (MenuVo childrenNode : deptList) {
+            if (htgMenuVo.getId().longValue() == childrenNode.getParentId().longValue()) {
+                childrenList.add(childrenNode);
+            }
+        }
+        if (CollectionUtils.isNotEmpty(childrenList)) {
+            htgMenuVo.setChildren(childrenList);
+            for (MenuVo menuVoTwo : childrenList) {
+                findChildrenTree(menuVoTwo, deptList);
+            }
+        }
+        return htgMenuVo;
+    }
+
+    /**
+     * 获取组件信息
+     *
+     * @param menu 菜单信息
+     * @return 组件信息
+     */
+    private String getComponent(MenuVo menu) {
+        String component = CommonConstant.LAYOUT;
+        if (StringUtils.isNotEmpty(menu.getComponent())) {
+            component = menu.getComponent();
+        }
+//        else if (StringUtils.isEmpty(menu.getComponent()) && menu.getParentId().intValue() != 0) {
+//            component = CommonConstant.INNER_LINK;
+//        }
+        //组件内容为空, 不是一级菜单并且菜单类型为目录
+        else if (StringUtils.isEmpty(menu.getComponent()) && isParentView(menu)) {
+            component = CommonConstant.PARENT_VIEW;
+        }
+        return component;
+    }
+
+
+    /**
+     * 获取路由名称
+     *
+     * @param menu 菜单信息
+     * @return 路由名称
+     */
+    private String getRouteName(MenuVo menu) {
+        String routerName = StringUtils.capitalize(menu.getPath());
+        return routerName;
+    }
+
+    /**
+     * 获取路由地址
+     *
+     * @param menu 菜单信息
+     * @return 路由地址
+     */
+    private String getRouterPath(MenuVo menu) {
+
+        String routerPath = menu.getPath();
+        // 一级菜单并且菜单类型为目录
+        if (0 == menu.getParentId().intValue() && CommonConstant.TYPE_DIR.equals(menu.getMenuType())) {
+            routerPath = "/" + menu.getPath();
+        }
+        return routerPath;
+    }
+
+    /**
+     * 是否为parent_view组件
+     *
+     * @param menu 菜单信息
+     * @return 结果
+     */
+    private boolean isParentView(MenuVo menu) {
+        //不是一级菜单并且菜单类型为目录
+        return menu.getParentId().intValue() != 0 && CommonConstant.TYPE_DIR.equals(menu.getMenuType());
+    }
+
+}

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+
+    <parent>
+        <artifactId>moli-parent</artifactId>
+        <groupId>com.moli</groupId>
+        <version>1.0-RELEASE</version>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.moli</groupId>
+    <artifactId>moli-project-single</artifactId>
+    <version>1.0-SNAPSHOT</version>
+<!--    <distributionManagement>-->
+<!--        <repository>-->
+<!--            &lt;!&ndash;id的名字可以任意取，但是在setting文件中的属性<server>的ID与这里一致&ndash;&gt;-->
+<!--            <id>releases</id>-->
+<!--            &lt;!&ndash;指向仓库类型为host(宿主仓库）的储存类型为Release的仓库&ndash;&gt;-->
+<!--            <url>http://121.89.243.115:8205/repository/htg-release/</url>-->
+<!--        </repository>-->
+<!--        <snapshotRepository>-->
+<!--            <id>snapshots</id>-->
+<!--            &lt;!&ndash;指向仓库类型为host(宿主仓库）的储存类型为Snapshot的仓库&ndash;&gt;-->
+<!--            <url>http://121.89.243.115:8205/repository/htg-snapshot/</url>-->
+<!--        </snapshotRepository>-->
+<!--    </distributionManagement>-->
+    <modules>
+        <module>moli-server</module>
+        <module>moli-common</module>
+    </modules>
+
+    <packaging>pom</packaging>
+
+    <build>
+        <!--  配置打包 -->
+        <resources>
+            <resource>
+                <directory>src/main/java</directory>
+                <includes>
+                    <include>**/*.properties</include>
+                    <include>**/*.xml</include>
+                    <include>**/*.yml</include>
+                    <include>**/*.tld</include>
+                </includes>
+                <filtering>false</filtering>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*.properties</include>
+                    <include>**/*.xml</include>
+                    <include>**/*.yml</include>
+                    <include>**/*.tld</include>
+                    <include>**/*.xlsx</include>
+                    <include>**/*.xls</include>
+                </includes>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+    </build>
+</project>
