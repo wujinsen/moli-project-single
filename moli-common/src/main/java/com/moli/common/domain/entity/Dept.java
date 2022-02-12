@@ -9,7 +9,7 @@ import java.util.Date;
 @Data
 public class Dept{
 
-    @ApiModelProperty("IDs")
+    @ApiModelProperty("ID")
     @TableField(fill = FieldFill.INSERT)
     private Long id;
 
