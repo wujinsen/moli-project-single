@@ -118,12 +118,15 @@ public class UserController {
     /**
      * 删除用户
      */
-    @DeleteMapping("/{id}")
-    public MoliResult remove(@PathVariable("id") Long id) {
-        User user = new User();
-        user.setId(id);
-        user.setIsDelete(CommonConstant.IS_DELETE);
-        userMapper.updateById(user);
+    @DeleteMapping("/{userIds}")
+    public MoliResult remove(@PathVariable Long[] userIds) {
+        for (Long id : userIds) {
+            User user = new User();
+            user.setId(id);
+            user.setIsDelete(CommonConstant.IS_DELETE);
+            userMapper.updateById(user);
+        }
+
         return MoliResult.success(Boolean.TRUE);
     }
 

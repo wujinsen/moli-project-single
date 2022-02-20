@@ -5,11 +5,13 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.moli.common.core.MoliResult;
 import com.moli.common.domain.entity.Role;
+import com.moli.common.domain.entity.User;
 import com.moli.common.domain.vo.RoleVo;
 import com.moli.common.page.PageRes;
 import com.moli.system.mapper.RoleMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,7 +34,7 @@ public class RoleController {
     public MoliResult<PageRes<Role>> list(RoleVo roleVo) {
         PageRes<Role> result = new PageRes<>();
         LambdaQueryWrapper<Role> lambdaQueryWrapper = new LambdaQueryWrapper();
-        if (roleVo.getRoleName() != null) {
+        if (StringUtils.isNotBlank(roleVo.getRoleName())) {
             lambdaQueryWrapper.eq(Role::getRoleName, roleVo.getRoleName());
         }
         if (roleVo.getStatus() != null) {
@@ -83,10 +85,18 @@ public class RoleController {
      * 删除角色
      */
     @DeleteMapping("/{id}")
+    @ApiOperation(value = "角色状态变更", notes = "角色状态变更")
     public MoliResult remove(@PathVariable("id") Long id) {
         roleMapper.deleteById(id);
         return MoliResult.success(Boolean.TRUE);
     }
 
+
+    @PutMapping("/changeStatus")
+    @ApiOperation(value = "角色状态变更", notes = "角色状态变更")
+    public MoliResult changeStatus(@RequestBody Role role) {
+        roleMapper.updateById(role);
+        return MoliResult.success(Boolean.TRUE);
+    }
 
 }

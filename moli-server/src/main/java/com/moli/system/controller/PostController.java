@@ -24,7 +24,7 @@ public class PostController {
      * @return 添加岗位
      */
     @PostMapping
-    public MoliResult<Boolean> insert(@RequestBody  Post post) {
+    public MoliResult<Boolean> insert(@RequestBody Post post) {
         postMapper.insert(post);
         return MoliResult.success(Boolean.TRUE);
     }
@@ -50,7 +50,7 @@ public class PostController {
     }
 
     /**
-     * 删除用户
+     * 删除岗位
      */
     @DeleteMapping("/{id}")
     public MoliResult remove(@PathVariable("id") Long id) {
