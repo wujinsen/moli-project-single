@@ -4,6 +4,8 @@ import com.moli.common.core.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class RoleVo extends BaseEntity {
 
@@ -25,5 +27,8 @@ public class RoleVo extends BaseEntity {
 
     @ApiModelProperty(value = "结束时间")
     private String endTime;
+
+    @ApiModelProperty(value = "菜单id集合")
+    private List<Long> menuIds;
 
 }

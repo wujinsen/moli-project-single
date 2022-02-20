@@ -119,7 +119,7 @@ public class UserController {
      * 删除用户
      */
     @DeleteMapping("/{userIds}")
-    public MoliResult remove(@PathVariable Long[] userIds) {
+    public MoliResult delete(@PathVariable Long[] userIds) {
         for (Long id : userIds) {
             User user = new User();
             user.setId(id);

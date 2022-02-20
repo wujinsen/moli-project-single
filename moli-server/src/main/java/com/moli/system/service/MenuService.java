@@ -31,7 +31,7 @@ public interface MenuService {
      */
     List<MenuVo> selectMenuListByUserId(MenuVo menuVo);
 
-    List<MenuVo> selectMenuTreeByRoleId(String roleId);
+    List<MenuVo> selectMenuTreeByRoleId(Long roleId);
 
     List<MenuVo> getMenuTreeAll();
 

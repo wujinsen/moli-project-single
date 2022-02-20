@@ -115,25 +115,27 @@ public class MenuServiceImpl implements MenuService {
     }
 
     @Override
-    public List<MenuVo> selectMenuTreeByRoleId(String roleId) {
+    public List<MenuVo> selectMenuTreeByRoleId(Long roleId) {
 
         List<RoleMenu> roleMenuList = roleMenuMapper.selectList(new QueryWrapper<RoleMenu>().lambda().eq(RoleMenu::getRoleId, roleId));
         List<Long> menuIdList = roleMenuList.stream().map(e -> e.getMenuId()).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(menuIdList)) {
             return new ArrayList<>();
         }
-        List<Menu> menuList = menuMapper.selectList(new QueryWrapper<Menu>().lambda().in(Menu::getId, menuIdList));
-        List<MenuVo> menuVoList = new ArrayList<>();
-        menuList.forEach(e -> {
-            MenuVo htgMenuVo = new MenuVo();
-            BeanUtils.copyProperties(e, htgMenuVo);
-            htgMenuVo.setHidden("1".equals(e.getStatus()));
-            htgMenuVo.setName(getRouteName(htgMenuVo));
-            htgMenuVo.setPath(getRouterPath(htgMenuVo));
-            htgMenuVo.setComponent(getComponent(htgMenuVo));
-            htgMenuVo.setRedirect(CommonConstant.NO_REDIRECT);
-            menuVoList.add(htgMenuVo);
-        });
+   //     List<Menu> menuList = menuMapper.selectList(new QueryWrapper<Menu>().lambda().in(Menu::getId, menuIdList));
+        List<MenuVo> menuVoList = this.getMenuTreeAll();
+//        menuList.forEach(e -> {
+//            MenuVo htgMenuVo = new MenuVo();
+//            BeanUtils.copyProperties(e, htgMenuVo);
+//            htgMenuVo.setHidden("1".equals(e.getStatus()));
+//            htgMenuVo.setName(getRouteName(htgMenuVo));
+//            htgMenuVo.setPath(getRouterPath(htgMenuVo));
+//            htgMenuVo.setComponent(getComponent(htgMenuVo));
+//            htgMenuVo.setRedirect(CommonConstant.NO_REDIRECT);
+//            menuVoList.add(htgMenuVo);
+//        });
+        createTree(menuVoList);
+        menuVoList.get(0).setMenuIds(menuIdList);
         return menuVoList;
     }
 
@@ -151,7 +153,7 @@ public class MenuServiceImpl implements MenuService {
             htgMenuVo.setRedirect(CommonConstant.NO_REDIRECT);
             menuVoList.add(htgMenuVo);
         });
-        return menuVoList;
+        return createTree(menuVoList);
     }
 
     /**

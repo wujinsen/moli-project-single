@@ -59,4 +59,7 @@ public class MenuVo  extends BaseEntity {
 
     private Long userId;
 
+    @ApiModelProperty(value = "菜单元信息")
+    private List<Long> menuIds;
+
 }

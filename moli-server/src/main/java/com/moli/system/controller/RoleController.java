@@ -5,13 +5,17 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.moli.common.core.MoliResult;
 import com.moli.common.domain.entity.Role;
+import com.moli.common.domain.entity.RoleMenu;
 import com.moli.common.domain.entity.User;
 import com.moli.common.domain.vo.RoleVo;
 import com.moli.common.page.PageRes;
 import com.moli.system.mapper.RoleMapper;
+import com.moli.system.mapper.RoleMenuMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,6 +26,9 @@ public class RoleController {
 
     @Autowired
     private RoleMapper roleMapper;
+
+    @Autowired
+    private RoleMenuMapper roleMenuMapper;
 
     /**
      * 角色列表
@@ -57,8 +64,18 @@ public class RoleController {
      * @return 添加角色
      */
     @PostMapping
-    public MoliResult<Boolean> insert(@RequestBody Role role) {
+    public MoliResult<Boolean> insert(@RequestBody RoleVo roleVo) {
+        Role role = new Role();
+        BeanUtils.copyProperties(roleVo, role);
         roleMapper.insert(role);
+        if (CollectionUtils.isNotEmpty(roleVo.getMenuIds())) {
+            for (Long menuId : roleVo.getMenuIds()) {
+                RoleMenu roleMenu = new RoleMenu();
+                roleMenu.setRoleId(role.getId());
+                roleMenu.setMenuId(menuId);
+                roleMenuMapper.insert(roleMenu);
+            }
+        }
         return MoliResult.success(Boolean.TRUE);
     }
 
@@ -84,10 +101,13 @@ public class RoleController {
     /**
      * 删除角色
      */
-    @DeleteMapping("/{id}")
-    @ApiOperation(value = "角色状态变更", notes = "角色状态变更")
-    public MoliResult remove(@PathVariable("id") Long id) {
-        roleMapper.deleteById(id);
+    @DeleteMapping("/{ids}")
+    @ApiOperation(value = "删除角色", notes = "删除角色")
+    public MoliResult delete(@PathVariable Long[] ids) {
+        for (Long roleId : ids) {
+            roleMapper.deleteById(roleId);
+            roleMenuMapper.delete(new LambdaQueryWrapper<RoleMenu>().eq(RoleMenu::getRoleId, roleId));
+        }
         return MoliResult.success(Boolean.TRUE);
     }
 

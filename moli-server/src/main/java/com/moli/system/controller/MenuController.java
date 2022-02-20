@@ -3,6 +3,7 @@ package com.moli.system.controller;
 import com.moli.common.core.MoliResult;
 import com.moli.common.domain.entity.Menu;
 import com.moli.common.domain.vo.MenuVo;
+import com.moli.config.util.ShiroUtils;
 import com.moli.system.mapper.MenuMapper;
 import com.moli.system.mapper.UserMapper;
 import com.moli.system.service.MenuService;
@@ -34,8 +35,7 @@ public class MenuController {
      */
     @GetMapping("getRouters")
     public MoliResult<List<MenuVo>> getRouters() {
-      //  Long userId2 = ShiroUtils.getUserInfo().getId();
-        Long userId = 1l;
+        Long userId = ShiroUtils.getUserInfo().getId();
         List<MenuVo> menuVoList = menuService.selectMenuTreeByUserId(userId);
 
         return MoliResult.success(menuVoList);
@@ -48,9 +48,9 @@ public class MenuController {
      */
     @GetMapping("list")
     public MoliResult list(String menuName, Integer status) {
-        //   Long userId = ShiroUtils.getUserInfo().getId();
+        Long userId = ShiroUtils.getUserInfo().getId();
         MenuVo menuVo = new MenuVo();
-        menuVo.setUserId(1l);
+        menuVo.setUserId(userId);
         menuVo.setName(menuName);
         menuVo.setStatus(status);
         List<MenuVo> menuVoList = menuService.selectMenuListByUserId(menuVo);
@@ -92,7 +92,7 @@ public class MenuController {
      * 删除菜单
      */
     @DeleteMapping("/{id}")
-    public MoliResult remove(@PathVariable("id") Long id) {
+    public MoliResult remove(@PathVariable Long id) {
         menuMapper.deleteById(id);
         return MoliResult.success(Boolean.TRUE);
 
@@ -112,13 +112,14 @@ public class MenuController {
     }
 
     /**
-     *
-     * @return 菜单列表
+     * 根据角色获取该角色下的所有菜单
+     * @return 全部菜单列表及该角色下的所有菜单id
      */
-    @GetMapping("selectMenuTreeByRoleId")
-    public MoliResult selectMenuTreeByRoleId(String roleId) {
+    @GetMapping("selectMenuTreeByRoleId/{roleId}")
+    public MoliResult selectMenuTreeByRoleId(@PathVariable Long roleId) {
 
         List<MenuVo> menuVoList = menuService.selectMenuTreeByRoleId(roleId);
+
         return MoliResult.success(menuVoList);
     }
     /**
