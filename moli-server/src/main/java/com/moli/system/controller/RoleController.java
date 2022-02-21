@@ -8,6 +8,7 @@ import com.moli.common.domain.entity.Role;
 import com.moli.common.domain.entity.RoleMenu;
 import com.moli.common.domain.entity.User;
 import com.moli.common.domain.vo.RoleVo;
+import com.moli.common.page.PageReq;
 import com.moli.common.page.PageRes;
 import com.moli.system.mapper.RoleMapper;
 import com.moli.system.mapper.RoleMenuMapper;
@@ -33,28 +34,30 @@ public class RoleController {
     /**
      * 角色列表
      *
-     * @param roleVo
+     * @param req
      * @return
      */
     @GetMapping("/list")
     @ApiOperation(value = "角色列表", notes = "角色列表")
-    public MoliResult<PageRes<Role>> list(RoleVo roleVo) {
+    public MoliResult<PageRes<Role>> list(PageReq<RoleVo> req) {
         PageRes<Role> result = new PageRes<>();
         LambdaQueryWrapper<Role> lambdaQueryWrapper = new LambdaQueryWrapper();
-        if (StringUtils.isNotBlank(roleVo.getRoleName())) {
-            lambdaQueryWrapper.eq(Role::getRoleName, roleVo.getRoleName());
+        if (StringUtils.isNotBlank(req.getData().getRoleName())) {
+            lambdaQueryWrapper.eq(Role::getRoleName, req.getData().getRoleName());
         }
-        if (roleVo.getStatus() != null) {
-            lambdaQueryWrapper.eq(Role::getStatus, roleVo.getStatus());
+        if (req.getData().getStatus() != null) {
+            lambdaQueryWrapper.eq(Role::getStatus, req.getData().getStatus());
         }
-        if (roleVo.getBeginTime() != null) {
-            lambdaQueryWrapper.between(Role::getCreateTime, roleVo.getBeginTime() + " 00:00:00", roleVo.getEndTime() + " 23:59:59");
+        if (req.getData().getBeginTime() != null) {
+            lambdaQueryWrapper.between(Role::getCreateTime, req.getData().getBeginTime() + " 00:00:00", req.getData().getEndTime() + " 23:59:59");
         }
         Page page = new Page();
         roleMapper.selectPage(page, lambdaQueryWrapper);
         Long total = page.getTotal();
         result.setTotal(total.intValue());
         result.setItems(page.getRecords());
+        result.setPageNum(req.getPageNum());
+        result.setPageSize(req.getPageSize());
         return MoliResult.success(result);
     }
 

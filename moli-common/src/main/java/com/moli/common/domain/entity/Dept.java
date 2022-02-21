@@ -13,6 +13,15 @@ public class Dept{
     @TableField(fill = FieldFill.INSERT)
     private Long id;
 
+    @ApiModelProperty("父级id")
+    private Long parentId;
+
+    @ApiModelProperty("部门名称")
+    private String deptName;
+
+    @ApiModelProperty("排序号")
+    private Integer orderNum;
+
     @ApiModelProperty("创建人")
     @TableField(fill = FieldFill.INSERT)
     private String createUser;
@@ -29,10 +38,5 @@ public class Dept{
     @ApiModelProperty("修改时间")
     private Date updateTime;
 
-    private Long parentId;
-
-    private String deptName;
-
-    private Integer orderNum;
 
 }

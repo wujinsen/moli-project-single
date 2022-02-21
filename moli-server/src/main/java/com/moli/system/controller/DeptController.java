@@ -5,14 +5,17 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.moli.common.constant.CommonConstant;
 import com.moli.common.core.MoliResult;
 import com.moli.common.domain.entity.Dept;
+import com.moli.common.domain.entity.Role;
 import com.moli.common.domain.entity.User;
 import com.moli.common.domain.vo.DeptVo;
+import com.moli.common.page.PageReq;
 import com.moli.common.page.PageRes;
 import com.moli.system.mapper.DeptMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -34,20 +37,25 @@ public class DeptController {
     /**
      * 部门列表
      *
-     * @param dept
+     * @param req
      * @return
      */
     @GetMapping("/list")
     @ApiOperation(value = "部门列表", notes = "部门列表")
-    public MoliResult<PageRes<Dept>> list(Dept dept) {
-        PageRes<Dept> result = new PageRes<>();
+    public MoliResult<List<DeptVo>> list(Dept dept) {
+
         LambdaQueryWrapper<Dept> lambdaQueryWrapper = new LambdaQueryWrapper();
-        Page page = new Page();
-        deptMapper.selectPage(page, lambdaQueryWrapper);
-        Long total = page.getTotal();
-        result.setTotal(total.intValue());
-        result.setItems(page.getRecords());
-        return MoliResult.success(result);
+        List<DeptVo> deptVoList = new ArrayList();
+        if (StringUtils.isNotBlank(dept.getDeptName())) {
+            lambdaQueryWrapper.like(Dept::getDeptName, dept.getDeptName());
+        }
+        List<Dept> deptList = deptMapper.selectList(lambdaQueryWrapper);
+        for (Dept entity : deptList) {
+            DeptVo deptVo = new DeptVo();
+            BeanUtils.copyProperties(entity, deptVo);
+            deptVoList.add(deptVo);
+        }
+        return MoliResult.success(deptVoList);
     }
 
     /**

@@ -11,6 +11,7 @@ import com.moli.common.domain.entity.User;
 import com.moli.common.domain.entity.UserRole;
 import com.moli.common.domain.vo.UserRoleVo;
 import com.moli.common.domain.vo.UserVo;
+import com.moli.common.page.PageReq;
 import com.moli.common.page.PageRes;
 import com.moli.system.mapper.RoleMapper;
 import com.moli.system.mapper.UserMapper;
@@ -50,28 +51,28 @@ public class UserController {
     /**
      * 用户列表
      *
-     * @param userVo
+     * @param req
      * @return
      */
     @GetMapping("/list")
     @ApiOperation(value = "用户列表", notes = "用户列表")
-    public MoliResult<PageRes<User>> list(UserVo userVo) {
+    public MoliResult<PageRes<User>> list(PageReq<UserVo> req) {
         PageRes<User> result = new PageRes<>();
         LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper();
-        if (userVo.getDeptId() != null) {
-            lambdaQueryWrapper.eq(User::getDeptId, userVo.getDeptId());
+        if (req.getData().getDeptId() != null) {
+            lambdaQueryWrapper.eq(User::getDeptId, req.getData().getDeptId());
         }
-        if (StringUtils.isNotBlank(userVo.getUserName())) {
-            lambdaQueryWrapper.eq(User::getUserName, userVo.getUserName());
+        if (StringUtils.isNotBlank(req.getData().getUserName())) {
+            lambdaQueryWrapper.eq(User::getUserName, req.getData().getUserName());
         }
-        if (StringUtils.isNotBlank(userVo.getTelephone())) {
-            lambdaQueryWrapper.eq(User::getTelephone, userVo.getTelephone());
+        if (StringUtils.isNotBlank(req.getData().getTelephone())) {
+            lambdaQueryWrapper.eq(User::getTelephone, req.getData().getTelephone());
         }
-        if (userVo.getStatus() != null) {
-            lambdaQueryWrapper.eq(User::getStatus, userVo.getStatus());
+        if (req.getData().getStatus() != null) {
+            lambdaQueryWrapper.eq(User::getStatus, req.getData().getStatus());
         }
-        if (userVo.getBeginTime() != null) {
-            lambdaQueryWrapper.between(User::getCreateTime, userVo.getBeginTime() + " 00:00:00", userVo.getEndTime() + " 23:59:59");
+        if (req.getData().getBeginTime() != null) {
+            lambdaQueryWrapper.between(User::getCreateTime, req.getData().getBeginTime() + " 00:00:00", req.getData().getEndTime() + " 23:59:59");
         }
         lambdaQueryWrapper.eq(User::getIsDelete, CommonConstant.UN_DELETE);
         Page page = new Page();
@@ -79,6 +80,8 @@ public class UserController {
         Long total = page.getTotal();
         result.setTotal(total.intValue());
         result.setItems(page.getRecords());
+        result.setPageNum(req.getPageNum());
+        result.setPageSize(req.getPageSize());
         return MoliResult.success(result);
     }
 
