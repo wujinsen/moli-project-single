@@ -14,7 +14,8 @@ public class DeptVo extends BaseEntity {
     private String deptName;
     @ApiModelProperty(value = "序号")
     private Integer orderNum;
-
+    @ApiModelProperty(value = "1:正常 0:停用")
+    private Integer status;
     @ApiModelProperty(value = "开始时间")
     private String beginTime;
 

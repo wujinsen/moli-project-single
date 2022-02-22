@@ -22,6 +22,9 @@ public class Dept{
     @ApiModelProperty("排序号")
     private Integer orderNum;
 
+    @ApiModelProperty(value = "1:正常 0:停用")
+    private Integer status;
+
     @ApiModelProperty("创建人")
     @TableField(fill = FieldFill.INSERT)
     private String createUser;

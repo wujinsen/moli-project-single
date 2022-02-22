@@ -37,7 +37,7 @@ public class DeptController {
     /**
      * 部门列表
      *
-     * @param req
+     * @param dept
      * @return
      */
     @GetMapping("/list")
@@ -48,6 +48,9 @@ public class DeptController {
         List<DeptVo> deptVoList = new ArrayList();
         if (StringUtils.isNotBlank(dept.getDeptName())) {
             lambdaQueryWrapper.like(Dept::getDeptName, dept.getDeptName());
+        }
+        if (dept.getStatus() != null) {
+            lambdaQueryWrapper.like(Dept::getStatus, dept.getStatus());
         }
         List<Dept> deptList = deptMapper.selectList(lambdaQueryWrapper);
         for (Dept entity : deptList) {

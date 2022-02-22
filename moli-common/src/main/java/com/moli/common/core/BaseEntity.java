@@ -36,4 +36,10 @@ public class BaseEntity implements Serializable {
     @ApiModelProperty("是否删除(0-未删除；1-已删除)")
     private Integer isDelete;
 
+    @TableField(exist = false)
+    private Integer pageNum;
+
+    @TableField(exist = false)
+    private Integer pageSize;
+
 }
