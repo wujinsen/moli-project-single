@@ -32,9 +32,9 @@ public class BaseEntity implements Serializable {
     @ApiModelProperty("修改时间")
     private Date updateTime;
 
-    @TableField(fill = FieldFill.INSERT)
-    @ApiModelProperty("是否删除(0-未删除；1-已删除)")
-    private Integer isDelete;
+    @ApiModelProperty(value = "备注")
+    @TableField(exist = false)
+    private String remark;
 
     @TableField(exist = false)
     private Integer pageNum;

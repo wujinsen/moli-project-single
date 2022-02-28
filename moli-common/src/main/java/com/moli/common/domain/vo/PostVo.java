@@ -1,12 +1,12 @@
-package com.moli.common.domain.entity;
+package com.moli.common.domain.vo;
 
 import com.moli.common.core.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-@Data
-public class Post extends BaseEntity {
 
+@Data
+public class PostVo extends BaseEntity {
     @ApiModelProperty(value = "岗位编码")
     private String postCode;
 
@@ -19,5 +19,5 @@ public class Post extends BaseEntity {
     @ApiModelProperty(value = "岗位排序")
     private Integer sort;
 
-
+    private String remark;
 }

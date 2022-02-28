@@ -1,5 +1,7 @@
 package com.moli.common.domain.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.moli.common.core.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -58,5 +60,9 @@ public class User extends BaseEntity {
     @ApiModelProperty(value = "初始密码")
     private String initPassword;
 
+
+    @TableField(fill = FieldFill.INSERT)
+    @ApiModelProperty("是否删除(0-未删除；1-已删除)")
+    private Integer isDelete;
 
 }
