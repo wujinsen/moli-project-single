@@ -13,6 +13,7 @@ import com.moli.common.domain.vo.UserRoleVo;
 import com.moli.common.domain.vo.UserVo;
 import com.moli.common.page.PageReq;
 import com.moli.common.page.PageRes;
+import com.moli.common.utils.MoliDateUtils;
 import com.moli.system.mapper.RoleMapper;
 import com.moli.system.mapper.UserMapper;
 import com.moli.system.mapper.UserRoleMapper;
@@ -72,7 +73,7 @@ public class UserController {
             lambdaQueryWrapper.eq(User::getStatus, userVo.getStatus());
         }
         if (userVo.getBeginTime() != null) {
-            lambdaQueryWrapper.between(User::getCreateTime, userVo.getBeginTime() + " 00:00:00", userVo.getEndTime() + " 23:59:59");
+            lambdaQueryWrapper.between(User::getCreateTime, MoliDateUtils.startTimeToDateStart(userVo.getBeginTime()), userVo.getEndTime() + " 23:59:59");
         }
         lambdaQueryWrapper.eq(User::getIsDelete, CommonConstant.UN_DELETE);
         Page page = new Page();

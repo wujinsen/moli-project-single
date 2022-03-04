@@ -8,30 +8,26 @@ import lombok.Data;
 @Data
 public class DictData extends BaseEntity {
 
-    @ApiModelProperty(value = "字典编码")
-    private Long dictCode;
+    @ApiModelProperty(value = "id")
+    private Long id;
+
+    @ApiModelProperty(value = "所属字典类型id")
+    private Long dictTypeId;
 
     @ApiModelProperty(value = "字典排序")
-    private Long dictSort;
+    private int sort;
 
-    @ApiModelProperty(value = "字典标签")
-    private String dictLabel;
+    @ApiModelProperty(value = "字典key")
+    private String dictKey;
 
-    @ApiModelProperty(value = "字典键值")
+    @ApiModelProperty(value = "字典value")
     private String dictValue;
 
     @ApiModelProperty(value = "字典类型")
     private String dictType;
 
-    @ApiModelProperty(value = "样式属性（其他样式扩展）")
-    private String cssClass;
-
-    @ApiModelProperty(value = "表格字典样式")
-    private String listClass;
-
-    @ApiModelProperty(value = "是否默认（Y是 N否）")
-    private String isDefault;
-
-    @ApiModelProperty(value = "状态（0正常 1停用）")
+    @ApiModelProperty(value = "状态（1正常 0停用）")
     private String status;
+
+
 }

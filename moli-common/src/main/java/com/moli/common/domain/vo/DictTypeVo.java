@@ -1,13 +1,13 @@
-package com.moli.common.domain.entity;
+package com.moli.common.domain.vo;
 
 import com.moli.common.core.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 @Data
-public class DictType extends BaseEntity {
+public class DictTypeVo extends BaseEntity {
 
-    @ApiModelProperty(value = "主键")
+    @ApiModelProperty(value = "字典主键")
     private Long id;
 
     @ApiModelProperty(value = "字典名称")
@@ -18,5 +18,12 @@ public class DictType extends BaseEntity {
 
     @ApiModelProperty(value = "状态（1正常 0停用)")
     private String status;
+
+    @ApiModelProperty(value = "开始时间")
+    private String beginTime;
+
+    @ApiModelProperty(value = "结束时间")
+    private String endTime;
+
 
 }
