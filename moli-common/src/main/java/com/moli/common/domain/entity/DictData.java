@@ -11,11 +11,8 @@ public class DictData extends BaseEntity {
     @ApiModelProperty(value = "id")
     private Long id;
 
-    @ApiModelProperty(value = "所属字典类型id")
-    private Long dictTypeId;
-
     @ApiModelProperty(value = "字典排序")
-    private int sort;
+    private Integer sort;
 
     @ApiModelProperty(value = "字典key")
     private String dictKey;
@@ -27,7 +24,8 @@ public class DictData extends BaseEntity {
     private String dictType;
 
     @ApiModelProperty(value = "状态（1正常 0停用）")
-    private String status;
+    private Integer status;
 
-
+    @ApiModelProperty(value = "备注")
+    private String remark;
 }

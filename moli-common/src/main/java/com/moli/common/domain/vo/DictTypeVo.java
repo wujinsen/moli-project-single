@@ -17,7 +17,7 @@ public class DictTypeVo extends BaseEntity {
     private String dictType;
 
     @ApiModelProperty(value = "状态（1正常 0停用)")
-    private String status;
+    private Integer status;
 
     @ApiModelProperty(value = "开始时间")
     private String beginTime;
@@ -25,5 +25,7 @@ public class DictTypeVo extends BaseEntity {
     @ApiModelProperty(value = "结束时间")
     private String endTime;
 
+    @ApiModelProperty(value = "备注")
+    private String remark;
 
 }

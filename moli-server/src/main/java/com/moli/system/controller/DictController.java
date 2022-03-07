@@ -21,6 +21,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("dict")
 @Api(tags = "字典管理")
@@ -71,6 +73,16 @@ public class DictController {
     }
 
     /**
+     * 字典类型列表
+     *
+     * @return 菜单列表
+     */
+    @GetMapping("/type/listAll")
+    public MoliResult<List<DictType>> listAll(DictTypeVo dictTypeVo) {
+        return MoliResult.success(dictTypeMapper.selectList(new LambdaQueryWrapper<>()));
+    }
+
+    /**
      * 添加字典类型
      *
      * @return 添加字典类型
@@ -94,13 +106,13 @@ public class DictController {
      * 查询字典类型
      */
     @GetMapping(value = "/type/{id}")
-    public MoliResult<DictType> getInfo(@PathVariable Long id) {
+    public MoliResult<DictType> getDictTypeInfo(@PathVariable Long id) {
 
         return MoliResult.success(dictTypeMapper.selectById(id));
     }
 
     /**
-     * 删除用户
+     * 删除字典类型
      */
     @DeleteMapping("/type/{dictIds}")
     public MoliResult delete(@PathVariable Long[] dictIds) {
@@ -145,6 +157,35 @@ public class DictController {
         result.setPageSize(dictDataVo.getPageSize());
         return MoliResult.success(result);
 
+    }
+
+    /**
+     * 查询字典类型
+     */
+    @GetMapping(value = "/data/{id}")
+    public MoliResult<DictData> getDictDataInfo(@PathVariable Long id) {
+
+        return MoliResult.success(dictDataMapper.selectById(id));
+    }
+
+    /**
+     * 查询字典类型
+     */
+    @PutMapping(value = "/data")
+    public MoliResult<Boolean> getDictDataInfo(@RequestBody DictData dictData) {
+
+        return MoliResult.success(dictDataMapper.updateById(dictData) > 0 ? Boolean.TRUE : Boolean.FALSE);
+    }
+
+    /**
+     * 删除用户
+     */
+    @DeleteMapping("/data/{dictIds}")
+    public MoliResult deleteData(@PathVariable Long[] dataIds) {
+        for (Long id : dataIds) {
+            dictTypeMapper.deleteById(id);
+        }
+        return MoliResult.success(Boolean.TRUE);
     }
 
 }

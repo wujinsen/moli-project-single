@@ -17,6 +17,9 @@ public class DictType extends BaseEntity {
     private String dictType;
 
     @ApiModelProperty(value = "状态（1正常 0停用)")
-    private String status;
+    private Integer status;
+
+    @ApiModelProperty(value = "备注")
+    private String remark;
 
 }
