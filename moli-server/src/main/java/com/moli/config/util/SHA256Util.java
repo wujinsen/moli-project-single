@@ -18,4 +18,8 @@ public class SHA256Util {
         return new SimpleHash(HASH_ALGORITHM_NAME, password, salt, HASH_ITERATIONS).toString();
     }
 
+    public static void main(String[] args) {
+        System.out.println(sha256("123456", SALT));
+    }
+
 }
