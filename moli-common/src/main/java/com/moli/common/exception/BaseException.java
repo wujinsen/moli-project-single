@@ -4,6 +4,7 @@ package com.moli.common.exception;
  * 业务异常类
  */
 public class BaseException extends RuntimeException {
+
     private static final long serialVersionUID = 1L;
 
     /**
@@ -19,17 +20,6 @@ public class BaseException extends RuntimeException {
         super();
     }
 
-    public BaseException(BaseErrorInfoInterface errorInfoInterface) {
-        super(errorInfoInterface.getResultCode());
-        this.errorCode = errorInfoInterface.getResultCode();
-        this.errorMsg = errorInfoInterface.getResultMsg();
-    }
-
-    public BaseException(BaseErrorInfoInterface errorInfoInterface, Throwable cause) {
-        super(errorInfoInterface.getResultCode(), cause);
-        this.errorCode = errorInfoInterface.getResultCode();
-        this.errorMsg = errorInfoInterface.getResultMsg();
-    }
 
     public BaseException(String errorMsg) {
         super(errorMsg);
