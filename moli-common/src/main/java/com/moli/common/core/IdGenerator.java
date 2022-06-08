@@ -29,4 +29,5 @@ public class IdGenerator {
     public void postConstruct() {
         idWorker = new SnowflakeIdWorker(workerId, dataCenterId);
     }
+
 }

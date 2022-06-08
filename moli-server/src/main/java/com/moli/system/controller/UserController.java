@@ -2,7 +2,6 @@ package com.moli.system.controller;
 
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.moli.common.constant.CommonConstant;
 import com.moli.common.core.MoliResult;
@@ -11,14 +10,12 @@ import com.moli.common.domain.entity.User;
 import com.moli.common.domain.entity.UserRole;
 import com.moli.common.domain.vo.UserRoleVo;
 import com.moli.common.domain.vo.UserVo;
-import com.moli.common.page.PageReq;
 import com.moli.common.page.PageRes;
 import com.moli.common.utils.MoliDateUtils;
 import com.moli.system.mapper.RoleMapper;
 import com.moli.system.mapper.UserMapper;
 import com.moli.system.mapper.UserRoleMapper;
 import com.moli.system.service.UserRoleService;
-import com.moli.system.service.UserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.collections.CollectionUtils;
@@ -27,8 +24,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 

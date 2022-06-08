@@ -3,6 +3,7 @@ package com.moli.system.controller;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.moli.common.constant.CommonConstant;
+import com.moli.common.core.IdGenerator;
 import com.moli.common.core.MoliResult;
 import com.moli.common.domain.entity.Dept;
 import com.moli.common.domain.entity.Role;
@@ -30,7 +31,9 @@ import java.util.List;
 @Api(tags = "部门管理")
 @Slf4j
 public class DeptController {
-
+    public static void main(String[] args) {
+        System.out.println(IdGenerator.getId());
+    }
     @Autowired
     private DeptMapper deptMapper;
 
