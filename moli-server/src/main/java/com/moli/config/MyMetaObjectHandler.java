@@ -16,7 +16,7 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
         log.info("start insert fill ....");
         this.strictInsertFill(metaObject, "isDelete", () -> 0, Integer.class);
         this.strictInsertFill(metaObject, "createTime", () -> new Date(), Date.class);
-        this.strictInsertFill(metaObject, "createUser", () -> ShiroUtils.getUserInfo().getId(), Long.class);
+        this.strictInsertFill(metaObject, "createId", () -> ShiroUtils.getUserInfo().getId(), Long.class);
     }
 
     @Override
@@ -24,7 +24,7 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
         log.info("start update fill ....");
         this.strictUpdateFill(metaObject, "updateTime", () -> new Date(), Date.class);
         if (ShiroUtils.getUserInfo() != null) {
-            this.strictInsertFill(metaObject, "updateUser", () -> ShiroUtils.getUserInfo().getId(), Long.class);
+            this.strictInsertFill(metaObject, "updateId", () -> ShiroUtils.getUserInfo().getId(), Long.class);
         }
     }
 

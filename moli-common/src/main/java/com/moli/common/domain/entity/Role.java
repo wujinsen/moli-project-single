@@ -17,7 +17,7 @@ public class Role {
 
     @ApiModelProperty("创建人")
     @TableField(fill = FieldFill.INSERT)
-    private String createUser;
+    private String createId;
 
     @ApiModelProperty("创建时间")
     @TableField(fill = FieldFill.INSERT)
@@ -25,7 +25,7 @@ public class Role {
 
     @ApiModelProperty("修改人")
     @TableField(fill = FieldFill.INSERT_UPDATE)
-    private String updateUser;
+    private String updateId;
 
     @TableField(fill = FieldFill.INSERT_UPDATE)
     @ApiModelProperty("修改时间")
