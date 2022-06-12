@@ -31,6 +31,7 @@ public class RedisConfig {
     public RedisTemplate<String, Object> redisTemplate(LettuceConnectionFactory lettuceConnectionFactory) {
 
         Jackson2JsonRedisSerializer<Object> jackson2JsonRedisSerializer = jacksonSerializer();
+        FastJsonRedisSerializer fastJsonRedisSerializer = new FastJsonRedisSerializer(Object.class);
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<String, Object>();
         redisTemplate.setConnectionFactory(lettuceConnectionFactory);
         RedisSerializer<String> stringSerializer = new StringRedisSerializer();
@@ -38,11 +39,12 @@ public class RedisConfig {
         // key序列化
         redisTemplate.setKeySerializer(stringSerializer);
         // value序列化
-        redisTemplate.setValueSerializer(jackson2JsonRedisSerializer);
+        redisTemplate.setValueSerializer(fastJsonRedisSerializer);
         // Hash key序列化
         redisTemplate.setHashKeySerializer(stringSerializer);
         // Hash value序列化
-        redisTemplate.setHashValueSerializer(jackson2JsonRedisSerializer);
+        redisTemplate.setHashValueSerializer(fastJsonRedisSerializer);
+
         redisTemplate.afterPropertiesSet();
         return redisTemplate;
     }
