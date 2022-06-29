@@ -7,10 +7,12 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.*;
 import org.springframework.test.context.junit4.SpringRunner;
+
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Set;
+
 import static java.math.BigDecimal.ROUND_UP;
 
 @RunWith(SpringRunner.class)
@@ -48,7 +50,7 @@ public class RedisTest {
     public void test2() {
         BoundZSetOperations<String, String> boundZSetOperations = redisTemplate.boundZSetOps("class:100");
         redisTemplate.opsForZSet().add("class:100", "zhaoqi", System.currentTimeMillis());
-        Set set = redisTemplate.opsForZSet().range("class:100",0, -1);
+        Set set = redisTemplate.opsForZSet().range("class:100", 0, -1);
 
 
         Cursor<ZSetOperations.TypedTuple<String>> scan = redisTemplate.boundZSetOps("class:100").scan(ScanOptions.NONE);
@@ -60,5 +62,25 @@ public class RedisTest {
         // boundZSetOperations.incrementScore("wangwu", 3000);
         // boundZSetOperations.range(0,-1).forEach(m -> System.out.println("获取map键值对:" + m ));
         // boundHashOperations.entries().forEach((m,n) -> System.out.println("获取map键值对:" + m + "-" + n));
+    }
+
+    @Test
+    public void test3() {
+
+        for(int i=0; i<10000; i++){
+            redisTemplate.opsForValue().set("bbb"+i, i);
+        }
+        for(int i=0; i<10000; i++){
+            redisTemplate.opsForValue().set("aaa"+i, i);
+        }
+        for(int i=0; i<10000; i++){
+            redisTemplate.opsForValue().set("ccc"+i, i);
+        }
+//        Long start = System.currentTimeMillis();
+//        Set set = redisTemplate.keys("*");
+//
+//        Long end = System.currentTimeMillis();
+//        System.out.println("耗时: " + (end-start) + "毫秒" + set.size());
+
     }
 }
