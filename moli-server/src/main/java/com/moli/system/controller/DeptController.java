@@ -31,9 +31,7 @@ import java.util.List;
 @Api(tags = "部门管理")
 @Slf4j
 public class DeptController {
-    public static void main(String[] args) {
-        System.out.println(IdGenerator.getId());
-    }
+
     @Autowired
     private DeptMapper deptMapper;
 
