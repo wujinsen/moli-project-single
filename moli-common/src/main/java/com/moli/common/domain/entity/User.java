@@ -28,7 +28,7 @@ public class User extends BaseEntity {
     private String identityCard;
 
     @ApiModelProperty(value = "性别")
-    private String sex;
+    private Integer sex;
 
     @ApiModelProperty(value = "电话号(唯一)")
     private String telephone;

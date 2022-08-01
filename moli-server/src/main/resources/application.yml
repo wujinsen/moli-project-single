@@ -4,5 +4,7 @@ server:
 
 ### 选择环境
 spring:
+  application:
+    name: moli-server
   profiles:
     active: dev
