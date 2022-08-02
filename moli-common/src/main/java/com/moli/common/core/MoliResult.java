@@ -62,7 +62,7 @@ public class MoliResult<T> implements Serializable {
     }
 
     public static <T> MoliResult<T> error() {
-        return new MoliResult(SUCCESS_CODE);
+        return new MoliResult(ResponseCodeEnums.ERROR.getCode());
     }
 
     public static <T> MoliResult<T> error(T t) {
@@ -77,7 +77,15 @@ public class MoliResult<T> implements Serializable {
         return moliResult;
     }
 
-    public static <T> MoliResult<T> error(int code, String message) {
+    public static <T> MoliResult<T> error(int code, T data, String message) {
+        MoliResult<T> moliResult = new MoliResult<>();
+        moliResult.setCode(code);
+        moliResult.setData(data);
+        moliResult.setMsg(message);
+        return moliResult;
+    }
+
+    public static <T> MoliResult<T> errorMsg(int code, String message) {
         return new MoliResult(code, message);
     }
 

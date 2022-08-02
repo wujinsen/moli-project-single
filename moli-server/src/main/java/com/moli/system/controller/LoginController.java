@@ -59,7 +59,7 @@ public class LoginController {
         MoliResult<LoginVo> result = new MoliResult<>();
         User user = userMapper.selectOne(new QueryWrapper<User>().lambda().eq(User::getUserName, userName).eq(User::getIsDelete, CommonConstant.UN_DELETE));
         if (null == user) {
-            result.setMessage("用户不存在或者密码错误");
+            result.setMsg("用户不存在或者密码错误");
             result.setCode(ResponseCodeEnums.ERROR.getCode());
             return result;
         }
@@ -71,7 +71,7 @@ public class LoginController {
             // 登录认证
             subject.login(token);
         } catch (IncorrectCredentialsException e) {
-            result.setMessage("用户不存在或者密码错误");
+            result.setMsg("用户不存在或者密码错误");
             result.setCode(ResponseCodeEnums.ERROR.getCode());
             log.error("login IncorrectCredentialsException: {}", e.getMessage());
 
@@ -82,17 +82,17 @@ public class LoginController {
             result.setData(loginVo);
             return result;
         } catch (LockedAccountException e) {
-            result.setMessage("登录失败，该用户已被冻结");
+            result.setMsg("登录失败，该用户已被冻结");
             result.setCode(ResponseCodeEnums.ERROR.getCode());
             log.error("login LockedAccountException: {}", e.getMessage());
             return result;
         } catch (AuthenticationException e) {
-            result.setMessage("用户认证失败");
+            result.setMsg("用户认证失败");
             result.setCode(ResponseCodeEnums.ERROR.getCode());
             log.error("login AuthenticationException: {} ", e.getMessage());
             return result;
         } catch (Exception e) {
-            result.setMessage("未知异常");
+            result.setMsg("未知异常");
             result.setCode(ResponseCodeEnums.ERROR.getCode());
             log.error("login Exception: {} ", e.getMessage());
             return result;
@@ -107,7 +107,7 @@ public class LoginController {
         List<MenuVo> menuVoList = menuService.selectMenuTreeByUserId(user.getId());
         //菜单信息
         loginVo.setMenuVoList(menuVoList);
-        result.setMessage("登录成功");
+        result.setMsg("登录成功");
         result.setCode(ResponseCodeEnums.SUCCESS_CODE.getCode());
         result.setData(loginVo);
         return result;
