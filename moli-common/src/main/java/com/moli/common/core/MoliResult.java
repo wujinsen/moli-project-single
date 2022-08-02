@@ -12,15 +12,10 @@ public class MoliResult<T> implements Serializable {
     private static final long serialVersionUID = -875864042638324305L;
 
     private static final int SUCCESS_CODE = ResponseCodeEnums.SUCCESS_CODE.getCode();
-    private static final int FAIL_CODE = -1;
-    private static final int STATUS_404 = 404;
-    private static final int STATUS_500 = ResponseCodeEnums.ERROR.getCode();
-    private static final int STATUS_PROTECTED = 1000;
-
 
     private T data;
     private int code;
-    private String message;
+    private String msg;
 
     public MoliResult(T data) {
         this.setData(data);
@@ -31,15 +26,15 @@ public class MoliResult<T> implements Serializable {
         this.code = code;
     }
 
-    public MoliResult(int code, String message) {
+    public MoliResult(int code, String msg) {
         this.code = code;
-        this.message = message;
+        this.msg = msg;
     }
 
-    public MoliResult(T data, int code, String message) {
+    public MoliResult(T data, int code, String msg) {
         this.data = data;
         this.code = code;
-        this.message = message;
+        this.msg = msg;
     }
 
     public MoliResult() {
@@ -70,26 +65,22 @@ public class MoliResult<T> implements Serializable {
         return new MoliResult(SUCCESS_CODE);
     }
 
-
     public static <T> MoliResult<T> error(T t) {
-        return new MoliResult(t, SUCCESS_CODE);
+        return new MoliResult(t, ResponseCodeEnums.ERROR.getCode());
     }
 
-    public static <T> MoliResult<T> error(T t, String message) {
-        return new MoliResult(t, SUCCESS_CODE, message);
+    public static <T> MoliResult<T> error(T data, String message) {
+        MoliResult<T> moliResult = new MoliResult<>();
+        moliResult.setCode(ResponseCodeEnums.ERROR.getCode());
+        moliResult.setData(data);
+        moliResult.setMsg(message);
+        return moliResult;
     }
 
-    public static <T> MoliResult<T> error(T t, int code) {
-        return new MoliResult(t, code);
-    }
-
-    public static <T> MoliResult<T> errorMsg(int code, String message) {
+    public static <T> MoliResult<T> error(int code, String message) {
         return new MoliResult(code, message);
     }
 
-    public static <T> MoliResult<T> error(T t, int code, String message) {
-        return new MoliResult(t, code, message);
-    }
 }
 
 
