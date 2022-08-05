@@ -9,7 +9,7 @@ import lombok.Data;
 import java.util.Date;
 
 @Data
-public class Role {
+public class SysRole {
 
     @ApiModelProperty("ID")
     @TableField(fill = FieldFill.INSERT)

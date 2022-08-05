@@ -4,7 +4,7 @@ package com.moli.system.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.moli.common.constant.CommonConstant;
 import com.moli.common.core.MoliResult;
-import com.moli.common.domain.entity.User;
+import com.moli.common.domain.entity.SysUser;
 import com.moli.common.domain.vo.CaptchaImageVo;
 import com.moli.common.domain.vo.LoginVo;
 import com.moli.common.domain.vo.MenuVo;
@@ -52,12 +52,12 @@ public class LoginController {
      * @return 结果
      */
     @PostMapping("/login")
-    public MoliResult login(@RequestBody User request) {
+    public MoliResult login(@RequestBody SysUser request) {
         String userName = request.getUserName();
         LoginVo loginVo = new LoginVo();
 
         MoliResult<LoginVo> result = new MoliResult<>();
-        User user = userMapper.selectOne(new QueryWrapper<User>().lambda().eq(User::getUserName, userName).eq(User::getIsDelete, CommonConstant.UN_DELETE));
+        SysUser user = userMapper.selectOne(new QueryWrapper<SysUser>().lambda().eq(SysUser::getUserName, userName).eq(SysUser::getIsDelete, CommonConstant.UN_DELETE));
         if (null == user) {
             result.setMsg("用户不存在或者密码错误");
             result.setCode(ResponseCodeEnums.ERROR.getCode());

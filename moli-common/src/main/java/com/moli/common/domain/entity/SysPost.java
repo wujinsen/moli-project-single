@@ -5,7 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 @Data
-public class Post extends BaseEntity {
+public class SysPost extends BaseEntity {
 
     @ApiModelProperty(value = "岗位编码")
     private String postCode;

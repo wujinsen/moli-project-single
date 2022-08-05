@@ -1,6 +1,6 @@
 package com.moli.system.service;
 
-import com.moli.common.domain.entity.Menu;
+import com.moli.common.domain.entity.SysMenu;
 import com.moli.common.domain.vo.MenuVo;
 
 import java.util.List;
@@ -12,14 +12,14 @@ public interface MenuService {
      * @param menu
      * @return
      */
-    public Boolean insert(Menu menu) ;
+    public Boolean insert(SysMenu menu) ;
 
     /**
      * 更新菜单
      * @param menu
      * @return
      */
-    public Boolean update(Menu menu) ;
+    public Boolean update(SysMenu menu) ;
 
     /**
      * 根据用户查询菜单树

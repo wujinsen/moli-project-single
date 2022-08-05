@@ -2,12 +2,9 @@ package com.moli.system.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.moli.common.constant.CommonConstant;
 import com.moli.common.core.MoliResult;
-import com.moli.common.domain.entity.Post;
-import com.moli.common.domain.entity.User;
+import com.moli.common.domain.entity.SysPost;
 import com.moli.common.domain.vo.PostVo;
-import com.moli.common.domain.vo.UserVo;
 import com.moli.common.page.PageRes;
 import com.moli.system.mapper.PostMapper;
 import io.swagger.annotations.Api;
@@ -35,19 +32,19 @@ public class PostController {
      */
     @GetMapping("/list")
     @ApiOperation(value = "岗位列表", notes = "岗位列表")
-    public MoliResult<PageRes<Post>> list(PostVo postVo) {
-        PageRes<Post> result = new PageRes<>();
-        LambdaQueryWrapper<Post> lambdaQueryWrapper = new LambdaQueryWrapper();
+    public MoliResult<PageRes<SysPost>> list(PostVo postVo) {
+        PageRes<SysPost> result = new PageRes<>();
+        LambdaQueryWrapper<SysPost> lambdaQueryWrapper = new LambdaQueryWrapper();
         if (StringUtils.isNotBlank(postVo.getPostCode())) {
-            lambdaQueryWrapper.eq(Post::getPostCode, postVo.getPostCode());
+            lambdaQueryWrapper.eq(SysPost::getPostCode, postVo.getPostCode());
         }
         if (StringUtils.isNotBlank(postVo.getPostName())) {
-            lambdaQueryWrapper.like(Post::getPostName, postVo.getPostName());
+            lambdaQueryWrapper.like(SysPost::getPostName, postVo.getPostName());
         }
         if (postVo.getStatus() != null) {
-            lambdaQueryWrapper.eq(Post::getStatus, postVo.getStatus());
+            lambdaQueryWrapper.eq(SysPost::getStatus, postVo.getStatus());
         }
-        lambdaQueryWrapper.orderByDesc(Post::getCreateTime);
+        lambdaQueryWrapper.orderByDesc(SysPost::getCreateTime);
         Page page = new Page();
         page.setCurrent(postVo.getPageNum());
         page.setSize(postVo.getPageSize());
@@ -68,7 +65,7 @@ public class PostController {
      * @return 添加岗位
      */
     @PostMapping
-    public MoliResult<Boolean> insert(@RequestBody Post post) {
+    public MoliResult<Boolean> insert(@RequestBody SysPost post) {
         postMapper.insert(post);
         return MoliResult.success(Boolean.TRUE);
     }
@@ -79,7 +76,7 @@ public class PostController {
      * @return
      */
     @PutMapping
-    public MoliResult<Boolean> update(@RequestBody Post post) {
+    public MoliResult<Boolean> update(@RequestBody SysPost post) {
         postMapper.updateById(post);
         return MoliResult.success(Boolean.TRUE);
     }
@@ -88,7 +85,7 @@ public class PostController {
      * 查询单个岗位
      */
     @GetMapping(value = "/{id}")
-    public MoliResult<Post> selectOne(@PathVariable Long id) {
+    public MoliResult<SysPost> selectOne(@PathVariable Long id) {
 
         return MoliResult.success(postMapper.selectById(id));
     }

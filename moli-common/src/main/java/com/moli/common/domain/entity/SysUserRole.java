@@ -4,7 +4,7 @@ import com.moli.common.core.BaseEntity;
 import lombok.Data;
 
 @Data
-public class UserRole {
+public class SysUserRole {
 
     private Long id;
 

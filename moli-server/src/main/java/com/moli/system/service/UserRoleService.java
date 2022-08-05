@@ -1,7 +1,7 @@
 package com.moli.system.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.moli.common.domain.entity.UserRole;
+import com.moli.common.domain.entity.SysUserRole;
 
-public interface UserRoleService extends IService<UserRole> {
+public interface UserRoleService extends IService<SysUserRole> {
 }

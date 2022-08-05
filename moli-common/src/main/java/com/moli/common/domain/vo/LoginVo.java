@@ -1,6 +1,6 @@
 package com.moli.common.domain.vo;
 
-import com.moli.common.domain.entity.User;
+import com.moli.common.domain.entity.SysUser;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -13,7 +13,7 @@ public class LoginVo {
     private String token;
 
     @ApiModelProperty(value = "用户信息")
-    private User user;
+    private SysUser user;
 
     @ApiModelProperty(value = "菜单树")
     private List<MenuVo> menuVoList;

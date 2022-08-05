@@ -1,7 +1,7 @@
 package com.moli.common.domain.vo;
 
-import com.moli.common.domain.entity.Role;
-import com.moli.common.domain.entity.User;
+import com.moli.common.domain.entity.SysRole;
+import com.moli.common.domain.entity.SysUser;
 import lombok.Data;
 
 import java.util.List;
@@ -9,10 +9,10 @@ import java.util.List;
 @Data
 public class UserRoleVo {
 
-    private User user;
+    private SysUser user;
 
     private Long UserId;
 
-    private List<Role> roleList;
+    private List<SysRole> roleList;
 
 }

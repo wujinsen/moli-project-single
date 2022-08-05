@@ -5,7 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 @Data
-public class Menu  extends BaseEntity {
+public class SysMenu extends BaseEntity {
 
     @ApiModelProperty(value = "菜单名称")
     private String menuName;

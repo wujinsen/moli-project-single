@@ -7,7 +7,7 @@ import lombok.Data;
 import java.util.Date;
 
 @Data
-public class Dept{
+public class SysDept {
 
     @ApiModelProperty("ID")
     @TableField(fill = FieldFill.INSERT)

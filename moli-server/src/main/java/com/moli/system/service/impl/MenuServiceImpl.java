@@ -3,10 +3,10 @@ package com.moli.system.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.moli.common.constant.CommonConstant;
-import com.moli.common.domain.entity.Menu;
-import com.moli.common.domain.entity.RoleMenu;
-import com.moli.common.domain.entity.User;
-import com.moli.common.domain.entity.UserRole;
+import com.moli.common.domain.entity.SysMenu;
+import com.moli.common.domain.entity.SysRoleMenu;
+import com.moli.common.domain.entity.SysUser;
+import com.moli.common.domain.entity.SysUserRole;
 import com.moli.common.domain.vo.MenuMetaVo;
 import com.moli.common.domain.vo.MenuVo;
 import com.moli.system.mapper.MenuMapper;
@@ -41,13 +41,13 @@ public class MenuServiceImpl implements MenuService {
 
 
     @Override
-    public Boolean insert(Menu menu) {
+    public Boolean insert(SysMenu menu) {
         menuMapper.insert(menu);
         return Boolean.TRUE;
     }
 
     @Override
-    public Boolean update(Menu menu) {
+    public Boolean update(SysMenu menu) {
         menuMapper.updateById(menu);
         return Boolean.TRUE;
     }
@@ -63,18 +63,18 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     public List<MenuVo> selectMenuListByUserId(MenuVo menuVo) {
-        User user = userMapper.selectById(menuVo.getUserId());
+        SysUser user = userMapper.selectById(menuVo.getUserId());
         //超级管理员
         if (StringUtils.isNotBlank(user.getUserName()) && user.getUserName().equals("admin")) {
-            LambdaQueryWrapper<Menu> lambdaQueryWrapper = new LambdaQueryWrapper();
+            LambdaQueryWrapper<SysMenu> lambdaQueryWrapper = new LambdaQueryWrapper();
             if (StringUtils.isNotBlank(menuVo.getMenuName())) {
-                lambdaQueryWrapper.like(Menu::getMenuName, menuVo.getMenuName());
+                lambdaQueryWrapper.like(SysMenu::getMenuName, menuVo.getMenuName());
             }
             if (menuVo.getStatus() != null) {
-                lambdaQueryWrapper.eq(Menu::getStatus, menuVo.getStatus());
+                lambdaQueryWrapper.eq(SysMenu::getStatus, menuVo.getStatus());
             }
-            lambdaQueryWrapper.orderByAsc(Menu::getOrderNum);
-            List<Menu> menuList = menuMapper.selectList(lambdaQueryWrapper);
+            lambdaQueryWrapper.orderByAsc(SysMenu::getOrderNum);
+            List<SysMenu> menuList = menuMapper.selectList(lambdaQueryWrapper);
             List<MenuVo> menuVoList = new ArrayList<>();
             menuList.forEach(e -> {
                 MenuVo htgMenuVo = new MenuVo();
@@ -89,17 +89,17 @@ public class MenuServiceImpl implements MenuService {
             });
             return menuVoList;
         }
-        List<UserRole> userRoleList = userRoleMapper.selectList(new QueryWrapper<UserRole>().lambda().eq(UserRole::getUserId, menuVo.getUserId()));
+        List<SysUserRole> userRoleList = userRoleMapper.selectList(new QueryWrapper<SysUserRole>().lambda().eq(SysUserRole::getUserId, menuVo.getUserId()));
         if (CollectionUtils.isEmpty(userRoleList)) {
             return new ArrayList<>();
         }
         List<Long> roleIdList = userRoleList.stream().map(e -> e.getRoleId()).collect(Collectors.toList());
-        List<RoleMenu> roleMenuList = roleMenuMapper.selectList(new QueryWrapper<RoleMenu>().lambda().in(RoleMenu::getRoleId, roleIdList));
+        List<SysRoleMenu> roleMenuList = roleMenuMapper.selectList(new QueryWrapper<SysRoleMenu>().lambda().in(SysRoleMenu::getRoleId, roleIdList));
         List<Long> menuIdList = roleMenuList.stream().map(e -> e.getMenuId()).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(menuIdList)) {
             return new ArrayList<>();
         }
-        List<Menu> menuList = menuMapper.selectList(new QueryWrapper<Menu>().lambda().in(Menu::getId, menuIdList));
+        List<SysMenu> menuList = menuMapper.selectList(new QueryWrapper<SysMenu>().lambda().in(SysMenu::getId, menuIdList));
         List<MenuVo> menuVoList = new ArrayList<>();
         menuList.forEach(e -> {
             MenuVo htgMenuVo = new MenuVo();
@@ -117,12 +117,12 @@ public class MenuServiceImpl implements MenuService {
     @Override
     public List<MenuVo> selectMenuTreeByRoleId(Long roleId) {
 
-        List<RoleMenu> roleMenuList = roleMenuMapper.selectList(new QueryWrapper<RoleMenu>().lambda().eq(RoleMenu::getRoleId, roleId));
+        List<SysRoleMenu> roleMenuList = roleMenuMapper.selectList(new QueryWrapper<SysRoleMenu>().lambda().eq(SysRoleMenu::getRoleId, roleId));
         List<Long> menuIdList = roleMenuList.stream().map(e -> e.getMenuId()).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(menuIdList)) {
             return new ArrayList<>();
         }
-   //     List<Menu> menuList = menuMapper.selectList(new QueryWrapper<Menu>().lambda().in(Menu::getId, menuIdList));
+   //     List<SysMenu> menuList = menuMapper.selectList(new QueryWrapper<SysMenu>().lambda().in(SysMenu::getId, menuIdList));
         List<MenuVo> menuVoList = this.getMenuTreeAll();
 //        menuList.forEach(e -> {
 //            MenuVo htgMenuVo = new MenuVo();
@@ -141,7 +141,7 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     public List<MenuVo> getMenuTreeAll() {
-        List<Menu> menuList = menuMapper.selectList(new QueryWrapper<>());
+        List<SysMenu> menuList = menuMapper.selectList(new QueryWrapper<>());
         List<MenuVo> menuVoList = new ArrayList<>();
         menuList.forEach(e -> {
             MenuVo htgMenuVo = new MenuVo();

@@ -4,11 +4,9 @@ package com.moli.system.controller;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.moli.common.core.MoliResult;
-import com.moli.common.domain.entity.Role;
-import com.moli.common.domain.entity.RoleMenu;
-import com.moli.common.domain.entity.User;
+import com.moli.common.domain.entity.SysRole;
+import com.moli.common.domain.entity.SysRoleMenu;
 import com.moli.common.domain.vo.RoleVo;
-import com.moli.common.page.PageReq;
 import com.moli.common.page.PageRes;
 import com.moli.system.mapper.RoleMapper;
 import com.moli.system.mapper.RoleMenuMapper;
@@ -19,14 +17,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import java.math.BigDecimal;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.Date;
-import java.util.TimeZone;
 
 @RestController
 @RequestMapping("/role")
@@ -47,18 +37,18 @@ public class RoleController {
      */
     @GetMapping("/list")
     @ApiOperation(value = "角色列表", notes = "角色列表")
-    public MoliResult<PageRes<Role>> list(RoleVo roleVo) {
+    public MoliResult<PageRes<SysRole>> list(RoleVo roleVo) {
 
-        PageRes<Role> result = new PageRes<>();
-        LambdaQueryWrapper<Role> lambdaQueryWrapper = new LambdaQueryWrapper();
+        PageRes<SysRole> result = new PageRes<>();
+        LambdaQueryWrapper<SysRole> lambdaQueryWrapper = new LambdaQueryWrapper();
         if (StringUtils.isNotBlank(roleVo.getRoleName())) {
-            lambdaQueryWrapper.eq(Role::getRoleName, roleVo.getRoleName());
+            lambdaQueryWrapper.eq(SysRole::getRoleName, roleVo.getRoleName());
         }
         if (roleVo.getStatus() != null) {
-            lambdaQueryWrapper.eq(Role::getStatus, roleVo.getStatus());
+            lambdaQueryWrapper.eq(SysRole::getStatus, roleVo.getStatus());
         }
         if (roleVo.getBeginTime() != null) {
-            lambdaQueryWrapper.between(Role::getCreateTime, roleVo.getBeginTime() + " 00:00:00", roleVo.getEndTime() + " 23:59:59");
+            lambdaQueryWrapper.between(SysRole::getCreateTime, roleVo.getBeginTime() + " 00:00:00", roleVo.getEndTime() + " 23:59:59");
         }
         Page page = new Page();
         roleMapper.selectPage(page, lambdaQueryWrapper);
@@ -78,12 +68,12 @@ public class RoleController {
      */
     @PostMapping
     public MoliResult<Boolean> insert(@RequestBody RoleVo roleVo) {
-        Role role = new Role();
+        SysRole role = new SysRole();
         BeanUtils.copyProperties(roleVo, role);
         roleMapper.insert(role);
         if (CollectionUtils.isNotEmpty(roleVo.getMenuIds())) {
             for (Long menuId : roleVo.getMenuIds()) {
-                RoleMenu roleMenu = new RoleMenu();
+                SysRoleMenu roleMenu = new SysRoleMenu();
                 roleMenu.setRoleId(role.getId());
                 roleMenu.setMenuId(menuId);
                 roleMenuMapper.insert(roleMenu);
@@ -98,7 +88,7 @@ public class RoleController {
      * @return
      */
     @PutMapping
-    public MoliResult<Boolean> update(@RequestBody Role role) {
+    public MoliResult<Boolean> update(@RequestBody SysRole role) {
         roleMapper.updateById(role);
         return MoliResult.success(Boolean.TRUE);
     }
@@ -107,7 +97,7 @@ public class RoleController {
      * 查询单个角色
      */
     @GetMapping(value = "/{id}")
-    public MoliResult<Role> getInfo(@PathVariable Long id) {
+    public MoliResult<SysRole> getInfo(@PathVariable Long id) {
         return MoliResult.success(roleMapper.selectById(id));
     }
 
@@ -119,7 +109,7 @@ public class RoleController {
     public MoliResult delete(@PathVariable Long[] ids) {
         for (Long roleId : ids) {
             roleMapper.deleteById(roleId);
-            roleMenuMapper.delete(new LambdaQueryWrapper<RoleMenu>().eq(RoleMenu::getRoleId, roleId));
+            roleMenuMapper.delete(new LambdaQueryWrapper<SysRoleMenu>().eq(SysRoleMenu::getRoleId, roleId));
         }
         return MoliResult.success(Boolean.TRUE);
     }
@@ -127,7 +117,7 @@ public class RoleController {
 
     @PutMapping("/changeStatus")
     @ApiOperation(value = "角色状态变更", notes = "角色状态变更")
-    public MoliResult changeStatus(@RequestBody Role role) {
+    public MoliResult changeStatus(@RequestBody SysRole role) {
         roleMapper.updateById(role);
         return MoliResult.success(Boolean.TRUE);
     }

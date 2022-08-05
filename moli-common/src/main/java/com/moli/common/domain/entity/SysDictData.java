@@ -6,7 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 @Data
-public class DictData extends BaseEntity {
+public class SysDictData extends BaseEntity {
 
     @ApiModelProperty(value = "id")
     private Long id;

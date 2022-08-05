@@ -3,12 +3,9 @@ package com.moli.system.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.moli.common.constant.CommonConstant;
 import com.moli.common.core.MoliResult;
-import com.moli.common.domain.entity.DictData;
-import com.moli.common.domain.entity.DictType;
-import com.moli.common.domain.entity.Menu;
-import com.moli.common.domain.entity.User;
+import com.moli.common.domain.entity.SysDictData;
+import com.moli.common.domain.entity.SysDictType;
 import com.moli.common.domain.vo.DictDataVo;
 import com.moli.common.domain.vo.DictTypeVo;
 import com.moli.common.page.PageRes;
@@ -41,22 +38,22 @@ public class DictController {
      * @return 菜单列表
      */
     @GetMapping("/type/list")
-    public MoliResult<PageRes<DictType>> list(DictTypeVo dictTypeVo) {
+    public MoliResult<PageRes<SysDictType>> list(DictTypeVo dictTypeVo) {
 
-        PageRes<DictType> result = new PageRes<>();
-        LambdaQueryWrapper<DictType> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        PageRes<SysDictType> result = new PageRes<>();
+        LambdaQueryWrapper<SysDictType> lambdaQueryWrapper = new LambdaQueryWrapper<>();
 
         if (StringUtils.isNotBlank(dictTypeVo.getDictName())) {
-            lambdaQueryWrapper.eq(DictType::getDictName, dictTypeVo.getDictName());
+            lambdaQueryWrapper.eq(SysDictType::getDictName, dictTypeVo.getDictName());
         }
         if (StringUtils.isNotBlank(dictTypeVo.getDictType())) {
-            lambdaQueryWrapper.eq(DictType::getDictType, dictTypeVo.getDictType());
+            lambdaQueryWrapper.eq(SysDictType::getDictType, dictTypeVo.getDictType());
         }
         if (dictTypeVo.getStatus() != null) {
-            lambdaQueryWrapper.eq(DictType::getStatus, dictTypeVo.getStatus());
+            lambdaQueryWrapper.eq(SysDictType::getStatus, dictTypeVo.getStatus());
         }
         if (StringUtils.isNotBlank(dictTypeVo.getBeginTime())) {
-            lambdaQueryWrapper.between(DictType::getCreateTime, MoliDateUtils.startTimeToDateStart(dictTypeVo.getBeginTime()), MoliDateUtils.endTimeToDateEnd(dictTypeVo.getEndTime()));
+            lambdaQueryWrapper.between(SysDictType::getCreateTime, MoliDateUtils.startTimeToDateStart(dictTypeVo.getBeginTime()), MoliDateUtils.endTimeToDateEnd(dictTypeVo.getEndTime()));
         }
 
         Page page = new Page();
@@ -78,7 +75,7 @@ public class DictController {
      * @return 菜单列表
      */
     @GetMapping("/type/listAll")
-    public MoliResult<List<DictType>> listAll(DictTypeVo dictTypeVo) {
+    public MoliResult<List<SysDictType>> listAll(DictTypeVo dictTypeVo) {
         return MoliResult.success(dictTypeMapper.selectList(new LambdaQueryWrapper<>()));
     }
 
@@ -88,7 +85,7 @@ public class DictController {
      * @return 添加字典类型
      */
     @PostMapping("/type")
-    public MoliResult<Boolean> insert(@RequestBody DictType dictType) {
+    public MoliResult<Boolean> insert(@RequestBody SysDictType dictType) {
         return MoliResult.success(dictTypeMapper.insert(dictType) > 0 ? Boolean.TRUE : Boolean.FALSE);
     }
 
@@ -98,7 +95,7 @@ public class DictController {
      * @return 菜单列表
      */
     @PutMapping("/type")
-    public MoliResult<Boolean> update(@RequestBody DictType dictType) {
+    public MoliResult<Boolean> update(@RequestBody SysDictType dictType) {
         return MoliResult.success(dictTypeMapper.updateById(dictType) > 0 ? Boolean.TRUE : Boolean.FALSE);
     }
 
@@ -106,7 +103,7 @@ public class DictController {
      * 查询字典类型
      */
     @GetMapping(value = "/type/{id}")
-    public MoliResult<DictType> getDictTypeInfo(@PathVariable Long id) {
+    public MoliResult<SysDictType> getDictTypeInfo(@PathVariable Long id) {
 
         return MoliResult.success(dictTypeMapper.selectById(id));
     }
@@ -129,21 +126,21 @@ public class DictController {
      * @return 菜单数据列表
      */
     @GetMapping("/data/list")
-    public MoliResult<PageRes<DictData>> list(DictDataVo dictDataVo) {
+    public MoliResult<PageRes<SysDictData>> list(DictDataVo dictDataVo) {
 
-        PageRes<DictData> result = new PageRes<>();
-        LambdaQueryWrapper<DictData> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        PageRes<SysDictData> result = new PageRes<>();
+        LambdaQueryWrapper<SysDictData> lambdaQueryWrapper = new LambdaQueryWrapper<>();
 
-        lambdaQueryWrapper.eq(DictData::getDictType, dictDataVo.getDictType());
+        lambdaQueryWrapper.eq(SysDictData::getDictType, dictDataVo.getDictType());
 
         if (StringUtils.isNotBlank(dictDataVo.getDictValue())) {
-            lambdaQueryWrapper.like(DictData::getDictValue, dictDataVo.getDictValue());
+            lambdaQueryWrapper.like(SysDictData::getDictValue, dictDataVo.getDictValue());
         }
         if (dictDataVo.getStatus() != null) {
-            lambdaQueryWrapper.eq(DictData::getStatus, dictDataVo.getStatus());
+            lambdaQueryWrapper.eq(SysDictData::getStatus, dictDataVo.getStatus());
         }
         if (StringUtils.isNotBlank(dictDataVo.getBeginTime())) {
-            lambdaQueryWrapper.between(DictData::getCreateTime, MoliDateUtils.startTimeToDateStart(dictDataVo.getBeginTime()), MoliDateUtils.endTimeToDateEnd(dictDataVo.getEndTime()));
+            lambdaQueryWrapper.between(SysDictData::getCreateTime, MoliDateUtils.startTimeToDateStart(dictDataVo.getBeginTime()), MoliDateUtils.endTimeToDateEnd(dictDataVo.getEndTime()));
         }
 
         Page page = new Page();
@@ -163,7 +160,7 @@ public class DictController {
      * 查询字典类型
      */
     @GetMapping(value = "/data/{id}")
-    public MoliResult<DictData> getDictDataInfo(@PathVariable Long id) {
+    public MoliResult<SysDictData> getDictDataInfo(@PathVariable Long id) {
 
         return MoliResult.success(dictDataMapper.selectById(id));
     }
@@ -172,7 +169,7 @@ public class DictController {
      * 查询字典类型
      */
     @PutMapping(value = "/data")
-    public MoliResult<Boolean> getDictDataInfo(@RequestBody DictData dictData) {
+    public MoliResult<Boolean> getDictDataInfo(@RequestBody SysDictData dictData) {
 
         return MoliResult.success(dictDataMapper.updateById(dictData) > 0 ? Boolean.TRUE : Boolean.FALSE);
     }

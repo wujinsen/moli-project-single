@@ -2,10 +2,10 @@ package com.moli.system.mapper;
 
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.moli.common.domain.entity.DictData;
+import com.moli.common.domain.entity.SysDictData;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
-public interface DictDataMapper extends BaseMapper<DictData> {
+public interface DictDataMapper extends BaseMapper<SysDictData> {
 
 }

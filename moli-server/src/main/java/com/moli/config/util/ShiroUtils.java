@@ -1,7 +1,7 @@
 package com.moli.config.util;
 
 
-import com.moli.common.domain.entity.User;
+import com.moli.common.domain.entity.SysUser;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.Authenticator;
 import org.apache.shiro.authc.LogoutAware;
@@ -49,8 +49,8 @@ public class ShiroUtils {
     /**
      * 获取当前用户信息
      */
-    public static User getUserInfo() {
-        return (User) SecurityUtils.getSubject().getPrincipal();
+    public static SysUser getUserInfo() {
+        return (SysUser) SecurityUtils.getSubject().getPrincipal();
     }
 
     /**
@@ -63,7 +63,7 @@ public class ShiroUtils {
         //从缓存中获取Session
         Session session = null;
         Collection<Session> sessions = redisSessionDAO.getActiveSessions();
-        User user;
+        SysUser user;
         Object attribute = null;
         for (Session sessionInfo : sessions) {
             //遍历Session,找到该用户名称对应的Session
@@ -72,7 +72,7 @@ public class ShiroUtils {
                 continue;
             }
             //login_token_632f7af9-e120-4b2d-818a-77504724a09c
-            user = (User) ((SimplePrincipalCollection) attribute).getPrimaryPrincipal();
+            user = (SysUser) ((SimplePrincipalCollection) attribute).getPrimaryPrincipal();
             if (user == null) {
                 continue;
             }

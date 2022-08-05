@@ -5,9 +5,9 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.moli.common.constant.CommonConstant;
 import com.moli.common.core.MoliResult;
-import com.moli.common.domain.entity.Role;
-import com.moli.common.domain.entity.User;
-import com.moli.common.domain.entity.UserRole;
+import com.moli.common.domain.entity.SysRole;
+import com.moli.common.domain.entity.SysUser;
+import com.moli.common.domain.entity.SysUserRole;
 import com.moli.common.domain.vo.UserRoleVo;
 import com.moli.common.domain.vo.UserVo;
 import com.moli.common.page.PageRes;
@@ -24,9 +24,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 
@@ -55,25 +53,25 @@ public class UserController {
      */
     @GetMapping("/list")
     @ApiOperation(value = "用户列表", notes = "用户列表")
-    public MoliResult<PageRes<User>> list(UserVo userVo) {
-        PageRes<User> result = new PageRes<>();
-        LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper();
+    public MoliResult<PageRes<SysUser>> list(UserVo userVo) {
+        PageRes<SysUser> result = new PageRes<>();
+        LambdaQueryWrapper<SysUser> lambdaQueryWrapper = new LambdaQueryWrapper();
         if (userVo.getDeptId() != null) {
-            lambdaQueryWrapper.eq(User::getDeptId, userVo.getDeptId());
+            lambdaQueryWrapper.eq(SysUser::getDeptId, userVo.getDeptId());
         }
         if (StringUtils.isNotBlank(userVo.getUserName())) {
-            lambdaQueryWrapper.eq(User::getUserName,userVo.getUserName());
+            lambdaQueryWrapper.eq(SysUser::getUserName,userVo.getUserName());
         }
         if (StringUtils.isNotBlank(userVo.getTelephone())) {
-            lambdaQueryWrapper.eq(User::getTelephone, userVo.getTelephone());
+            lambdaQueryWrapper.eq(SysUser::getTelephone, userVo.getTelephone());
         }
         if (userVo.getStatus() != null) {
-            lambdaQueryWrapper.eq(User::getStatus, userVo.getStatus());
+            lambdaQueryWrapper.eq(SysUser::getStatus, userVo.getStatus());
         }
         if (userVo.getBeginTime() != null) {
-            lambdaQueryWrapper.between(User::getCreateTime, MoliDateUtils.startTimeToDateStart(userVo.getBeginTime()), userVo.getEndTime() + " 23:59:59");
+            lambdaQueryWrapper.between(SysUser::getCreateTime, MoliDateUtils.startTimeToDateStart(userVo.getBeginTime()), userVo.getEndTime() + " 23:59:59");
         }
-        lambdaQueryWrapper.eq(User::getIsDelete, CommonConstant.UN_DELETE);
+        lambdaQueryWrapper.eq(SysUser::getIsDelete, CommonConstant.UN_DELETE);
         Page page = new Page();
         page.setPages(userVo.getPageNum());
         page.setSize(userVo.getPageSize());
@@ -93,7 +91,7 @@ public class UserController {
      */
     @PostMapping
     public MoliResult<Boolean> insert(@RequestBody UserVo userVo) {
-        User user = new User();
+        SysUser user = new SysUser();
         BeanUtils.copyProperties(userVo, user);
         userMapper.insert(user);
         return MoliResult.success(Boolean.TRUE);
@@ -105,7 +103,7 @@ public class UserController {
      * @return
      */
     @PutMapping
-    public MoliResult<Boolean> update(@RequestBody User user) {
+    public MoliResult<Boolean> update(@RequestBody SysUser user) {
         userMapper.updateById(user);
         return MoliResult.success(Boolean.TRUE);
     }
@@ -114,7 +112,7 @@ public class UserController {
      * 查询单个用户
      */
     @GetMapping(value = "/{id}")
-    public MoliResult<User> getInfo(@PathVariable Long id) {
+    public MoliResult<SysUser> getInfo(@PathVariable Long id) {
 
         return MoliResult.success(userMapper.selectById(id));
     }
@@ -125,7 +123,7 @@ public class UserController {
     @DeleteMapping("/{userIds}")
     public MoliResult delete(@PathVariable Long[] userIds) {
         for (Long id : userIds) {
-            User user = new User();
+            SysUser user = new SysUser();
             user.setId(id);
             user.setIsDelete(CommonConstant.IS_DELETE);
             userMapper.updateById(user);
@@ -135,7 +133,7 @@ public class UserController {
     }
 
     @PutMapping("/changeStatus")
-    public MoliResult changeStatus(@RequestBody User user) {
+    public MoliResult changeStatus(@RequestBody SysUser user) {
         userMapper.updateById(user);
         return MoliResult.success(Boolean.TRUE);
     }
@@ -146,11 +144,11 @@ public class UserController {
     @GetMapping(value = "/getRoleByUserId/{userId}")
     public MoliResult<UserRoleVo> getRoleByUserId(@PathVariable Long userId) {
         UserRoleVo userRoleVo = new UserRoleVo();
-        User user = userMapper.selectById(userId);
+        SysUser user = userMapper.selectById(userId);
         userRoleVo.setUser(user);
-        List<UserRole> userRoleList = userRoleMapper.selectList(new LambdaQueryWrapper<UserRole>().eq(UserRole::getUserId, userId));
+        List<SysUserRole> userRoleList = userRoleMapper.selectList(new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getUserId, userId));
         List<Long> roleIdList = userRoleList.stream().map(e -> e.getRoleId()).collect(Collectors.toList());
-        List<Role> roleList = roleMapper.selectList(new LambdaQueryWrapper<Role>().in(Role::getId, roleIdList));
+        List<SysRole> roleList = roleMapper.selectList(new LambdaQueryWrapper<SysRole>().in(SysRole::getId, roleIdList));
         userRoleVo.setRoleList(roleList);
         return MoliResult.success(userRoleVo);
     }
@@ -162,10 +160,10 @@ public class UserController {
      */
     @PutMapping("/inserUserRole")
     public MoliResult<Boolean> inserUserRole(@RequestBody UserRoleVo userRoleVo) {
-        List<UserRole> userRoleList = new ArrayList<>();
+        List<SysUserRole> userRoleList = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(userRoleVo.getRoleList())) {
-            for (Role role : userRoleVo.getRoleList()) {
-                UserRole userRole = new UserRole();
+            for (SysRole role : userRoleVo.getRoleList()) {
+                SysUserRole userRole = new SysUserRole();
                 userRole.setUserId(userRoleVo.getUserId());
                 userRole.setRoleId(role.getId());
                 userRoleList.add(userRole);
