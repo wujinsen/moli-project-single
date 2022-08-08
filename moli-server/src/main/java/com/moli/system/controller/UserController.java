@@ -78,7 +78,7 @@ public class UserController {
         userMapper.selectPage(page, lambdaQueryWrapper);
         Long total = page.getTotal();
         result.setTotal(total.intValue());
-        result.setItems(page.getRecords());
+        result.setList(page.getRecords());
         result.setPageNum(userVo.getPageNum());
         result.setPageSize(userVo.getPageSize());
         return MoliResult.success(result);

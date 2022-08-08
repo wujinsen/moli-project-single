@@ -62,7 +62,7 @@ public class DictController {
         dictTypeMapper.selectPage(page, lambdaQueryWrapper);
         Long total = page.getTotal();
         result.setTotal(total.intValue());
-        result.setItems(page.getRecords());
+        result.setList(page.getRecords());
         result.setPageNum(dictTypeVo.getPageNum());
         result.setPageSize(dictTypeVo.getPageSize());
         return MoliResult.success(result);
@@ -149,7 +149,7 @@ public class DictController {
         dictDataMapper.selectPage(page, lambdaQueryWrapper);
         Long total = page.getTotal();
         result.setTotal(total.intValue());
-        result.setItems(page.getRecords());
+        result.setList(page.getRecords());
         result.setPageNum(dictDataVo.getPageNum());
         result.setPageSize(dictDataVo.getPageSize());
         return MoliResult.success(result);

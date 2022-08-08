@@ -14,10 +14,10 @@ public class PageRes<T> extends BasePage {
     private Integer total;
 
     @ApiModelProperty("返回数据")
-    private List<T> items;
+    private List<T> list;
 
     public void setData(List<T> data, Integer pageNum, Integer pageSize) {
-        this.items = data;
+        this.list = data;
         if (null == pageNum || null == pageSize) {
             pageNum = 1;
             pageSize = 10;
@@ -27,7 +27,7 @@ public class PageRes<T> extends BasePage {
     }
 
     public void setData(List<T> data) {
-        this.items = data;
+        this.list = data;
         this.pageNum = 1;
         this.pageSize = 10;
     }

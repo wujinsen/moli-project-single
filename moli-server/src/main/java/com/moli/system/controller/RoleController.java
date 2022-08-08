@@ -54,7 +54,7 @@ public class RoleController {
         roleMapper.selectPage(page, lambdaQueryWrapper);
         Long total = page.getTotal();
         result.setTotal(total.intValue());
-        result.setItems(page.getRecords());
+        result.setList(page.getRecords());
         result.setPageNum(roleVo.getPageNum());
         result.setPageSize(roleVo.getPageSize());
         return MoliResult.success(result);

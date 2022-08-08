@@ -51,7 +51,7 @@ public class PostController {
         postMapper.selectPage(page, lambdaQueryWrapper);
         Long total = page.getTotal();
         result.setTotal(total.intValue());
-        result.setItems(page.getRecords());
+        result.setList(page.getRecords());
         result.setPageNum(postVo.getPageNum());
         result.setPageSize(postVo.getPageSize());
         return MoliResult.success(result);
