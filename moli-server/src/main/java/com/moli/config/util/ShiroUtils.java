@@ -2,6 +2,7 @@ package com.moli.config.util;
 
 
 import com.moli.common.domain.entity.SysUser;
+import com.moli.common.utils.SpringUtil;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.Authenticator;
 import org.apache.shiro.authc.LogoutAware;

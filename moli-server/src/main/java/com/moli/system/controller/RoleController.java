@@ -7,6 +7,8 @@ import com.moli.common.core.MoliResult;
 import com.moli.common.domain.entity.SysRole;
 import com.moli.common.domain.entity.SysRoleMenu;
 import com.moli.common.domain.vo.RoleVo;
+import com.moli.common.enums.BusinessTypeEnum;
+import com.moli.common.log.MoliLog;
 import com.moli.common.page.PageRes;
 import com.moli.system.mapper.RoleMapper;
 import com.moli.system.mapper.RoleMenuMapper;
@@ -88,6 +90,7 @@ public class RoleController {
      * @return
      */
     @PutMapping
+    @MoliLog(title = "角色管理", businessType = BusinessTypeEnum.UPDATE)
     public MoliResult<Boolean> update(@RequestBody SysRole role) {
         roleMapper.updateById(role);
         return MoliResult.success(Boolean.TRUE);

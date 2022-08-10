@@ -1,4 +1,4 @@
-package com.moli.config.util;
+package com.moli.common.utils;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
