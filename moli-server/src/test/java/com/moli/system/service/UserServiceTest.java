@@ -1,4 +1,4 @@
-package com.moli.service;
+package com.moli.system.service;
 
 import com.moli.common.core.IdGenerator;
 import lombok.Data;
@@ -28,4 +28,5 @@ public class UserServiceTest {
     public void test(){
         System.out.println(IdGenerator.getId());
     }
+
 }

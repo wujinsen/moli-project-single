@@ -19,5 +19,4 @@ public class SysPost extends BaseEntity {
     @ApiModelProperty(value = "岗位排序")
     private Integer sort;
 
-
 }

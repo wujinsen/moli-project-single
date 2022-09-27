@@ -1,4 +1,4 @@
-package com.moli.service;
+package com.moli.system.service;
 
 import com.moli.system.service.PostService;
 import lombok.extern.slf4j.Slf4j;

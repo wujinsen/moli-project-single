@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.moli.common.core.MoliResult;
 import com.moli.common.domain.entity.SysDept;
 import com.moli.common.domain.vo.DeptVo;
+import com.moli.common.domain.vo.PostVo;
 import com.moli.system.mapper.DeptMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -16,6 +17,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 
 @RestController
