@@ -2,16 +2,13 @@ package com.moli.common.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.moli.common.core.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import java.util.Date;
 
 @Data
-public class SysDept {
-
-    @ApiModelProperty("ID")
-    @TableField(fill = FieldFill.INSERT)
-    private Long id;
+public class SysDept extends BaseEntity {
 
     @ApiModelProperty("父级id")
     private Long parentId;
@@ -24,22 +21,5 @@ public class SysDept {
 
     @ApiModelProperty(value = "1:正常 0:停用")
     private Integer status;
-
-    @ApiModelProperty("创建人")
-    @TableField(fill = FieldFill.INSERT)
-    private Long createId;
-
-    @ApiModelProperty("创建时间")
-    @TableField(fill = FieldFill.INSERT)
-    private Date createTime;
-
-    @ApiModelProperty("修改人")
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private Long updateId;
-
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    @ApiModelProperty("修改时间")
-    private Date updateTime;
-
 
 }
