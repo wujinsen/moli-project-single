@@ -73,7 +73,7 @@ public class UserController {
         }
         lambdaQueryWrapper.eq(SysUser::getIsDelete, CommonConstant.UN_DELETE);
         Page page = new Page();
-        page.setPages(userVo.getPageNum());
+        page.setCurrent(userVo.getPageNum());
         page.setSize(userVo.getPageSize());
         userMapper.selectPage(page, lambdaQueryWrapper);
         Long total = page.getTotal();

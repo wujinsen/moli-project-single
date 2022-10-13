@@ -53,6 +53,8 @@ public class RoleController {
             lambdaQueryWrapper.between(SysRole::getCreateTime, roleVo.getBeginTime() + " 00:00:00", roleVo.getEndTime() + " 23:59:59");
         }
         Page page = new Page();
+        page.setCurrent(roleVo.getPageNum());
+        page.setSize(roleVo.getPageSize());
         roleMapper.selectPage(page, lambdaQueryWrapper);
         Long total = page.getTotal();
         result.setTotal(total.intValue());

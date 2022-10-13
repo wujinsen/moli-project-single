@@ -57,7 +57,7 @@ public class DictController {
         }
 
         Page page = new Page();
-        page.setPages(dictTypeVo.getPageNum());
+        page.setCurrent(dictTypeVo.getPageNum());
         page.setSize(dictTypeVo.getPageSize());
         dictTypeMapper.selectPage(page, lambdaQueryWrapper);
         Long total = page.getTotal();
@@ -144,7 +144,7 @@ public class DictController {
         }
 
         Page page = new Page();
-        page.setPages(dictDataVo.getPageNum());
+        page.setCurrent(dictDataVo.getPageNum());
         page.setSize(dictDataVo.getPageSize());
         dictDataMapper.selectPage(page, lambdaQueryWrapper);
         Long total = page.getTotal();
