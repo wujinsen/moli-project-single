@@ -7,6 +7,7 @@ import lombok.Data;
 
 @Data
 public class OperationServerInfo extends BaseEntity {
+
     @ApiModelProperty("服务器名")
     private String serverName;
     @ApiModelProperty("ip")
