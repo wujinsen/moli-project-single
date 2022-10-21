@@ -7,13 +7,14 @@ spring:
     username: root
     password: 12345678
   # druid 配置信息
-    min-idle: 10
-    max-active: 20
-    initial-size: 5
-    max-wait: 6000
-    min-evictable-idle-time-millis: 600000
-    max-evictable-idle-time-millis: 900000
-    validation-query: SELECT 1
+    druid:
+      min-idle: 10
+      max-active: 20
+      initial-size: 5
+      max-wait: 6000
+      min-evictable-idle-time-millis: 600000
+      max-evictable-idle-time-millis: 900000
+      validation-query: SELECT 1
 
   servlet:
     multipart:
