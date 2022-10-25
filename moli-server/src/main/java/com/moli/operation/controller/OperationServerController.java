@@ -32,7 +32,7 @@ public class OperationServerController {
             lambdaQueryWrapper.eq(OperationServerInfo::getServerName, operationServerInfoVo.getServerName());
         }
         if (operationServerInfoVo.getEnvironment() != null) {
-            lambdaQueryWrapper.like(OperationServerInfo::getEnvironment, operationServerInfoVo.getEnvironment());
+            lambdaQueryWrapper.eq(OperationServerInfo::getEnvironment, operationServerInfoVo.getEnvironment());
         }
 
         lambdaQueryWrapper.orderByDesc(OperationServerInfo::getCreateTime);
