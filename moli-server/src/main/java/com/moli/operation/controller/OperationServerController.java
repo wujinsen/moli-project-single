@@ -34,7 +34,7 @@ public class OperationServerController {
         if (StringUtils.isNotBlank(operationServerInfoVo.getServerName())) {
             lambdaQueryWrapper.eq(OperationServerInfo::getServerName, operationServerInfoVo.getServerName());
         }
-        if (StringUtils.isNotBlank(operationServerInfoVo.getEnvironment())) {
+        if (operationServerInfoVo.getEnvironment() != null) {
             lambdaQueryWrapper.like(OperationServerInfo::getEnvironment, operationServerInfoVo.getEnvironment());
         }
 
