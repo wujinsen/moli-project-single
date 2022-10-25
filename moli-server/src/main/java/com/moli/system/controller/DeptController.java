@@ -46,7 +46,7 @@ public class DeptController {
             lambdaQueryWrapper.like(SysDept::getDeptName, dept.getDeptName());
         }
         if (dept.getStatus() != null) {
-            lambdaQueryWrapper.like(SysDept::getStatus, dept.getStatus());
+            lambdaQueryWrapper.eq(SysDept::getStatus, dept.getStatus());
         }
         List<SysDept> deptList = deptMapper.selectList(lambdaQueryWrapper);
         for (SysDept entity : deptList) {

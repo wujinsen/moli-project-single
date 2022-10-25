@@ -16,5 +16,7 @@ public class OperationProjectDeployInfo extends BaseEntity {
     private String deployPath;
     @ApiModelProperty("端口号")
     private String port;
+    @ApiModelProperty("开发环境: 1: dev 2:test 3:pre 4:pro")
+    private Integer environment;
     private String remark;
 }

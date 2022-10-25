@@ -134,7 +134,7 @@ public class DictController {
         lambdaQueryWrapper.eq(SysDictData::getDictType, dictDataVo.getDictType());
 
         if (StringUtils.isNotBlank(dictDataVo.getDictValue())) {
-            lambdaQueryWrapper.like(SysDictData::getDictValue, dictDataVo.getDictValue());
+            lambdaQueryWrapper.eq(SysDictData::getDictValue, dictDataVo.getDictValue());
         }
         if (dictDataVo.getStatus() != null) {
             lambdaQueryWrapper.eq(SysDictData::getStatus, dictDataVo.getStatus());
