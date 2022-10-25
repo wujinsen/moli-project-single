@@ -15,7 +15,7 @@ public class OperationServerInfo extends BaseEntity {
     private String ip;
 
     @ApiModelProperty("端口号")
-    private Integer port;
+    private String port;
 
     @ApiModelProperty("开发环境: 1: dev 2:test 3:pre 4:pro")
     private Integer environment;
