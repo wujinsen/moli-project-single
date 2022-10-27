@@ -29,7 +29,10 @@ public class OperationServerController {
         PageRes<OperationServerInfo> result = new PageRes<>();
         LambdaQueryWrapper<OperationServerInfo> lambdaQueryWrapper = new LambdaQueryWrapper();
         if (StringUtils.isNotBlank(operationServerInfoVo.getServerName())) {
-            lambdaQueryWrapper.eq(OperationServerInfo::getServerName, operationServerInfoVo.getServerName());
+            lambdaQueryWrapper.like(OperationServerInfo::getServerName, operationServerInfoVo.getServerName());
+        }
+        if (operationServerInfoVo.getIp() != null) {
+            lambdaQueryWrapper.eq(OperationServerInfo::getIp, operationServerInfoVo.getIp());
         }
         if (operationServerInfoVo.getEnvironment() != null) {
             lambdaQueryWrapper.eq(OperationServerInfo::getEnvironment, operationServerInfoVo.getEnvironment());

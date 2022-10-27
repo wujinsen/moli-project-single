@@ -99,19 +99,6 @@ public class MenuController {
     }
 
     /**
-     * 获取菜单列表
-     *
-     * @return 菜单列表
-     */
-    @GetMapping("selectMenuTreeByUserId")
-    public MoliResult selectMenuTreeByUserId() {
-        MenuVo menuVo = new MenuVo();
-        menuVo.setUserId(1l);
-        List<MenuVo> menuVoList = menuService.selectMenuListByUserId(menuVo);
-        return MoliResult.success(menuVoList);
-    }
-
-    /**
      * 根据角色获取该角色下的所有菜单
      * @return 全部菜单列表及该角色下的所有菜单id
      */
