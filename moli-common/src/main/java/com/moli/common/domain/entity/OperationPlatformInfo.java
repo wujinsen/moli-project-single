@@ -17,5 +17,6 @@ public class OperationPlatformInfo extends BaseEntity {
     private String password;
     @ApiModelProperty("开发环境: 1: dev 2:test 3:pre 4:pro")
     private Integer environment;
+    private String remark;
 
 }

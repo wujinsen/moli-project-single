@@ -9,6 +9,8 @@ public class OperationProjectDeployInfoVo {
     private Long serverId;
     @ApiModelProperty("服务器id")
     private String serverIp;
+    @ApiModelProperty("url")
+    private String url;
     @ApiModelProperty("项目名称")
     private String projectName;
     @ApiModelProperty("端口号")
