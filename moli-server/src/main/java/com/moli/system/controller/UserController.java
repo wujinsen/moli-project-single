@@ -13,6 +13,7 @@ import com.moli.common.domain.vo.UserRoleVo;
 import com.moli.common.domain.vo.UserVo;
 import com.moli.common.page.PageRes;
 import com.moli.common.utils.MoliDateUtils;
+import com.moli.config.util.SHA256Util;
 import com.moli.system.mapper.RoleMapper;
 import com.moli.system.mapper.SysUserMapper;
 import com.moli.system.mapper.SysUserRoleMapper;
@@ -181,6 +182,14 @@ public class UserController {
             }
             userRoleService.saveBatch(userRoleList);
         }
+        return MoliResult.success(Boolean.TRUE);
+    }
+
+    @PutMapping("/resetPassword")
+    @ApiOperation(value = "重置密码")
+    public MoliResult<Boolean> resetPassword(@RequestBody SysUser sysUser) {
+        sysUser.setPassword(SHA256Util.sha256(sysUser.getPassword(), SHA256Util.SALT));
+        sysUserMapper.updateById(sysUser);
         return MoliResult.success(Boolean.TRUE);
     }
 
