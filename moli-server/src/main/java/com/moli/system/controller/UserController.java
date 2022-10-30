@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.moli.common.constant.CommonConstant;
 import com.moli.common.core.MoliResult;
+import com.moli.common.domain.entity.SysDept;
 import com.moli.common.domain.entity.SysRole;
 import com.moli.common.domain.entity.SysUser;
 import com.moli.common.domain.entity.SysUserRole;
@@ -15,6 +16,7 @@ import com.moli.common.utils.MoliDateUtils;
 import com.moli.system.mapper.RoleMapper;
 import com.moli.system.mapper.UserMapper;
 import com.moli.system.mapper.UserRoleMapper;
+import com.moli.system.service.DeptService;
 import com.moli.system.service.UserRoleService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -45,6 +47,9 @@ public class UserController {
     @Autowired
     private UserRoleService userRoleService;
 
+    @Autowired
+    private DeptService deptService;
+
     /**
      * 用户列表
      *
@@ -56,9 +61,15 @@ public class UserController {
     public MoliResult<PageRes<SysUser>> list(UserVo userVo) {
         PageRes<SysUser> result = new PageRes<>();
         LambdaQueryWrapper<SysUser> lambdaQueryWrapper = new LambdaQueryWrapper();
+
         if (userVo.getDeptId() != null) {
-            lambdaQueryWrapper.eq(SysUser::getDeptId, userVo.getDeptId());
+            List<Long> detpIdList = new ArrayList<>();
+            List<SysDept> deptList = deptService.list();
+            detpIdList.add(userVo.getDeptId());
+            deptService.findChildrenDeptIdTree(detpIdList, deptList, userVo.getDeptId());
+            lambdaQueryWrapper.in(SysUser::getDeptId, detpIdList);
         }
+
         if (StringUtils.isNotBlank(userVo.getUserName())) {
             lambdaQueryWrapper.eq(SysUser::getUserName,userVo.getUserName());
         }

@@ -13,7 +13,7 @@ public class UserVo extends BaseEntity {
 
     @NotNull(message = "部门ID不能为空")
     @ApiModelProperty(value = "部门ID")
-    private String deptId;
+    private Long deptId;
 
     @ApiModelProperty(value = " 工号")
     private String workNo;

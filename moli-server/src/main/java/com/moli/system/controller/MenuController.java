@@ -25,9 +25,6 @@ public class MenuController {
     @Autowired
     private MenuMapper menuMapper;
 
-    @Autowired
-    private UserMapper userMapper;
-
     /**
      * 获取菜单列表
      *
