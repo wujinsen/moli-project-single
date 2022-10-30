@@ -138,23 +138,11 @@ public class MenuServiceImpl implements MenuService {
 
         List<SysRoleMenu> roleMenuList = roleMenuMapper.selectList(new QueryWrapper<SysRoleMenu>().lambda().eq(SysRoleMenu::getRoleId, roleId));
         List<Long> menuIdList = roleMenuList.stream().map(e -> e.getMenuId()).collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(menuIdList)) {
-            return new ArrayList<>();
-        }
-        //     List<SysMenu> menuList = menuMapper.selectList(new QueryWrapper<SysMenu>().lambda().in(SysMenu::getId, menuIdList));
         List<MenuVo> menuVoList = this.getMenuTreeAll();
-//        menuList.forEach(e -> {
-//            MenuVo htgMenuVo = new MenuVo();
-//            BeanUtils.copyProperties(e, htgMenuVo);
-//            htgMenuVo.setHidden("1".equals(e.getStatus()));
-//            htgMenuVo.setName(getRouteName(htgMenuVo));
-//            htgMenuVo.setPath(getRouterPath(htgMenuVo));
-//            htgMenuVo.setComponent(getComponent(htgMenuVo));
-//            htgMenuVo.setRedirect(CommonConstant.NO_REDIRECT);
-//            menuVoList.add(htgMenuVo);
-//        });
         createTree(menuVoList);
-        menuVoList.get(0).setMenuIds(menuIdList);
+        if (CollectionUtils.isNotEmpty(menuIdList)) {
+            menuVoList.get(0).setMenuIds(menuIdList);
+        }
         return menuVoList;
     }
 
