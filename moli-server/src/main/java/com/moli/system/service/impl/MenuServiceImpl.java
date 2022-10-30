@@ -9,6 +9,7 @@ import com.moli.common.domain.entity.SysUser;
 import com.moli.common.domain.entity.SysUserRole;
 import com.moli.common.domain.vo.MenuMetaVo;
 import com.moli.common.domain.vo.MenuVo;
+import com.moli.config.util.ShiroUtils;
 import com.moli.system.mapper.MenuMapper;
 import com.moli.system.mapper.RoleMenuMapper;
 import com.moli.system.mapper.UserMapper;
@@ -59,6 +60,32 @@ public class MenuServiceImpl implements MenuService {
         menuVo.setUserId(userId);
         menuVoList = this.selectMenuListByUserId(menuVo);
         return createTree(menuVoList);
+
+    }
+
+    @Override
+    public List<MenuVo> selectMenuList(MenuVo menuVo) {
+        LambdaQueryWrapper<SysMenu> lambdaQueryWrapper = new LambdaQueryWrapper();
+        if (StringUtils.isNotBlank(menuVo.getMenuName())) {
+            lambdaQueryWrapper.like(SysMenu::getMenuName, menuVo.getMenuName());
+        }
+        if (menuVo.getStatus() != null) {
+            lambdaQueryWrapper.eq(SysMenu::getStatus, menuVo.getStatus());
+        }
+        lambdaQueryWrapper.orderByAsc(SysMenu::getOrderNum);
+        List<SysMenu> menuList = menuMapper.selectList(lambdaQueryWrapper);
+        List<MenuVo> menuVoList = new ArrayList<>();
+        menuList.forEach(e -> {
+            MenuVo htgMenuVo = new MenuVo();
+            BeanUtils.copyProperties(e, htgMenuVo);
+            htgMenuVo.setHidden("1".equals(e.getStatus()));
+            htgMenuVo.setName(getRouteName(htgMenuVo));
+            htgMenuVo.setPath(getRouterPath(htgMenuVo));
+            htgMenuVo.setComponent(getComponent(htgMenuVo));
+            htgMenuVo.setRedirect(CommonConstant.NO_REDIRECT);
+            menuVoList.add(htgMenuVo);
+        });
+        return menuVoList;
     }
 
     @Override
@@ -66,15 +93,7 @@ public class MenuServiceImpl implements MenuService {
         SysUser user = userMapper.selectById(menuVo.getUserId());
         //超级管理员
         if (StringUtils.isNotBlank(user.getUserName()) && user.getUserName().equals("admin")) {
-            LambdaQueryWrapper<SysMenu> lambdaQueryWrapper = new LambdaQueryWrapper();
-            if (StringUtils.isNotBlank(menuVo.getMenuName())) {
-                lambdaQueryWrapper.like(SysMenu::getMenuName, menuVo.getMenuName());
-            }
-            if (menuVo.getStatus() != null) {
-                lambdaQueryWrapper.eq(SysMenu::getStatus, menuVo.getStatus());
-            }
-            lambdaQueryWrapper.orderByAsc(SysMenu::getOrderNum);
-            List<SysMenu> menuList = menuMapper.selectList(lambdaQueryWrapper);
+            List<SysMenu> menuList = menuMapper.selectList(new LambdaQueryWrapper<>());
             List<MenuVo> menuVoList = new ArrayList<>();
             menuList.forEach(e -> {
                 MenuVo htgMenuVo = new MenuVo();
@@ -122,7 +141,7 @@ public class MenuServiceImpl implements MenuService {
         if (CollectionUtils.isEmpty(menuIdList)) {
             return new ArrayList<>();
         }
-   //     List<SysMenu> menuList = menuMapper.selectList(new QueryWrapper<SysMenu>().lambda().in(SysMenu::getId, menuIdList));
+        //     List<SysMenu> menuList = menuMapper.selectList(new QueryWrapper<SysMenu>().lambda().in(SysMenu::getId, menuIdList));
         List<MenuVo> menuVoList = this.getMenuTreeAll();
 //        menuList.forEach(e -> {
 //            MenuVo htgMenuVo = new MenuVo();

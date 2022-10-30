@@ -26,6 +26,7 @@ public interface MenuService {
      */
     List<MenuVo> selectMenuTreeByUserId(Long userId);
 
+    List<MenuVo> selectMenuList(MenuVo menuVo);
     /**
      * 根据用户查询菜单列表
      */
@@ -33,6 +34,10 @@ public interface MenuService {
 
     List<MenuVo> selectMenuTreeByRoleId(Long roleId);
 
+    /**
+     * 所有菜单列表树结构
+     * @return
+     */
     List<MenuVo> getMenuTreeAll();
 
 }

@@ -45,12 +45,10 @@ public class MenuController {
      */
     @GetMapping("list")
     public MoliResult list(String menuName, Integer status) {
-        Long userId = ShiroUtils.getUserInfo().getId();
         MenuVo menuVo = new MenuVo();
-        menuVo.setUserId(userId);
         menuVo.setName(menuName);
         menuVo.setStatus(status);
-        List<MenuVo> menuVoList = menuService.selectMenuListByUserId(menuVo);
+        List<MenuVo> menuVoList = menuService.selectMenuList(menuVo);
         return MoliResult.success(menuVoList);
     }
 
