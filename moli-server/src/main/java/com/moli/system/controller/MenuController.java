@@ -5,7 +5,6 @@ import com.moli.common.domain.entity.SysMenu;
 import com.moli.common.domain.vo.MenuVo;
 import com.moli.config.util.ShiroUtils;
 import com.moli.system.mapper.MenuMapper;
-import com.moli.system.mapper.UserMapper;
 import com.moli.system.service.MenuService;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;

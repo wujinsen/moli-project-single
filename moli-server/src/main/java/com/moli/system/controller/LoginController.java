@@ -11,7 +11,7 @@ import com.moli.common.domain.vo.MenuVo;
 import com.moli.common.enums.ResponseCodeEnums;
 import com.moli.common.exception.BaseException;
 import com.moli.config.util.ShiroUtils;
-import com.moli.system.mapper.UserMapper;
+import com.moli.system.mapper.SysUserMapper;
 import com.moli.system.service.MenuService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -43,7 +43,7 @@ public class LoginController {
     private MenuService menuService;
 
     @Autowired
-    private UserMapper userMapper;
+    private SysUserMapper sysUserMapper;
 
     /**
      * 登录方法
@@ -57,7 +57,7 @@ public class LoginController {
         LoginVo loginVo = new LoginVo();
 
         MoliResult<LoginVo> result = new MoliResult<>();
-        SysUser user = userMapper.selectOne(new QueryWrapper<SysUser>().lambda().eq(SysUser::getUserName, userName).eq(SysUser::getIsDelete, CommonConstant.UN_DELETE));
+        SysUser user = sysUserMapper.selectOne(new QueryWrapper<SysUser>().lambda().eq(SysUser::getUserName, userName).eq(SysUser::getIsDelete, CommonConstant.UN_DELETE));
         if (null == user) {
             result.setMsg("用户不存在或者密码错误");
             result.setCode(ResponseCodeEnums.ERROR.getCode());

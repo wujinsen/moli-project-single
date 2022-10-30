@@ -6,5 +6,5 @@ import com.moli.common.domain.entity.SysUserRole;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
-public interface UserRoleMapper extends BaseMapper<SysUserRole> {
+public interface SysUserRoleMapper extends BaseMapper<SysUserRole> {
 }

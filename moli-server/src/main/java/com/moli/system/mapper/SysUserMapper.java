@@ -6,6 +6,6 @@ import com.moli.common.domain.entity.SysUser;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
-public interface UserMapper extends BaseMapper<SysUser> {
+public interface SysUserMapper extends BaseMapper<SysUser> {
 
 }

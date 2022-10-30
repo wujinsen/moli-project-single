@@ -9,11 +9,10 @@ import com.moli.common.domain.entity.SysUser;
 import com.moli.common.domain.entity.SysUserRole;
 import com.moli.common.domain.vo.MenuMetaVo;
 import com.moli.common.domain.vo.MenuVo;
-import com.moli.config.util.ShiroUtils;
 import com.moli.system.mapper.MenuMapper;
 import com.moli.system.mapper.RoleMenuMapper;
-import com.moli.system.mapper.UserMapper;
-import com.moli.system.mapper.UserRoleMapper;
+import com.moli.system.mapper.SysUserMapper;
+import com.moli.system.mapper.SysUserRoleMapper;
 import com.moli.system.service.MenuService;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -29,7 +28,7 @@ import java.util.stream.Collectors;
 public class MenuServiceImpl implements MenuService {
 
     @Autowired
-    private UserMapper userMapper;
+    private SysUserMapper sysUserMapper;
 
     @Autowired
     private MenuMapper menuMapper;
@@ -38,7 +37,7 @@ public class MenuServiceImpl implements MenuService {
     private RoleMenuMapper roleMenuMapper;
 
     @Autowired
-    private UserRoleMapper userRoleMapper;
+    private SysUserRoleMapper sysUserRoleMapper;
 
 
     @Override
@@ -90,7 +89,7 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     public List<MenuVo> selectMenuListByUserId(MenuVo menuVo) {
-        SysUser user = userMapper.selectById(menuVo.getUserId());
+        SysUser user = sysUserMapper.selectById(menuVo.getUserId());
         //超级管理员
         if (StringUtils.isNotBlank(user.getUserName()) && user.getUserName().equals("admin")) {
             List<SysMenu> menuList = menuMapper.selectList(new LambdaQueryWrapper<>());
@@ -108,7 +107,7 @@ public class MenuServiceImpl implements MenuService {
             });
             return menuVoList;
         }
-        List<SysUserRole> userRoleList = userRoleMapper.selectList(new QueryWrapper<SysUserRole>().lambda().eq(SysUserRole::getUserId, menuVo.getUserId()));
+        List<SysUserRole> userRoleList = sysUserRoleMapper.selectList(new QueryWrapper<SysUserRole>().lambda().eq(SysUserRole::getUserId, menuVo.getUserId()));
         if (CollectionUtils.isEmpty(userRoleList)) {
             return new ArrayList<>();
         }

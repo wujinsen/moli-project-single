@@ -14,8 +14,8 @@ import com.moli.common.domain.vo.UserVo;
 import com.moli.common.page.PageRes;
 import com.moli.common.utils.MoliDateUtils;
 import com.moli.system.mapper.RoleMapper;
-import com.moli.system.mapper.UserMapper;
-import com.moli.system.mapper.UserRoleMapper;
+import com.moli.system.mapper.SysUserMapper;
+import com.moli.system.mapper.SysUserRoleMapper;
 import com.moli.system.service.DeptService;
 import com.moli.system.service.UserRoleService;
 import io.swagger.annotations.Api;
@@ -36,10 +36,10 @@ import java.util.stream.Collectors;
 public class UserController {
 
     @Autowired
-    private UserMapper userMapper;
+    private SysUserMapper sysUserMapper;
 
     @Autowired
-    private UserRoleMapper userRoleMapper;
+    private SysUserRoleMapper sysUserRoleMapper;
 
     @Autowired
     private RoleMapper roleMapper;
@@ -86,7 +86,7 @@ public class UserController {
         Page page = new Page();
         page.setCurrent(userVo.getPageNum());
         page.setSize(userVo.getPageSize());
-        userMapper.selectPage(page, lambdaQueryWrapper);
+        sysUserMapper.selectPage(page, lambdaQueryWrapper);
         Long total = page.getTotal();
         result.setTotal(total.intValue());
         result.setList(page.getRecords());
@@ -104,7 +104,7 @@ public class UserController {
     public MoliResult<Boolean> insert(@RequestBody UserVo userVo) {
         SysUser user = new SysUser();
         BeanUtils.copyProperties(userVo, user);
-        userMapper.insert(user);
+        sysUserMapper.insert(user);
         return MoliResult.success(Boolean.TRUE);
     }
 
@@ -115,7 +115,7 @@ public class UserController {
      */
     @PutMapping
     public MoliResult<Boolean> update(@RequestBody SysUser user) {
-        userMapper.updateById(user);
+        sysUserMapper.updateById(user);
         return MoliResult.success(Boolean.TRUE);
     }
 
@@ -125,7 +125,7 @@ public class UserController {
     @GetMapping(value = "/{id}")
     public MoliResult<SysUser> getInfo(@PathVariable Long id) {
 
-        return MoliResult.success(userMapper.selectById(id));
+        return MoliResult.success(sysUserMapper.selectById(id));
     }
 
     /**
@@ -137,7 +137,7 @@ public class UserController {
             SysUser user = new SysUser();
             user.setId(id);
             user.setIsDelete(CommonConstant.IS_DELETE);
-            userMapper.updateById(user);
+            sysUserMapper.updateById(user);
         }
 
         return MoliResult.success(Boolean.TRUE);
@@ -145,7 +145,7 @@ public class UserController {
 
     @PutMapping("/changeStatus")
     public MoliResult changeStatus(@RequestBody SysUser user) {
-        userMapper.updateById(user);
+        sysUserMapper.updateById(user);
         return MoliResult.success(Boolean.TRUE);
     }
 
@@ -155,9 +155,9 @@ public class UserController {
     @GetMapping(value = "/getRoleByUserId/{userId}")
     public MoliResult<UserRoleVo> getRoleByUserId(@PathVariable Long userId) {
         UserRoleVo userRoleVo = new UserRoleVo();
-        SysUser user = userMapper.selectById(userId);
+        SysUser user = sysUserMapper.selectById(userId);
         userRoleVo.setUser(user);
-        List<SysUserRole> userRoleList = userRoleMapper.selectList(new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getUserId, userId));
+        List<SysUserRole> userRoleList = sysUserRoleMapper.selectList(new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getUserId, userId));
         List<Long> roleIdList = userRoleList.stream().map(e -> e.getRoleId()).collect(Collectors.toList());
         List<SysRole> roleList = roleMapper.selectList(new LambdaQueryWrapper<SysRole>().in(SysRole::getId, roleIdList));
         userRoleVo.setRoleList(roleList);
