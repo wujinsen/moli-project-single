@@ -249,11 +249,10 @@ public class MenuServiceImpl implements MenuService {
      * @return 路由地址
      */
     private String getRouterPath(MenuVo menu) {
-
         String routerPath = menu.getPath();
         // 一级菜单并且菜单类型为目录
         if (0 == menu.getParentId().intValue() && CommonConstant.TYPE_DIR.equals(menu.getMenuType())) {
-            routerPath = "/" + menu.getPath();
+            routerPath = menu.getPath();
         }
         return routerPath;
     }
