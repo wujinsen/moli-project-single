@@ -26,12 +26,22 @@ public interface MenuService {
      */
     List<MenuVo> selectMenuTreeByUserId(Long userId);
 
+    /**
+     * 获取菜单列表
+     * @param menuVo
+     * @return
+     */
     List<MenuVo> selectMenuList(MenuVo menuVo);
     /**
      * 根据用户查询菜单列表
      */
     List<MenuVo> selectMenuListByUserId(MenuVo menuVo);
 
+    /**
+     * 根据角色获取菜单树
+     * @param roleId
+     * @return
+     */
     List<MenuVo> selectMenuTreeByRoleId(Long roleId);
 
     /**
