@@ -35,9 +35,11 @@ public class OperationProjectController {
             lambdaQueryWrapper.eq(OperationProjectDeployInfo::getProjectName, operationProjectDeployInfo.getProjectName());
         }
         if (StringUtils.isNotBlank(operationProjectDeployInfo.getServerIp())) {
-            lambdaQueryWrapper.eq(OperationProjectDeployInfo::getServerIp, operationProjectDeployInfo.getServerIp());
+            lambdaQueryWrapper.like(OperationProjectDeployInfo::getServerIp, operationProjectDeployInfo.getServerIp());
         }
-
+        if (operationProjectDeployInfo.getEnvironment() != null) {
+            lambdaQueryWrapper.eq(OperationProjectDeployInfo::getEnvironment, operationProjectDeployInfo.getEnvironment());
+        }
         lambdaQueryWrapper.orderByDesc(OperationProjectDeployInfo::getCreateTime);
         Page page = new Page();
         page.setCurrent(operationProjectDeployInfo.getPageNum());
