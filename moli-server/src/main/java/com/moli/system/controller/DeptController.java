@@ -30,12 +30,6 @@ public class DeptController {
     @Autowired
     private DeptMapper deptMapper;
 
-    /**
-     * 部门列表
-     *
-     * @param dept
-     * @return
-     */
     @GetMapping("/list")
     @ApiOperation(value = "部门列表", notes = "部门列表")
     public MoliResult<List<DeptVo>> list(SysDept dept) {
@@ -57,12 +51,7 @@ public class DeptController {
         return MoliResult.success(deptVoList);
     }
 
-    /**
-     * 部门列表
-     *
-     * @param
-     * @return
-     */
+
     @GetMapping("/getDeptTreeList")
     @ApiOperation(value = "部门列表", notes = "部门列表")
     public MoliResult<List<DeptVo>> getDeptTreeList() {
@@ -79,49 +68,37 @@ public class DeptController {
         return MoliResult.success(createTree(deptVoList));
     }
 
-    /**
-     * 添加用户
-     *
-     * @return 添加用户
-     */
+
     @PostMapping
+    @ApiOperation(value = "添加部门", notes = "添加部门")
     public MoliResult<Boolean> insert(@RequestBody SysDept dept) {
         deptMapper.insert(dept);
         return MoliResult.success(Boolean.TRUE);
     }
 
-    /**
-     * 更新用户
-     *
-     * @return
-     */
+
     @PutMapping
+    @ApiOperation(value = "更新部门", notes = "更新部门")
     public MoliResult<Boolean> update(@RequestBody SysDept dept) {
         deptMapper.updateById(dept);
         return MoliResult.success(Boolean.TRUE);
     }
 
-    /**
-     * 查询单个用户
-     */
     @GetMapping(value = "/{id}")
+    @ApiOperation(value = "查询单个部门", notes = "查询单个部门")
     public MoliResult<SysDept> getInfo(@PathVariable Long id) {
 
         return MoliResult.success(deptMapper.selectById(id));
     }
 
-    /**
-     * 删除用户
-     */
+
     @DeleteMapping("/{id}")
+    @ApiOperation(value = "删除单个部门", notes = "删除单个部门")
     public MoliResult remove(@PathVariable("id") Long id) {
         deptMapper.deleteById(id);
         return MoliResult.success(Boolean.TRUE);
     }
 
-    /**
-     * 递归查询一级节点
-     */
     private static List<DeptVo> createTree(List<DeptVo> deptList) {
         List<DeptVo> list = new ArrayList<>();
         for (DeptVo treeNode : deptList) {

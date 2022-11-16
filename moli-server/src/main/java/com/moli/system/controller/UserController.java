@@ -139,6 +139,7 @@ public class UserController {
             user.setId(id);
             user.setIsDelete(CommonConstant.IS_DELETE);
             sysUserMapper.updateById(user);
+            sysUserRoleMapper.delete(new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getUserId, id));
         }
 
         return MoliResult.success(Boolean.TRUE);

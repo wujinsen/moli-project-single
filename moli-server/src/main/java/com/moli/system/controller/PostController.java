@@ -58,42 +58,30 @@ public class PostController {
 
     }
 
-
-    /**
-     * 添加岗位
-     *
-     * @return 添加岗位
-     */
     @PostMapping
+    @ApiOperation(value = "添加岗位", notes = "添加岗位")
     public MoliResult<Boolean> insert(@RequestBody SysPost post) {
         postMapper.insert(post);
         return MoliResult.success(Boolean.TRUE);
     }
 
-    /**
-     * 更新岗位
-     *
-     * @return
-     */
     @PutMapping
+    @ApiOperation(value = "更新岗位", notes = "更新岗位")
     public MoliResult<Boolean> update(@RequestBody SysPost post) {
         postMapper.updateById(post);
         return MoliResult.success(Boolean.TRUE);
     }
 
-    /**
-     * 查询单个岗位
-     */
     @GetMapping(value = "/{id}")
+    @ApiOperation(value = "查询单个岗位", notes = "查询单个岗位")
     public MoliResult<SysPost> selectOne(@PathVariable Long id) {
 
         return MoliResult.success(postMapper.selectById(id));
     }
 
-    /**
-     * 删除岗位
-     */
+
     @DeleteMapping("/{ids}")
+    @ApiOperation(value = "删除岗位", notes = "删除岗位")
     public MoliResult remove(@PathVariable Long[] ids) {
         for (Long id : ids) {
             postMapper.deleteById(id);

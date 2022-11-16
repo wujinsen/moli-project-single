@@ -13,6 +13,7 @@ import com.moli.common.utils.MoliDateUtils;
 import com.moli.system.mapper.DictDataMapper;
 import com.moli.system.mapper.DictTypeMapper;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,12 +33,9 @@ public class DictController {
     @Autowired
     private DictTypeMapper dictTypeMapper;
 
-    /**
-     * 字典类型列表
-     *
-     * @return 菜单列表
-     */
+
     @GetMapping("/type/list")
+    @ApiOperation(value = "字典类型分页", notes = "字典类型分页")
     public MoliResult<PageRes<SysDictType>> list(DictTypeVo dictTypeVo) {
 
         PageRes<SysDictType> result = new PageRes<>();
@@ -69,40 +67,27 @@ public class DictController {
 
     }
 
-    /**
-     * 字典类型列表
-     *
-     * @return 菜单列表
-     */
     @GetMapping("/type/listAll")
-    public MoliResult<List<SysDictType>> listAll(DictTypeVo dictTypeVo) {
+    @ApiOperation(value = "字典类型列表", notes = "字典类型列表")
+    public MoliResult<List<SysDictType>> listAll() {
         return MoliResult.success(dictTypeMapper.selectList(new LambdaQueryWrapper<>()));
     }
 
-    /**
-     * 添加字典类型
-     *
-     * @return 添加字典类型
-     */
+
     @PostMapping("/type")
+    @ApiOperation(value = "添加字典类型", notes = "添加字典类型")
     public MoliResult<Boolean> insert(@RequestBody SysDictType dictType) {
         return MoliResult.success(dictTypeMapper.insert(dictType) > 0 ? Boolean.TRUE : Boolean.FALSE);
     }
 
-    /**
-     * 获取字典类型列表
-     *
-     * @return 菜单列表
-     */
     @PutMapping("/type")
+    @ApiOperation(value = "更新字典类型", notes = "更新字典类型")
     public MoliResult<Boolean> update(@RequestBody SysDictType dictType) {
         return MoliResult.success(dictTypeMapper.updateById(dictType) > 0 ? Boolean.TRUE : Boolean.FALSE);
     }
 
-    /**
-     * 查询字典类型
-     */
     @GetMapping(value = "/type/{id}")
+    @ApiOperation(value = "查询字典类型", notes = "查询字典类型")
     public MoliResult<SysDictType> getDictTypeInfo(@PathVariable Long id) {
 
         return MoliResult.success(dictTypeMapper.selectById(id));

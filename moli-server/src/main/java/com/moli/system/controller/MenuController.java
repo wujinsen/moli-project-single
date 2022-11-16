@@ -7,6 +7,7 @@ import com.moli.config.util.ShiroUtils;
 import com.moli.system.mapper.MenuMapper;
 import com.moli.system.service.MenuService;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,12 +25,9 @@ public class MenuController {
     @Autowired
     private MenuMapper menuMapper;
 
-    /**
-     * 获取菜单列表
-     *
-     * @return 菜单列表
-     */
+
     @GetMapping("getRouters")
+    @ApiOperation(value = "获取菜单列表", notes = "获取菜单列表")
     public MoliResult<List<MenuVo>> getRouters() {
         Long userId = ShiroUtils.getUserInfo().getId();
         List<MenuVo> menuVoList = menuService.selectMenuTreeByUserId(userId);
@@ -37,12 +35,9 @@ public class MenuController {
         return MoliResult.success(menuVoList);
     }
 
-    /**
-     * 获取菜单列表
-     *
-     * @return 菜单列表
-     */
+
     @GetMapping("list")
+    @ApiOperation(value = "获取菜单列表", notes = "获取菜单列表")
     public MoliResult list(String menuName, Integer status) {
         MenuVo menuVo = new MenuVo();
         menuVo.setName(menuName);
@@ -51,41 +46,29 @@ public class MenuController {
         return MoliResult.success(menuVoList);
     }
 
-    /**
-     * 添加菜单
-     *
-     * @return
-     */
     @PostMapping
+    @ApiOperation(value = "添加菜单", notes = "添加菜单")
     public MoliResult<Boolean> insert(@RequestBody SysMenu menu) {
         menuService.insert(menu);
         return MoliResult.success(Boolean.TRUE);
     }
 
-    /**
-     * 更新菜单
-     *
-     * @return
-     */
     @PutMapping
+    @ApiOperation(value = "更新菜单", notes = "更新菜单")
     public MoliResult<Boolean> update(@RequestBody SysMenu menu) {
         menuService.update(menu);
         return MoliResult.success(Boolean.TRUE);
     }
 
-    /**
-     * 查询菜单
-     */
     @GetMapping(value = "/{id}")
+    @ApiOperation(value = "查询菜单", notes = "查询菜单")
     public MoliResult<SysMenu> getInfo(@PathVariable Long id) {
 
         return MoliResult.success(menuMapper.selectById(id));
     }
 
-    /**
-     * 删除菜单
-     */
     @DeleteMapping("/{id}")
+    @ApiOperation(value = "删除菜单", notes = "删除菜单")
     public MoliResult remove(@PathVariable Long id) {
         menuMapper.deleteById(id);
         return MoliResult.success(Boolean.TRUE);
@@ -97,10 +80,9 @@ public class MenuController {
      * @return 全部菜单列表及该角色下的所有菜单id
      */
     @GetMapping("selectMenuTreeByRoleId/{roleId}")
+    @ApiOperation(value = "根据角色获取该角色下的所有菜单", notes = "根据角色获取该角色下的所有菜单")
     public MoliResult selectMenuTreeByRoleId(@PathVariable Long roleId) {
-
         List<MenuVo> menuVoList = menuService.selectMenuTreeByRoleId(roleId);
-
         return MoliResult.success(menuVoList);
     }
     /**
@@ -109,6 +91,7 @@ public class MenuController {
      * @return 菜单列表
      */
     @GetMapping("getMenuTreeAll")
+    @ApiOperation(value = "删除单个部门", notes = "删除单个部门")
     public MoliResult getMenuTreeAll() {
 
         List<MenuVo> menuVoList = menuService.getMenuTreeAll();

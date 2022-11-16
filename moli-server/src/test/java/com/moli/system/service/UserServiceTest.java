@@ -1,6 +1,7 @@
 package com.moli.system.service;
 
 import com.moli.common.core.IdGenerator;
+import com.moli.system.mapper.DeptMapper;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -24,9 +25,16 @@ public class UserServiceTest {
     @Resource
     private IdGenerator idGenerator;
 
+    @Resource
+    private DeptMapper deptMapper;
+
     @Test
-    public void test(){
+    public void test() {
         System.out.println(IdGenerator.getId());
     }
 
+    @Test
+    public void aaa() {
+        System.out.println("====: " + deptMapper.aaa());
+    }
 }

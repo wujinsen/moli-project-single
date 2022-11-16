@@ -65,12 +65,8 @@ public class RoleController {
 
     }
 
-    /**
-     * 添加角色
-     *
-     * @return 添加角色
-     */
     @PostMapping
+    @ApiOperation(value = "添加角色", notes = "添加角色")
     public MoliResult<Boolean> insert(@RequestBody RoleVo roleVo) {
         SysRole role = new SysRole();
         BeanUtils.copyProperties(roleVo, role);
@@ -86,29 +82,21 @@ public class RoleController {
         return MoliResult.success(Boolean.TRUE);
     }
 
-    /**
-     * 更新角色
-     *
-     * @return
-     */
+
     @PutMapping
     @MoliLog(title = "角色管理", businessType = BusinessTypeEnum.UPDATE)
+    @ApiOperation(value = "更新角色", notes = "更新角色")
     public MoliResult<Boolean> update(@RequestBody SysRole role) {
         roleMapper.updateById(role);
         return MoliResult.success(Boolean.TRUE);
     }
 
-    /**
-     * 查询单个角色
-     */
     @GetMapping(value = "/{id}")
+    @ApiOperation(value = "查询单个角色", notes = "查询单个角色")
     public MoliResult<SysRole> getInfo(@PathVariable Long id) {
         return MoliResult.success(roleMapper.selectById(id));
     }
 
-    /**
-     * 删除角色
-     */
     @DeleteMapping("/{ids}")
     @ApiOperation(value = "删除角色", notes = "删除角色")
     public MoliResult delete(@PathVariable Long[] ids) {
@@ -118,7 +106,6 @@ public class RoleController {
         }
         return MoliResult.success(Boolean.TRUE);
     }
-
 
     @PutMapping("/changeStatus")
     @ApiOperation(value = "角色状态变更", notes = "角色状态变更")
