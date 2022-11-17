@@ -14,10 +14,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 
 @RestController
@@ -31,30 +28,24 @@ public class LogController {
     @Autowired
     private SysOperationLogMapper sysOperationLogMapper;
 
-    @PostMapping("/loginLogList")
+    @GetMapping("/loginLogList")
     @ApiOperation(value = "登录日志列表")
-    public MoliResult<PageRes<SysLoginLog>> loginLogList(@RequestBody PageReq<SysLoginLog> req) {
+    public MoliResult<PageRes<SysLoginLog>> loginLogList(@RequestBody SysLoginLog sysLoginLog) {
         PageRes<SysLoginLog> result = new PageRes<>();
 
-        Page<SysLoginLog> page = new Page<>(req.getPageNum(), req.getPageSize());
+        Page<SysLoginLog> page = new Page<>(sysLoginLog.getPageNum(), sysLoginLog.getPageSize());
         LambdaQueryWrapper<SysLoginLog> lambdaQueryWrapper = new LambdaQueryWrapper();
-        if (req.getData() != null) {
-            if (StringUtils.isNotBlank(req.getData().getRealName())) {
-                lambdaQueryWrapper.eq(SysLoginLog::getRealName, req.getData().getRealName());
-            }
-            if (StringUtils.isNotBlank(req.getData().getTelephone())) {
-                lambdaQueryWrapper.eq(SysLoginLog::getTelephone, req.getData().getTelephone());
-            }
-            if (req.getData().getStatus() != null) {
-                lambdaQueryWrapper.eq(SysLoginLog::getStatus, req.getData().getStatus());
-            }
-
+        if (StringUtils.isNotBlank(sysLoginLog.getUserName())) {
+            lambdaQueryWrapper.like(SysLoginLog::getUserName, sysLoginLog.getUserName());
+        }
+        if (sysLoginLog.getStatus() != null) {
+            lambdaQueryWrapper.eq(SysLoginLog::getStatus, sysLoginLog.getStatus());
         }
         lambdaQueryWrapper.orderByDesc(SysLoginLog::getLoginTime);
         sysLoginLogMapper.selectPage(page, lambdaQueryWrapper);
         result.setList(page.getRecords());
-        result.setPageNum(req.getPageNum());
-        result.setPageSize(req.getPageSize());
+        result.setPageNum(sysLoginLog.getPageNum());
+        result.setPageSize(sysLoginLog.getPageSize());
         result.setTotal((int) page.getTotal());
         return MoliResult.success(result);
 

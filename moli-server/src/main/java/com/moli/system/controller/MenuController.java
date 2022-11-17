@@ -72,7 +72,6 @@ public class MenuController {
     public MoliResult remove(@PathVariable Long id) {
         menuMapper.deleteById(id);
         return MoliResult.success(Boolean.TRUE);
-
     }
 
     /**

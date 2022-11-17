@@ -1,17 +1,17 @@
 package com.moli.common.domain.entity;
 
+import com.moli.common.core.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.Date;
 
 @Data
-public class SysLoginLog {
+public class SysLoginLog extends BaseEntity {
+
     private String id;
     @ApiModelProperty("用户名")
-    private String realName;
-    @ApiModelProperty("手机号")
-    private String telephone;
+    private String userName;
     @ApiModelProperty("IP地址")
     private String ipAddress;
     @ApiModelProperty("登录地址")
@@ -26,4 +26,5 @@ public class SysLoginLog {
     private String remark;
     @ApiModelProperty("登录时间")
     private Date loginTime;
+
 }
