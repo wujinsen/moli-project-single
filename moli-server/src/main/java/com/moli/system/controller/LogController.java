@@ -30,7 +30,7 @@ public class LogController {
 
     @GetMapping("/loginLogList")
     @ApiOperation(value = "登录日志列表")
-    public MoliResult<PageRes<SysLoginLog>> loginLogList(@RequestBody SysLoginLog sysLoginLog) {
+    public MoliResult<PageRes<SysLoginLog>> loginLogList(SysLoginLog sysLoginLog) {
         PageRes<SysLoginLog> result = new PageRes<>();
 
         Page<SysLoginLog> page = new Page<>(sysLoginLog.getPageNum(), sysLoginLog.getPageSize());
@@ -51,28 +51,25 @@ public class LogController {
 
     }
 
-    @PostMapping("/oepartionLogList")
+    @GetMapping("/operationLogList")
     @ApiOperation(value = "操作日志列表")
-    public MoliResult<PageRes<SysOperationLog>> oepartionLogList(@RequestBody PageReq<SysOperationLog> req) {
+    public MoliResult<PageRes<SysOperationLog>> operationLogList(SysOperationLog req) {
 
         PageRes<SysOperationLog> result = new PageRes<>();
 
         Page<SysOperationLog> page = new Page<>(req.getPageNum(), req.getPageSize());
         LambdaQueryWrapper<SysOperationLog> lambdaQueryWrapper = new LambdaQueryWrapper();
-        if (req.getData() != null) {
-            if (StringUtils.isNotBlank(req.getData().getUserName())) {
-                lambdaQueryWrapper.eq(SysOperationLog::getUserName, req.getData().getUserName());
-            }
-            if (StringUtils.isNotBlank(req.getData().getTelephone())) {
-                lambdaQueryWrapper.eq(SysOperationLog::getTelephone, req.getData().getTelephone());
-            }
-            if (req.getData().getStatus() != null) {
-                lambdaQueryWrapper.eq(SysOperationLog::getStatus, req.getData().getStatus());
-            }
-            if (req.getData().getBusinessType() != null) {
-                lambdaQueryWrapper.eq(SysOperationLog::getBusinessType, req.getData().getBusinessType());
-            }
+        if (StringUtils.isNotBlank(req.getUserName())) {
+            lambdaQueryWrapper.eq(SysOperationLog::getUserName, req.getUserName());
         }
+
+        if (req.getStatus() != null) {
+            lambdaQueryWrapper.eq(SysOperationLog::getStatus, req.getStatus());
+        }
+        if (req.getBusinessType() != null) {
+            lambdaQueryWrapper.eq(SysOperationLog::getBusinessType, req.getBusinessType());
+        }
+
         lambdaQueryWrapper.orderByDesc(SysOperationLog::getCreateTime);
         sysOperationLogMapper.selectPage(page, lambdaQueryWrapper);
         result.setList(page.getRecords());

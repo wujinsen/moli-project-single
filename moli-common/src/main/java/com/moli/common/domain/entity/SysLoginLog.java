@@ -1,15 +1,18 @@
 package com.moli.common.domain.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.moli.common.core.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @Data
-public class SysLoginLog extends BaseEntity {
+public class SysLoginLog {
 
-    private String id;
+    private Long id;
     @ApiModelProperty("用户名")
     private String userName;
     @ApiModelProperty("IP地址")
@@ -26,5 +29,12 @@ public class SysLoginLog extends BaseEntity {
     private String remark;
     @ApiModelProperty("登录时间")
     private Date loginTime;
+
+    @TableField(exist = false)
+    private Integer pageNum;
+
+    @TableField(exist = false)
+    private Integer pageSize;
+
 
 }

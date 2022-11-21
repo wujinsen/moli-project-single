@@ -74,7 +74,6 @@ public class LogAspect {
             sysOperationLog.setRequestUrl(ServletUtils.getRequest().getRequestURI());
             if (User != null) {
                 sysOperationLog.setUserName(User.getUserName());
-                sysOperationLog.setTelephone(User.getTelephone());
             }
             if (e != null) {
                 sysOperationLog.setStatus(0);
@@ -111,8 +110,6 @@ public class LogAspect {
         operLog.setBusinessType(log.businessType().ordinal());
         // 设置标题
         operLog.setTitle(log.title());
-        // 设置操作人类别
-        operLog.setOperatorType(log.operatorType().ordinal());
         // 是否需要保存request，参数和值
         if (log.isSaveRequestData()) {
             // 获取参数的信息，传入到数据库中。

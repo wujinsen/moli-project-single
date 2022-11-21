@@ -4,18 +4,24 @@ package com.moli.system.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.moli.common.constant.CommonConstant;
 import com.moli.common.core.MoliResult;
+import com.moli.common.domain.entity.SysLoginLog;
 import com.moli.common.domain.entity.SysUser;
 import com.moli.common.domain.vo.CaptchaImageVo;
 import com.moli.common.domain.vo.LoginVo;
 import com.moli.common.domain.vo.MenuVo;
 import com.moli.common.enums.ResponseCodeEnums;
 import com.moli.common.exception.BaseException;
+import com.moli.common.utils.IpUtils;
+import com.moli.common.utils.ServletUtils;
+import com.moli.common.utils.SpringUtil;
 import com.moli.config.util.ShiroUtils;
+import com.moli.system.mapper.SysLoginLogMapper;
 import com.moli.system.mapper.SysUserMapper;
 import com.moli.system.service.MenuService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.IncorrectCredentialsException;
@@ -31,6 +37,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -61,6 +68,7 @@ public class LoginController {
         if (null == user) {
             result.setMsg("用户不存在或者密码错误");
             result.setCode(ResponseCodeEnums.ERROR.getCode());
+            insertLoginLog(user, result.getMsg(), 0);
             return result;
         }
         Subject subject = SecurityUtils.getSubject();
@@ -74,27 +82,30 @@ public class LoginController {
             result.setMsg("用户不存在或者密码错误");
             result.setCode(ResponseCodeEnums.ERROR.getCode());
             log.error("login IncorrectCredentialsException: {}", e.getMessage());
-
             BeanUtils.copyProperties(user, request);
             request.setPassword("");
             request.setSalt("");
             loginVo.setUser(request);
             result.setData(loginVo);
+            insertLoginLog(ShiroUtils.getUserInfo(), result.getMsg(), 0);
             return result;
         } catch (LockedAccountException e) {
             result.setMsg("登录失败，该用户已被冻结");
             result.setCode(ResponseCodeEnums.ERROR.getCode());
             log.error("login LockedAccountException: {}", e.getMessage());
+            insertLoginLog(ShiroUtils.getUserInfo(), result.getMsg(), 0);
             return result;
         } catch (AuthenticationException e) {
             result.setMsg("用户认证失败");
             result.setCode(ResponseCodeEnums.ERROR.getCode());
             log.error("login AuthenticationException: {} ", e.getMessage());
+            insertLoginLog(ShiroUtils.getUserInfo(), result.getMsg(), 0);
             return result;
         } catch (Exception e) {
             result.setMsg("未知异常");
             result.setCode(ResponseCodeEnums.ERROR.getCode());
             log.error("login Exception: {} ", e.getMessage());
+            insertLoginLog(ShiroUtils.getUserInfo(), result.getMsg(), 0);
             return result;
         }
         //token
@@ -110,6 +121,7 @@ public class LoginController {
         result.setMsg("登录成功");
         result.setCode(ResponseCodeEnums.SUCCESS_CODE.getCode());
         result.setData(loginVo);
+        insertLoginLog(ShiroUtils.getUserInfo(), result.getMsg(), 1);
         return result;
     }
 
@@ -148,5 +160,26 @@ public class LoginController {
 //        captchaImageVo.setImg();
 //        captchaImageVo.setUuid();
         return MoliResult.success(captchaImageVo);
+    }
+
+    public void insertLoginLog(SysUser sysUser, String msg, Integer status) {
+            // 保存数据库
+            SysLoginLog sysLoginLog = new SysLoginLog();
+            if (sysUser != null && StringUtils.isNotBlank(sysUser.getUserName())) {
+                sysLoginLog.setUserName(sysUser.getUserName());
+            }
+            String ip = IpUtils.getIpAddr(ServletUtils.getRequest());
+            sysLoginLog.setIpAddress(ip);
+//            sysLoginLog.setBrowser(browser);
+//            sysLoginLog.setLoginAddress(os);
+            sysLoginLog.setStatus(status);
+            sysLoginLog.setRemark(msg);
+            sysLoginLog.setLoginTime(new Date());
+        try {
+            SpringUtil.getBean(SysLoginLogMapper.class).insert(sysLoginLog);
+        } catch (Exception e) {
+            log.error("SysLoginLogMapper insert error: {}", e.getMessage());
+        }
+
     }
 }
