@@ -7,6 +7,7 @@ import com.moli.common.core.MoliResult;
 import com.moli.common.domain.entity.SysRole;
 import com.moli.common.domain.entity.SysRoleMenu;
 import com.moli.common.domain.vo.RoleVo;
+import com.moli.common.domain.vo.SysRoleVo;
 import com.moli.common.enums.BusinessTypeEnum;
 import com.moli.common.log.MoliLog;
 import com.moli.common.page.PageRes;
@@ -86,8 +87,19 @@ public class RoleController {
     @PutMapping
     @MoliLog(title = "角色管理", businessType = BusinessTypeEnum.UPDATE)
     @ApiOperation(value = "更新角色", notes = "更新角色")
-    public MoliResult<Boolean> update(@RequestBody SysRole role) {
-        roleMapper.updateById(role);
+    public MoliResult<Boolean> update(@RequestBody SysRoleVo roleVo) {
+        SysRole sysRole = new SysRole();
+        BeanUtils.copyProperties(roleVo, sysRole);
+        roleMapper.updateById(sysRole);
+        roleMenuMapper.delete(new LambdaQueryWrapper<SysRoleMenu>().eq(SysRoleMenu::getRoleId, roleVo.getId()));
+        if (CollectionUtils.isNotEmpty(roleVo.getMenuIds())) {
+            for (Long menuId : roleVo.getMenuIds()) {
+                SysRoleMenu roleMenu = new SysRoleMenu();
+                roleMenu.setRoleId(roleVo.getId());
+                roleMenu.setMenuId(menuId);
+                roleMenuMapper.insert(roleMenu);
+            }
+        };
         return MoliResult.success(Boolean.TRUE);
     }
 
