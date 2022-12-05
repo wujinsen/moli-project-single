@@ -194,7 +194,7 @@ public class ShiroConfig {
     public SessionManager sessionManager() {
         ShiroSessionManager shiroSessionManager = new ShiroSessionManager();
         shiroSessionManager.setSessionDAO(redisSessionDAO());
-
+        shiroSessionManager.setGlobalSessionTimeout(timeout * 1000L);
         return shiroSessionManager;
     }
 
