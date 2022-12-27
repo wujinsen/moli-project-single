@@ -37,6 +37,9 @@ public class ShiroConfig {
     @Value("${spring.redis.password}")
     private String password;
 
+    @Value("${spring.redis.database}")
+    private int database;
+
     /**
      * 开启Shiro-aop注解支持
      * @Attention 使用代理方式所以需要开启代码支持
@@ -138,6 +141,7 @@ public class ShiroConfig {
         redisManager.setPort(port);
         redisManager.setTimeout(timeout);
         redisManager.setPassword(password);
+        redisManager.setDatabase(database);
         return redisManager;
     }
 

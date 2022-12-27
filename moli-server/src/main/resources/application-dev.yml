@@ -40,6 +40,7 @@ spring:
         max-wait: -1      # 连接池最大阻塞等待时间（使用负值表示没有限制）
         max-idle: 10      # 连接池中的最大空闲连接
         min-idle: 5       # 连接池中的最小空闲连接
+    database: 1
 
 mybatis-plus:
   # 配置映射文件位置，classpath指resources
