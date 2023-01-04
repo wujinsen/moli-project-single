@@ -1,7 +1,9 @@
 package com.moli.system.service;
 
-import com.moli.system.service.PostService;
+import com.alibaba.fastjson.JSON;
+import com.moli.common.domain.entity.SysPost;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.User;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -10,6 +12,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -25,6 +28,20 @@ public class RedisTest {
     @Resource
     private RedisTemplate redisTemplate;
 
+    @Test
+    public void test4(){
+        Map map = new HashMap<>();
+        map.put("aaa", "aaa");
+        map.put("bbb","bbb");
+        redisTemplate.opsForValue().set("map2", JSON.toJSONString(map));
+        SysPost post = new SysPost();
+        post.setPostName("zhangsan");
+        post.setId(1l);
+        redisTemplate.opsForValue().set("post", post);
+        redisTemplate.opsForValue().set("post2", JSON.toJSONString(post));
+        log.info("post : {}",    redisTemplate.opsForValue().get("post"));
+        log.info("post : {}",    redisTemplate.opsForValue().get("post2"));
+    }
 
     @Test
     public void test() {
