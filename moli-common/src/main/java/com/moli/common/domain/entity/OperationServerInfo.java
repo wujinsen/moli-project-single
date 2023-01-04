@@ -14,6 +14,9 @@ public class OperationServerInfo extends BaseEntity {
     @ApiModelProperty("ip")
     private String ip;
 
+    @ApiModelProperty("内网ip")
+    private String innerIp;
+
     @ApiModelProperty("端口号")
     private String port;
 
