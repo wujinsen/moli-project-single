@@ -10,6 +10,8 @@ public class OperationProjectDeployInfo extends BaseEntity {
     private Long serverId;
     @ApiModelProperty("服务器id")
     private String serverIp;
+    @ApiModelProperty("内网ip")
+    private String innerIp;
     @ApiModelProperty("url")
     private String url;
     @ApiModelProperty("项目名称")

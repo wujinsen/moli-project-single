@@ -35,9 +35,9 @@ public class OperationComponentController {
         if (operationComponentDeployInfo.getServerIp() != null) {
             lambdaQueryWrapper.eq(OperationComponentDeployInfo::getServerIp, operationComponentDeployInfo.getServerIp());
         }
-//        if (operationComponentDeployInfo.g() != null) {
-//            lambdaQueryWrapper.eq(OperationComponentDeployInfo::getEnvironment, operationComponentDeployInfo.getEnvironment());
-//        }
+        if (operationComponentDeployInfo.getEnvironment() != null) {
+            lambdaQueryWrapper.eq(OperationComponentDeployInfo::getEnvironment, operationComponentDeployInfo.getEnvironment());
+        }
 
         lambdaQueryWrapper.orderByDesc(OperationComponentDeployInfo::getCreateTime);
         Page page = new Page();
