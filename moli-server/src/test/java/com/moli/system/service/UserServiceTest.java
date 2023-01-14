@@ -52,10 +52,17 @@ public class UserServiceTest {
         // 异步执行每个数据源查询方法
         // 返回一个Future集合
         List<CompletableFuture<List<SysUser>>> futures = new ArrayList<>();
-        for(int i=0;i<3;i++){
-            futures.add(queryUsers());
+        int num = 2;
+        for (int i = 0; i < 11; i += num) {
+
+            //越界处理
+            if (i + num > 11) {
+                num = 11 - i;
+            }
             futures.add(queryUsers());
         }
+
+
         System.out.println("长度: " + futures.size());
         // 多个异步执行结果合并到该集合
         List<SysUser> futureUsers = new ArrayList<>();
@@ -76,10 +83,10 @@ public class UserServiceTest {
         // 阻塞等待所有CompletableFuture执行完成
         allFuture.get();
         // 对合并后的结果集进行去重处理
-        List<SysUser> result = futureUsers.stream().collect(Collectors.toList());
+
         Long endTime = System.currentTimeMillis();
 
-        log.info("result: {}, time: {}", result.size(), (endTime - startTime));
+        log.info("result: {}, time: {}", futureUsers.size(), (endTime - startTime));
     }
 
     /**

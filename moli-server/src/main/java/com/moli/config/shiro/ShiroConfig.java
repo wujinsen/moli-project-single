@@ -66,6 +66,7 @@ public class ShiroConfig {
         // 注意过滤器配置顺序不能颠倒
         // 配置过滤:不会被拦截的链接
         //Swagger接口
+        filterChainDefinitionMap.put("/doc.html", "anon");
         filterChainDefinitionMap.put("/swagger-ui.html", "anon");
         filterChainDefinitionMap.put("/webjars/**", "anon");
         filterChainDefinitionMap.put("/v2/**", "anon");

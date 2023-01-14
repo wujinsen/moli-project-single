@@ -67,4 +67,4 @@ minio:
   secretKey: minioadmin
 
 swagger:
-  show: true
+  show: false
