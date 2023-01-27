@@ -14,6 +14,7 @@ import com.moli.common.domain.vo.UserVo;
 import com.moli.common.page.PageRes;
 import com.moli.common.utils.MoliDateUtils;
 import com.moli.config.util.SHA256Util;
+import com.moli.config.util.ShiroUtils;
 import com.moli.system.mapper.RoleMapper;
 import com.moli.system.mapper.SysUserMapper;
 import com.moli.system.mapper.SysUserRoleMapper;
@@ -173,11 +174,12 @@ public class UserController {
      */
     @PutMapping("/inserUserRole")
     public MoliResult<Boolean> inserUserRole(@RequestBody UserRoleVo userRoleVo) {
+        Long userId = ShiroUtils.getUserInfo().getId();
         List<SysUserRole> userRoleList = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(userRoleVo.getRoleList())) {
             for (SysRole role : userRoleVo.getRoleList()) {
                 SysUserRole userRole = new SysUserRole();
-                userRole.setUserId(userRoleVo.getUserId());
+                userRole.setUserId(userId);
                 userRole.setRoleId(role.getId());
                 userRoleList.add(userRole);
             }

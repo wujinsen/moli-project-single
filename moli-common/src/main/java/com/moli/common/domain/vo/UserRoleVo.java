@@ -15,4 +15,6 @@ public class UserRoleVo {
 
     private List<SysRole> roleList;
 
+    private List<Long> roleIds;
+
 }
