@@ -3,6 +3,7 @@ package com.moli.system.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.moli.common.constant.CommonConstant;
 import com.moli.common.core.MoliResult;
 import com.moli.common.domain.entity.SysRole;
 import com.moli.common.domain.entity.SysRoleMenu;
@@ -20,6 +21,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/role")
@@ -99,7 +103,8 @@ public class RoleController {
                 roleMenu.setMenuId(menuId);
                 roleMenuMapper.insert(roleMenu);
             }
-        };
+        }
+        ;
         return MoliResult.success(Boolean.TRUE);
     }
 
@@ -124,6 +129,14 @@ public class RoleController {
     public MoliResult changeStatus(@RequestBody SysRole role) {
         roleMapper.updateById(role);
         return MoliResult.success(Boolean.TRUE);
+    }
+
+    @GetMapping("/getRoleAll")
+    @ApiOperation(value = "获取所有角色", notes = "获取所有角色")
+    public MoliResult<List<SysRole>> getRoleAll() {
+
+        return MoliResult.success(roleMapper.selectList(new LambdaQueryWrapper<SysRole>().eq(SysRole::getStatus, CommonConstant.YES)));
+
     }
 
 }

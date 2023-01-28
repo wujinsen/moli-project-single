@@ -7,6 +7,10 @@ public class CommonConstant {
 
     public static final Integer UN_DELETE = 0;
 
+    public static final Integer YES = 1;
+
+    public static final Integer NO = 0;
+
     public static final String  BUCKET_PICTURE_NAME = "picture";
 
     public static final String  BUCKET_FILE_NAME = "file";

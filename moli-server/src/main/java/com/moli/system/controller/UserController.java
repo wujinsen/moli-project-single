@@ -22,6 +22,7 @@ import com.moli.system.service.DeptService;
 import com.moli.system.service.UserRoleService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.catalina.User;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -158,9 +159,12 @@ public class UserController {
     @GetMapping(value = "/getRoleByUserId/{userId}")
     public MoliResult<UserRoleVo> getRoleByUserId(@PathVariable Long userId) {
         UserRoleVo userRoleVo = new UserRoleVo();
+        List<SysUserRole> userRoleList = sysUserRoleMapper.selectList(new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getUserId, userId));
+        if (CollectionUtils.isEmpty(userRoleList)) {
+            return MoliResult.success(userRoleVo);
+        }
         SysUser user = sysUserMapper.selectById(userId);
         userRoleVo.setUser(user);
-        List<SysUserRole> userRoleList = sysUserRoleMapper.selectList(new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getUserId, userId));
         List<Long> roleIdList = userRoleList.stream().map(e -> e.getRoleId()).collect(Collectors.toList());
         List<SysRole> roleList = roleMapper.selectList(new LambdaQueryWrapper<SysRole>().in(SysRole::getId, roleIdList));
         userRoleVo.setRoleList(roleList);
@@ -174,13 +178,14 @@ public class UserController {
      */
     @PutMapping("/inserUserRole")
     public MoliResult<Boolean> inserUserRole(@RequestBody UserRoleVo userRoleVo) {
-        Long userId = ShiroUtils.getUserInfo().getId();
         List<SysUserRole> userRoleList = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(userRoleVo.getRoleList())) {
-            for (SysRole role : userRoleVo.getRoleList()) {
+        //删除用户角色关系
+        userRoleService.remove(new LambdaQueryWrapper<SysUserRole>().in(SysUserRole::getUserId, userRoleVo.getUserId()));
+        if (CollectionUtils.isNotEmpty(userRoleVo.getRoleIds())) {
+            for (Long roleId : userRoleVo.getRoleIds()) {
                 SysUserRole userRole = new SysUserRole();
-                userRole.setUserId(userId);
-                userRole.setRoleId(role.getId());
+                userRole.setUserId(userRoleVo.getUserId());
+                userRole.setRoleId(roleId);
                 userRoleList.add(userRole);
             }
             userRoleService.saveBatch(userRoleList);
