@@ -144,8 +144,8 @@ public class UserController {
      *
      * @return
      */
-    @PutMapping("/inserUserRole")
-    public MoliResult<Boolean> inserUserRole(@RequestBody UserRoleVo userRoleVo) {
+    @PutMapping("/insertUserRole")
+    public MoliResult<Boolean> insertUserRole(@RequestBody UserRoleVo userRoleVo) {
         List<SysUserRole> userRoleList = new ArrayList<>();
         //删除用户角色关系
         userRoleService.remove(new LambdaQueryWrapper<SysUserRole>().in(SysUserRole::getUserId, userRoleVo.getUserId()));
@@ -154,6 +154,27 @@ public class UserController {
                 SysUserRole userRole = new SysUserRole();
                 userRole.setUserId(userRoleVo.getUserId());
                 userRole.setRoleId(roleId);
+                userRoleList.add(userRole);
+            }
+            userRoleService.saveBatch(userRoleList);
+        }
+        return MoliResult.success(Boolean.TRUE);
+    }
+
+
+    /**
+     * 给角色新增用户，
+     *
+     * @return
+     */
+    @PutMapping("/addUserRole")
+    public MoliResult<Boolean> addUserRole(@RequestBody UserRoleVo userRoleVo) {
+        List<SysUserRole> userRoleList = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(userRoleVo.getUserIds())) {
+            for (Long userId : userRoleVo.getUserIds()) {
+                SysUserRole userRole = new SysUserRole();
+                userRole.setUserId(userId);
+                userRole.setRoleId(userRoleVo.getRoleId());
                 userRoleList.add(userRole);
             }
             userRoleService.saveBatch(userRoleList);
