@@ -9,6 +9,7 @@ import com.moli.common.domain.entity.SysRole;
 import com.moli.common.domain.entity.SysRoleMenu;
 import com.moli.common.domain.vo.RoleVo;
 import com.moli.common.domain.vo.SysRoleVo;
+import com.moli.common.domain.vo.UserRoleVo;
 import com.moli.common.enums.BusinessTypeEnum;
 import com.moli.common.log.MoliLog;
 import com.moli.common.page.PageRes;
@@ -35,6 +36,7 @@ public class RoleController {
 
     @Autowired
     private RoleMenuMapper roleMenuMapper;
+
 
     /**
      * 角色列表
@@ -138,5 +140,6 @@ public class RoleController {
         return MoliResult.success(roleMapper.selectList(new LambdaQueryWrapper<SysRole>().eq(SysRole::getStatus, CommonConstant.YES)));
 
     }
+
 
 }

@@ -11,6 +11,7 @@ import com.moli.common.utils.MoliDateUtils;
 import com.moli.system.mapper.SysUserMapper;
 import com.moli.system.service.DeptService;
 import com.moli.system.service.UserService;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -51,6 +52,9 @@ public class UserServiceImpl  implements UserService {
         }
         if (userVo.getBeginTime() != null) {
             lambdaQueryWrapper.between(SysUser::getCreateTime, MoliDateUtils.startTimeToDateStart(userVo.getBeginTime()), userVo.getEndTime() + " 23:59:59");
+        }
+        if(CollectionUtils.isNotEmpty(userVo.getUserIds())){
+            lambdaQueryWrapper.notIn(SysUser::getId, userVo.getUserIds());
         }
         lambdaQueryWrapper.eq(SysUser::getIsDelete, CommonConstant.UN_DELETE);
         Page page = new Page();

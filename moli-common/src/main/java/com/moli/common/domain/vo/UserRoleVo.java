@@ -11,10 +11,13 @@ public class UserRoleVo {
 
     private SysUser user;
 
-    private Long UserId;
+    private Long userId;
 
     private List<SysRole> roleList;
 
     private List<Long> roleIds;
 
+    private List<Long> userIds;
+
+    private Long roleId;
 }

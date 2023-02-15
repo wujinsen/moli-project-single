@@ -76,4 +76,6 @@ public class UserVo extends BaseEntity {
     @ApiModelProperty(value = "角色id")
     private Long roleId;
 
+    @ApiModelProperty(value = "用户id集合")
+    private List<Long> userIds;
 }

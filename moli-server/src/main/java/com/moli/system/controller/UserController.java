@@ -196,6 +196,29 @@ public class UserController {
         return MoliResult.success(result);
     }
 
+    @PutMapping("/removeUsers")
+    @ApiOperation(value = "批量移除角色下的用户", notes = "批量移除角色下的用户")
+    public MoliResult removeUsers(@RequestBody UserRoleVo req) {
+        if (CollectionUtils.isNotEmpty(req.getUserIds())) {
+            for (Long userId : req.getUserIds()) {
+                sysUserRoleMapper.delete(new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getRoleId, req.getRoleId()).eq(SysUserRole::getUserId, userId));
+            }
+        }
+        return MoliResult.success();
+    }
+
+    @GetMapping("/unauthorizedUsers")
+    @ApiOperation(value = "查询角色未授权用户列表", notes = "查询角色未授权用户列表")
+    public MoliResult<PageRes<SysUser>> unauthorizedUsers(UserVo req) {
+
+        List<SysUserRole> userRoleList = sysUserRoleMapper.selectList(new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getRoleId, req.getRoleId()));
+        if(CollectionUtils.isNotEmpty(userRoleList)){
+            req.setUserIds(userRoleList.stream().map(e->e.getUserId()).collect(Collectors.toList()));
+        }
+
+        return MoliResult.success(userService.list(req));
+    }
+
     @PutMapping("/resetPassword")
     @ApiOperation(value = "重置密码")
     public MoliResult<Boolean> resetPassword(@RequestBody SysUser sysUser) {
@@ -203,6 +226,5 @@ public class UserController {
         sysUserMapper.updateById(sysUser);
         return MoliResult.success(Boolean.TRUE);
     }
-
 
 }
