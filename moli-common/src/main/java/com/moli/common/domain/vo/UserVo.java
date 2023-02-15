@@ -70,7 +70,10 @@ public class UserVo extends BaseEntity {
     @ApiModelProperty(value = "岗位id")
     private List<Long> postIds;
 
-    @ApiModelProperty(value = "角色id")
+    @ApiModelProperty(value = "角色id集合")
     private List<Long> roleIds;
+
+    @ApiModelProperty(value = "角色id")
+    private Long roleId;
 
 }

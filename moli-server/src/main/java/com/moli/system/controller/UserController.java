@@ -20,6 +20,7 @@ import com.moli.system.mapper.SysUserMapper;
 import com.moli.system.mapper.SysUserRoleMapper;
 import com.moli.system.service.DeptService;
 import com.moli.system.service.UserRoleService;
+import com.moli.system.service.UserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.catalina.User;
@@ -51,7 +52,7 @@ public class UserController {
     private UserRoleService userRoleService;
 
     @Autowired
-    private DeptService deptService;
+    private UserService userService;
 
     /**
      * 用户列表
@@ -62,40 +63,7 @@ public class UserController {
     @GetMapping("/list")
     @ApiOperation(value = "用户列表", notes = "用户列表")
     public MoliResult<PageRes<SysUser>> list(UserVo userVo) {
-        PageRes<SysUser> result = new PageRes<>();
-        LambdaQueryWrapper<SysUser> lambdaQueryWrapper = new LambdaQueryWrapper();
-
-        if (userVo.getDeptId() != null) {
-            List<Long> detpIdList = new ArrayList<>();
-            List<SysDept> deptList = deptService.list();
-            detpIdList.add(userVo.getDeptId());
-            deptService.findChildrenDeptIdTree(detpIdList, deptList, userVo.getDeptId());
-            lambdaQueryWrapper.in(SysUser::getDeptId, detpIdList);
-        }
-
-        if (StringUtils.isNotBlank(userVo.getUserName())) {
-            lambdaQueryWrapper.eq(SysUser::getUserName,userVo.getUserName());
-        }
-        if (StringUtils.isNotBlank(userVo.getTelephone())) {
-            lambdaQueryWrapper.eq(SysUser::getTelephone, userVo.getTelephone());
-        }
-        if (userVo.getStatus() != null) {
-            lambdaQueryWrapper.eq(SysUser::getStatus, userVo.getStatus());
-        }
-        if (userVo.getBeginTime() != null) {
-            lambdaQueryWrapper.between(SysUser::getCreateTime, MoliDateUtils.startTimeToDateStart(userVo.getBeginTime()), userVo.getEndTime() + " 23:59:59");
-        }
-        lambdaQueryWrapper.eq(SysUser::getIsDelete, CommonConstant.UN_DELETE);
-        Page page = new Page();
-        page.setCurrent(userVo.getPageNum());
-        page.setSize(userVo.getPageSize());
-        sysUserMapper.selectPage(page, lambdaQueryWrapper);
-        Long total = page.getTotal();
-        result.setTotal(total.intValue());
-        result.setList(page.getRecords());
-        result.setPageNum(userVo.getPageNum());
-        result.setPageSize(userVo.getPageSize());
-        return MoliResult.success(result);
+        return MoliResult.success(userService.list(userVo));
     }
 
     /**
@@ -193,6 +161,41 @@ public class UserController {
         return MoliResult.success(Boolean.TRUE);
     }
 
+    /**
+     * 查询角色下的用户
+     *
+     * @param
+     * @return
+     */
+    @GetMapping("/getUserByRole")
+    public MoliResult<PageRes<SysUser>> getUserByRole(UserVo req) {
+        PageRes<SysUser> result = new PageRes<>();
+        List<SysUserRole> userRoleList = sysUserRoleMapper.selectList(new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getRoleId, req.getRoleId()));
+        if (CollectionUtils.isEmpty(userRoleList)) {
+            return MoliResult.success();
+        }
+        List<Long> userIdList = userRoleList.stream().map(e -> e.getUserId()).collect(Collectors.toList());
+
+        LambdaQueryWrapper<SysUser> lambdaQueryWrapper = new LambdaQueryWrapper();
+        if (StringUtils.isNotBlank(req.getUserName())) {
+            lambdaQueryWrapper.like(SysUser::getUserName, req.getUserName());
+        }
+        if (StringUtils.isNotBlank(req.getTelephone())) {
+            lambdaQueryWrapper.like(SysUser::getTelephone, req.getTelephone());
+        }
+        lambdaQueryWrapper.in(SysUser::getId, userIdList);
+        Page page = new Page();
+        page.setCurrent(req.getPageNum());
+        page.setSize(req.getPageSize());
+        sysUserMapper.selectPage(page, lambdaQueryWrapper);
+        Long total = page.getTotal();
+        result.setTotal(total.intValue());
+        result.setList(page.getRecords());
+        result.setPageNum(req.getPageNum());
+        result.setPageSize(req.getPageSize());
+        return MoliResult.success(result);
+    }
+
     @PutMapping("/resetPassword")
     @ApiOperation(value = "重置密码")
     public MoliResult<Boolean> resetPassword(@RequestBody SysUser sysUser) {
@@ -200,5 +203,6 @@ public class UserController {
         sysUserMapper.updateById(sysUser);
         return MoliResult.success(Boolean.TRUE);
     }
+
 
 }
