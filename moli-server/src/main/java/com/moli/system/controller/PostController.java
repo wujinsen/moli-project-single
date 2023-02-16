@@ -14,6 +14,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 
 @RestController
 @RequestMapping("post")
@@ -87,6 +89,13 @@ public class PostController {
             postMapper.deleteById(id);
         }
         return MoliResult.success(Boolean.TRUE);
+    }
+
+
+    @GetMapping(value = "/allPost")
+    @ApiOperation(value = "查询所有岗位", notes = "查询所有岗位")
+    public MoliResult<List<SysPost>> allPost() {
+        return MoliResult.success(postMapper.selectList(new LambdaQueryWrapper<>()));
     }
 
 }

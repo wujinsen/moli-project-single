@@ -12,6 +12,8 @@ public class SysUser extends BaseEntity {
 
     private Long deptId;
 
+    private Long postId;
+
     @ApiModelProperty(value = "工号")
     private String workNo;
 
@@ -56,10 +58,6 @@ public class SysUser extends BaseEntity {
 
     @ApiModelProperty(value = "盐值")
     private String salt;
-
-    @ApiModelProperty(value = "初始密码")
-    private String initPassword;
-
 
     @TableField(fill = FieldFill.INSERT)
     @ApiModelProperty("是否删除(0-未删除；1-已删除)")

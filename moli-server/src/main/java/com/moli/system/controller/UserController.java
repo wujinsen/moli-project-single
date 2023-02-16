@@ -5,25 +5,21 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.moli.common.constant.CommonConstant;
 import com.moli.common.core.MoliResult;
-import com.moli.common.domain.entity.SysDept;
 import com.moli.common.domain.entity.SysRole;
 import com.moli.common.domain.entity.SysUser;
 import com.moli.common.domain.entity.SysUserRole;
 import com.moli.common.domain.vo.UserRoleVo;
 import com.moli.common.domain.vo.UserVo;
 import com.moli.common.page.PageRes;
-import com.moli.common.utils.MoliDateUtils;
 import com.moli.config.util.SHA256Util;
-import com.moli.config.util.ShiroUtils;
+import com.moli.system.mapper.PostMapper;
 import com.moli.system.mapper.RoleMapper;
 import com.moli.system.mapper.SysUserMapper;
 import com.moli.system.mapper.SysUserRoleMapper;
-import com.moli.system.service.DeptService;
 import com.moli.system.service.UserRoleService;
 import com.moli.system.service.UserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.apache.catalina.User;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -54,6 +50,9 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private PostMapper postMapper;
+
     /**
      * 用户列表
      *
@@ -62,7 +61,7 @@ public class UserController {
      */
     @GetMapping("/list")
     @ApiOperation(value = "用户列表", notes = "用户列表")
-    public MoliResult<PageRes<SysUser>> list(UserVo userVo) {
+    public MoliResult<PageRes<UserVo>> list(UserVo userVo) {
         return MoliResult.success(userService.list(userVo));
     }
 
@@ -95,7 +94,6 @@ public class UserController {
      */
     @GetMapping(value = "/{id}")
     public MoliResult<SysUser> getInfo(@PathVariable Long id) {
-
         return MoliResult.success(sysUserMapper.selectById(id));
     }
 
@@ -231,13 +229,28 @@ public class UserController {
     @GetMapping("/unauthorizedUsers")
     @ApiOperation(value = "查询角色未授权用户列表", notes = "查询角色未授权用户列表")
     public MoliResult<PageRes<SysUser>> unauthorizedUsers(UserVo req) {
-
+        PageRes<SysUser> result = new PageRes<>();
+        LambdaQueryWrapper<SysUser> lambdaQueryWrapper = new LambdaQueryWrapper();
         List<SysUserRole> userRoleList = sysUserRoleMapper.selectList(new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getRoleId, req.getRoleId()));
-        if(CollectionUtils.isNotEmpty(userRoleList)){
-            req.setUserIds(userRoleList.stream().map(e->e.getUserId()).collect(Collectors.toList()));
+        if (CollectionUtils.isNotEmpty(userRoleList)) {
+            req.setUserIds(userRoleList.stream().map(e -> e.getUserId()).collect(Collectors.toList()));
         }
 
-        return MoliResult.success(userService.list(req));
+        if (CollectionUtils.isNotEmpty(req.getUserIds())) {
+            lambdaQueryWrapper.notIn(SysUser::getId, req.getUserIds());
+        }
+        lambdaQueryWrapper.eq(SysUser::getIsDelete, CommonConstant.UN_DELETE);
+        Page page = new Page();
+        page.setCurrent(req.getPageNum());
+        page.setSize(req.getPageSize());
+        sysUserMapper.selectPage(page, lambdaQueryWrapper);
+        Long total = page.getTotal();
+        result.setTotal(total.intValue());
+        result.setList(page.getRecords());
+        result.setPageNum(req.getPageNum());
+        result.setPageSize(req.getPageSize());
+
+        return MoliResult.success(result);
     }
 
     @PutMapping("/resetPassword")

@@ -1,6 +1,7 @@
 package com.moli.common.domain.vo;
 
 import com.moli.common.core.BaseEntity;
+import com.moli.common.domain.entity.SysPost;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -31,7 +32,7 @@ public class UserVo extends BaseEntity {
     private String identityCard;
 
     @ApiModelProperty(value = "性别")
-    private String sex;
+    private Integer sex;
 
     @NotNull(message = "手机号不能为空")
     @ApiModelProperty(value = "电话号(唯一)")
@@ -58,9 +59,6 @@ public class UserVo extends BaseEntity {
     @ApiModelProperty(value = "部门名称")
     private String deptName;
 
-    @ApiModelProperty(value = "初始密码")
-    private String initPassword;
-
     @ApiModelProperty(value = "开始时间")
     private String beginTime;
 
@@ -69,6 +67,12 @@ public class UserVo extends BaseEntity {
 
     @ApiModelProperty(value = "岗位id")
     private List<Long> postIds;
+
+    @ApiModelProperty(value = "岗位id")
+    private Long postId;
+
+    @ApiModelProperty(value = "岗位集合")
+    private List<SysPost> postList;
 
     @ApiModelProperty(value = "角色id集合")
     private List<Long> roleIds;
