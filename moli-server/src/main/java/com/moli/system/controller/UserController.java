@@ -7,15 +7,14 @@ import com.moli.common.constant.CommonConstant;
 import com.moli.common.core.MoliResult;
 import com.moli.common.domain.entity.SysRole;
 import com.moli.common.domain.entity.SysUser;
+import com.moli.common.domain.entity.SysUserPost;
 import com.moli.common.domain.entity.SysUserRole;
+import com.moli.common.domain.vo.SysUserVo;
 import com.moli.common.domain.vo.UserRoleVo;
 import com.moli.common.domain.vo.UserVo;
 import com.moli.common.page.PageRes;
 import com.moli.config.util.SHA256Util;
-import com.moli.system.mapper.PostMapper;
-import com.moli.system.mapper.RoleMapper;
-import com.moli.system.mapper.SysUserMapper;
-import com.moli.system.mapper.SysUserRoleMapper;
+import com.moli.system.mapper.*;
 import com.moli.system.service.UserRoleService;
 import com.moli.system.service.UserService;
 import io.swagger.annotations.Api;
@@ -24,6 +23,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -51,7 +51,11 @@ public class UserController {
     private UserService userService;
 
     @Autowired
+    private UserPostMapper userPostMapper;
+
+    @Autowired
     private PostMapper postMapper;
+
 
     /**
      * 用户列表
@@ -84,8 +88,18 @@ public class UserController {
      * @return
      */
     @PutMapping
-    public MoliResult<Boolean> update(@RequestBody SysUser user) {
-        sysUserMapper.updateById(user);
+    public MoliResult<Boolean> update(@RequestBody SysUserVo req) {
+        SysUser sysUser = new SysUser();
+        BeanUtils.copyProperties(req, sysUser);
+        sysUserMapper.updateById(sysUser);
+        userPostMapper.delete(new LambdaQueryWrapper<SysUserPost>().eq(SysUserPost::getUserId, req.getId()));
+        for(Long postId : req.getPostIds()){
+            SysUserPost sysUserPost = new SysUserPost();
+            sysUserPost.setUserId(req.getId());
+            sysUserPost.setPostId(postId);
+            userPostMapper.insert(sysUserPost);
+        }
+
         return MoliResult.success(Boolean.TRUE);
     }
 
@@ -95,6 +109,17 @@ public class UserController {
     @GetMapping(value = "/{id}")
     public MoliResult<SysUser> getInfo(@PathVariable Long id) {
         return MoliResult.success(sysUserMapper.selectById(id));
+    }
+
+    @GetMapping(value = "/getUserDetail/{id}")
+    public MoliResult<SysUserVo> getUserDetail(@PathVariable Long id) {
+        SysUserVo sysUserVo = new SysUserVo();
+        SysUser sysUser = sysUserMapper.selectById(id);
+        BeanUtils.copyProperties(sysUser, sysUserVo);
+        List<SysUserPost> userPostList = userPostMapper.selectList(new LambdaQueryWrapper<SysUserPost>().eq(SysUserPost::getUserId, id));
+        List<Long> postIds = userPostList.stream().map(e -> e.getPostId()).collect(Collectors.toList());
+        sysUserVo.setPostIds(postIds);
+        return MoliResult.success(sysUserVo);
     }
 
     /**
