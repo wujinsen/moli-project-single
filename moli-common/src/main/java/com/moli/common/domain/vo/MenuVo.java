@@ -39,7 +39,7 @@ public class MenuVo  extends BaseEntity {
     private String icon;
 
     @ApiModelProperty(value = "显示顺序")
-    private Integer sort;
+    private Integer orderNum;
 
     @ApiModelProperty(value = "下级菜单集合")
     private List<MenuVo> children;

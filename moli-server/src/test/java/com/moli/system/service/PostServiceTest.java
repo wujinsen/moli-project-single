@@ -30,4 +30,9 @@ public class PostServiceTest {
         System.out.println(num);
         System.out.println(post);
     }
+
+    @Test
+    public void aaa(){
+        System.out.println("aaa");
+    }
 }
