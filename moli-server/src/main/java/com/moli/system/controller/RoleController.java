@@ -9,7 +9,6 @@ import com.moli.common.domain.entity.SysRole;
 import com.moli.common.domain.entity.SysRoleMenu;
 import com.moli.common.domain.vo.RoleVo;
 import com.moli.common.domain.vo.SysRoleVo;
-import com.moli.common.domain.vo.UserRoleVo;
 import com.moli.common.enums.BusinessTypeEnum;
 import com.moli.common.log.MoliLog;
 import com.moli.common.page.PageRes;
@@ -22,8 +21,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController

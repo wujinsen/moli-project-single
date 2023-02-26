@@ -68,4 +68,7 @@ public class SysUserVo extends BaseEntity {
 
     private List<Long> postIds;
 
+    private String postNames;
+
+    private String deptName;
 }

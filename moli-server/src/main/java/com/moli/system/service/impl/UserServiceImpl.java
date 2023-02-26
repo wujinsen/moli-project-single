@@ -79,8 +79,7 @@ public class UserServiceImpl implements UserService {
 
         List<SysDept> deptList = deptService.list();
         Map<Long, String> mapDeptName = deptList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e.getDeptName()));
-//        List<SysPost> postList = postMapper.selectList(new LambdaQueryWrapper<>());
-//        Map<Long, List<SysPost>> mapPost = postList.stream().collect(Collectors.groupingBy(e -> e.getId()));
+
         page.getRecords().forEach(e -> {
             UserVo userVoTwo = new UserVo();
             BeanUtils.copyProperties(e, userVoTwo);

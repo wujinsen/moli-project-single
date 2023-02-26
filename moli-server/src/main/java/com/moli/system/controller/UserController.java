@@ -5,15 +5,13 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.moli.common.constant.CommonConstant;
 import com.moli.common.core.MoliResult;
-import com.moli.common.domain.entity.SysRole;
-import com.moli.common.domain.entity.SysUser;
-import com.moli.common.domain.entity.SysUserPost;
-import com.moli.common.domain.entity.SysUserRole;
+import com.moli.common.domain.entity.*;
 import com.moli.common.domain.vo.SysUserVo;
 import com.moli.common.domain.vo.UserRoleVo;
 import com.moli.common.domain.vo.UserVo;
 import com.moli.common.page.PageRes;
 import com.moli.config.util.SHA256Util;
+import com.moli.config.util.ShiroUtils;
 import com.moli.system.mapper.*;
 import com.moli.system.service.UserRoleService;
 import com.moli.system.service.UserService;
@@ -23,9 +21,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -55,26 +51,17 @@ public class UserController {
 
     @Autowired
     private PostMapper postMapper;
+    @Autowired
+    private DeptMapper deptMapper;
 
-
-    /**
-     * 用户列表
-     *
-     * @param userVo
-     * @return
-     */
     @GetMapping("/list")
     @ApiOperation(value = "用户列表", notes = "用户列表")
     public MoliResult<PageRes<UserVo>> list(UserVo userVo) {
         return MoliResult.success(userService.list(userVo));
     }
 
-    /**
-     * 添加用户
-     *
-     * @return 添加用户
-     */
     @PostMapping
+    @ApiOperation(value = "添加用户", notes = "添加用户")
     public MoliResult<Boolean> insert(@RequestBody UserVo userVo) {
         SysUser user = new SysUser();
         BeanUtils.copyProperties(userVo, user);
@@ -82,36 +69,35 @@ public class UserController {
         return MoliResult.success(Boolean.TRUE);
     }
 
-    /**
-     * 更新用户
-     *
-     * @return
-     */
+
     @PutMapping
+    @ApiOperation(value = "更新用户", notes = "更新用户")
     public MoliResult<Boolean> update(@RequestBody SysUserVo req) {
         SysUser sysUser = new SysUser();
         BeanUtils.copyProperties(req, sysUser);
         sysUserMapper.updateById(sysUser);
-        userPostMapper.delete(new LambdaQueryWrapper<SysUserPost>().eq(SysUserPost::getUserId, req.getId()));
-        for(Long postId : req.getPostIds()){
-            SysUserPost sysUserPost = new SysUserPost();
-            sysUserPost.setUserId(req.getId());
-            sysUserPost.setPostId(postId);
-            userPostMapper.insert(sysUserPost);
+        if(CollectionUtils.isNotEmpty(req.getPostIds())) {
+            userPostMapper.delete(new LambdaQueryWrapper<SysUserPost>().eq(SysUserPost::getUserId, req.getId()));
+            for (Long postId : req.getPostIds()) {
+                SysUserPost sysUserPost = new SysUserPost();
+                sysUserPost.setUserId(req.getId());
+                sysUserPost.setPostId(postId);
+                userPostMapper.insert(sysUserPost);
+            }
         }
-
         return MoliResult.success(Boolean.TRUE);
     }
 
-    /**
-     * 查询单个用户
-     */
+
     @GetMapping(value = "/{id}")
+    @ApiOperation(value = "查询单个用户", notes = "查询单个用户")
     public MoliResult<SysUser> getInfo(@PathVariable Long id) {
         return MoliResult.success(sysUserMapper.selectById(id));
     }
 
+
     @GetMapping(value = "/getUserDetail/{id}")
+    @ApiOperation(value = "获取用户详情", notes = "获取用户详情")
     public MoliResult<SysUserVo> getUserDetail(@PathVariable Long id) {
         SysUserVo sysUserVo = new SysUserVo();
         SysUser sysUser = sysUserMapper.selectById(id);
@@ -122,10 +108,27 @@ public class UserController {
         return MoliResult.success(sysUserVo);
     }
 
-    /**
-     * 删除用户
-     */
+    @GetMapping(value = "/profile")
+    @ApiOperation(value = "获取用户详情", notes = "获取用户详情")
+    public MoliResult<SysUserVo> getUserProfile() {
+        SysUserVo sysUserVo = new SysUserVo();
+        SysUser sysUser = ShiroUtils.getUserInfo();
+        SysUser user = sysUserMapper.selectById(sysUser.getId());
+        BeanUtils.copyProperties(user, sysUserVo);
+        SysDept sysDept = deptMapper.selectById(sysUser.getDeptId());
+        sysUserVo.setDeptName(sysDept.getDeptName());
+        List<SysUserPost> userPostList = userPostMapper.selectList(new LambdaQueryWrapper<SysUserPost>().eq(SysUserPost::getUserId, user.getId()));
+        if(CollectionUtils.isNotEmpty(userPostList)){
+            List<Long> postIdList = userPostList.stream().map(e->e.getPostId()).collect(Collectors.toList());
+            List<SysPost> postList = postMapper.selectList(new LambdaQueryWrapper<SysPost>().in(SysPost::getId, postIdList));
+            sysUserVo.setPostNames(String.join(",",postList.stream().map(e->e.getPostName()).collect(Collectors.toList())));
+        }
+        return MoliResult.success(sysUserVo);
+    }
+
+
     @DeleteMapping("/{userIds}")
+    @ApiOperation(value = "删除用户", notes = "删除用户")
     public MoliResult delete(@PathVariable Long[] userIds) {
         for (Long id : userIds) {
             SysUser user = new SysUser();
@@ -139,15 +142,15 @@ public class UserController {
     }
 
     @PutMapping("/changeStatus")
+    @ApiOperation(value = "开启关闭用户", notes = "开启关闭用户")
     public MoliResult changeStatus(@RequestBody SysUser user) {
         sysUserMapper.updateById(user);
         return MoliResult.success(Boolean.TRUE);
     }
 
-    /**
-     * 查询单个用户下的角色信息
-     */
+
     @GetMapping(value = "/getRoleByUserId/{userId}")
+    @ApiOperation(value = "查询单个用户下的角色信息", notes = "查询单个用户下的角色信息")
     public MoliResult<UserRoleVo> getRoleByUserId(@PathVariable Long userId) {
         UserRoleVo userRoleVo = new UserRoleVo();
         List<SysUserRole> userRoleList = sysUserRoleMapper.selectList(new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getUserId, userId));
@@ -162,12 +165,8 @@ public class UserController {
         return MoliResult.success(userRoleVo);
     }
 
-    /**
-     * 保存授权角色
-     *
-     * @return
-     */
     @PutMapping("/insertUserRole")
+    @ApiOperation(value = "保存授权角色", notes = "保存授权角色")
     public MoliResult<Boolean> insertUserRole(@RequestBody UserRoleVo userRoleVo) {
         List<SysUserRole> userRoleList = new ArrayList<>();
         //删除用户角色关系
@@ -184,13 +183,8 @@ public class UserController {
         return MoliResult.success(Boolean.TRUE);
     }
 
-
-    /**
-     * 给角色新增用户，
-     *
-     * @return
-     */
     @PutMapping("/addUserRole")
+    @ApiOperation(value = "给角色新增用户", notes = "给角色新增用户")
     public MoliResult<Boolean> addUserRole(@RequestBody UserRoleVo userRoleVo) {
         List<SysUserRole> userRoleList = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(userRoleVo.getUserIds())) {
@@ -205,13 +199,8 @@ public class UserController {
         return MoliResult.success(Boolean.TRUE);
     }
 
-    /**
-     * 查询角色下的用户
-     *
-     * @param
-     * @return
-     */
     @GetMapping("/getUserByRole")
+    @ApiOperation(value = "查询角色下的用户", notes = "查询角色下的用户")
     public MoliResult<PageRes<SysUser>> getUserByRole(UserVo req) {
         PageRes<SysUser> result = new PageRes<>();
         List<SysUserRole> userRoleList = sysUserRoleMapper.selectList(new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getRoleId, req.getRoleId()));
