@@ -1,6 +1,7 @@
 package com.moli.common.domain.entity;
 
 import com.moli.common.core.BaseEntity;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
