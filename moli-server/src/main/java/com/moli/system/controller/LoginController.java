@@ -37,6 +37,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -82,10 +83,9 @@ public class LoginController {
             result.setMsg("用户不存在或者密码错误");
             result.setCode(ResponseCodeEnums.ERROR.getCode());
             log.error("login IncorrectCredentialsException: {}", e.getMessage());
-            BeanUtils.copyProperties(user, request);
-            request.setPassword("");
-            request.setSalt("");
-            loginVo.setUser(request);
+            user.setPassword("");
+            user.setSalt("");
+            loginVo.setUser(user);
             result.setData(loginVo);
             insertLoginLog(ShiroUtils.getUserInfo(), result.getMsg(), 0);
             return result;
@@ -110,12 +110,16 @@ public class LoginController {
         }
         //token
         loginVo.setToken(ShiroUtils.getSession().getId().toString());
-        BeanUtils.copyProperties(ShiroUtils.getUserInfo(), request);
-        request.setPassword("");
-        request.setSalt("");
+        user.setPassword("");
+        user.setSalt("");
         //用户信息
-        loginVo.setUser(request);
-        List<MenuVo> menuVoList = menuService.selectMenuTreeByUserId(user.getId());
+        loginVo.setUser(user);
+        List<MenuVo> menuVoList = new ArrayList<>();
+        if(user.getUserName().equals(CommonConstant.SUPER_ADMIN)){
+            menuVoList = menuService.getMenuTreeAll();
+        }else{
+            menuVoList = menuService.selectMenuTreeByUserId(user.getId());
+        }
         //菜单信息
         loginVo.setMenuVoList(menuVoList);
         result.setMsg("登录成功");
