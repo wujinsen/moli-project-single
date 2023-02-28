@@ -37,4 +37,7 @@ public class CommonConstant {
 
     public static final String NO_REDIRECT = "noRedirect";
 
+    public static final String SUPER_ADMIN = "superadmin";
+
+
 }

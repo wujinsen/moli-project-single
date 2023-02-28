@@ -64,6 +64,7 @@ public class UserServiceImpl implements UserService {
             lambdaQueryWrapper.between(SysUser::getCreateTime, MoliDateUtils.startTimeToDateStart(userVo.getBeginTime()), userVo.getEndTime() + " 23:59:59");
         }
         lambdaQueryWrapper.eq(SysUser::getIsDelete, CommonConstant.UN_DELETE);
+        lambdaQueryWrapper.ne(SysUser::getUserName, CommonConstant.SUPER_ADMIN);
         Page<SysUser> page = new Page();
         page.setCurrent(userVo.getPageNum());
         page.setSize(userVo.getPageSize());

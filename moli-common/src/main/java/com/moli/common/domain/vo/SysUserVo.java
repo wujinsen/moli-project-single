@@ -14,8 +14,6 @@ public class SysUserVo extends BaseEntity {
 
     private Long deptId;
 
-    private Long postId;
-
     @ApiModelProperty(value = "工号")
     private String workNo;
 
@@ -65,10 +63,10 @@ public class SysUserVo extends BaseEntity {
     @ApiModelProperty("是否删除(0-未删除；1-已删除)")
     private Integer isDelete;
 
-
     private List<Long> postIds;
 
     private String postNames;
 
     private String deptName;
+
 }

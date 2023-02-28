@@ -1,7 +1,9 @@
 package com.moli.system.controller;
 
+import com.moli.common.constant.CommonConstant;
 import com.moli.common.core.MoliResult;
 import com.moli.common.domain.entity.SysMenu;
+import com.moli.common.domain.entity.SysUser;
 import com.moli.common.domain.vo.MenuVo;
 import com.moli.config.util.ShiroUtils;
 import com.moli.system.mapper.MenuMapper;
@@ -30,6 +32,10 @@ public class MenuController {
     @ApiOperation(value = "获取菜单列表", notes = "获取菜单列表")
     public MoliResult<List<MenuVo>> getRouters() {
         Long userId = ShiroUtils.getUserInfo().getId();
+        SysUser sysUser = ShiroUtils.getUserInfo();
+        if(sysUser.getUserName().equals(CommonConstant.SUPER_ADMIN)){
+            return MoliResult.success(menuService.getMenuTreeAll());
+        }
         List<MenuVo> menuVoList = menuService.selectMenuTreeByUserId(userId);
 
         return MoliResult.success(menuVoList);

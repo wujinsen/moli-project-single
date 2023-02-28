@@ -12,8 +12,6 @@ public class SysUser extends BaseEntity {
 
     private Long deptId;
 
-    private Long postId;
-
     @ApiModelProperty(value = "工号")
     private String workNo;
 
