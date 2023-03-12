@@ -24,10 +24,23 @@ public class ChatGPTController {
 
     @GetMapping("/v1/createCompletion/{content}")
     @ApiOperation(value = "chatgpt-文本问答", notes = "chatgpt-文本问答")
-    public MoliResult<String> getInfo(@PathVariable String content) {
+    public MoliResult<String> createCompletion(@PathVariable String content) {
         log.info("content: {}", content);
+        Long startTime = System.currentTimeMillis();
         String result = openAiService.createCompletion(content);
-        log.info("result: {}", result);
+        Long endTime = System.currentTimeMillis();
+        log.info("createCompletion result: {}, 耗时: {} 毫秒", result, (endTime-startTime));
+        return MoliResult.success(result);
+    }
+
+    @GetMapping("/v1/createCompletionTurbo/{content}")
+    @ApiOperation(value = "chatgpt-文本问答", notes = "chatgpt-文本问答")
+    public MoliResult<String> createCompletionTurbo(@PathVariable String content) {
+        log.info("content: {}", content);
+        Long startTime = System.currentTimeMillis();
+        String result = openAiService.createCompletionTurbo(content);
+        Long endTime = System.currentTimeMillis();
+        log.info("createCompletionTurbo result: {}, 耗时: {} 毫秒", result, (endTime-startTime));
         return MoliResult.success(result);
     }
 
