@@ -1,5 +1,6 @@
 package com.moli.ai;
 
+import com.moli.common.Messages;
 import com.moli.common.core.MoliResult;
 import com.moli.service.OpenAiService;
 import io.swagger.annotations.Api;
@@ -22,23 +23,23 @@ public class ChatGPTController {
     @Resource
     private OpenAiService openAiService;
 
-    @GetMapping("/v1/createCompletion/{content}")
+    @GetMapping("/v1/createCompletion")
     @ApiOperation(value = "chatgpt-文本问答", notes = "chatgpt-文本问答")
-    public MoliResult<String> createCompletion(@PathVariable String content) {
-        log.info("content: {}", content);
+    public MoliResult<String> createCompletion(Messages messages) {
+        log.info("content: {}", messages.getContent());
         Long startTime = System.currentTimeMillis();
-        String result = openAiService.createCompletion(content);
+        String result = openAiService.createCompletion(messages.getContent());
         Long endTime = System.currentTimeMillis();
         log.info("createCompletion result: {}, 耗时: {} 毫秒", result, (endTime-startTime));
         return MoliResult.success(result);
     }
 
-    @GetMapping("/v1/createCompletionTurbo/{content}")
+    @GetMapping("/v1/createCompletionTurbo")
     @ApiOperation(value = "chatgpt-文本问答", notes = "chatgpt-文本问答")
-    public MoliResult<String> createCompletionTurbo(@PathVariable String content) {
-        log.info("content: {}", content);
+    public MoliResult<String> createCompletionTurbo(Messages messages) {
+        log.info("content: {}", messages.getContent());
         Long startTime = System.currentTimeMillis();
-        String result = openAiService.createCompletionTurbo(content);
+        String result = openAiService.createCompletionTurbo(messages.getContent());
         Long endTime = System.currentTimeMillis();
         log.info("createCompletionTurbo result: {}, 耗时: {} 毫秒", result, (endTime-startTime));
         return MoliResult.success(result);
