@@ -57,6 +57,7 @@ public class UserController {
     @GetMapping("/list")
     @ApiOperation(value = "用户列表", notes = "用户列表")
     public MoliResult<PageRes<UserVo>> list(UserVo userVo) {
+
         return MoliResult.success(userService.list(userVo));
     }
 
@@ -65,6 +66,7 @@ public class UserController {
     public MoliResult<Boolean> insert(@RequestBody UserVo userVo) {
         SysUser user = new SysUser();
         BeanUtils.copyProperties(userVo, user);
+        user.setSalt(SHA256Util.SALT);
         sysUserMapper.insert(user);
         return MoliResult.success(Boolean.TRUE);
     }

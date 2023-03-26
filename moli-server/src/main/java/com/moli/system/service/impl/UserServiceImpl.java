@@ -41,6 +41,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public PageRes<UserVo> list(UserVo userVo) {
+
         PageRes<UserVo> result = new PageRes<>();
         List<UserVo> list = new ArrayList<>();
         LambdaQueryWrapper<SysUser> lambdaQueryWrapper = new LambdaQueryWrapper();
@@ -61,7 +62,7 @@ public class UserServiceImpl implements UserService {
             lambdaQueryWrapper.eq(SysUser::getStatus, userVo.getStatus());
         }
         if (userVo.getBeginTime() != null) {
-            lambdaQueryWrapper.between(SysUser::getCreateTime, MoliDateUtils.startTimeToDateStart(userVo.getBeginTime()), userVo.getEndTime() + " 23:59:59");
+            lambdaQueryWrapper.between(SysUser::getCreateTime, MoliDateUtils.startTimeToDateStart(userVo.getBeginTime()), MoliDateUtils.endTimeToDateEnd(userVo.getEndTime()));
         }
         lambdaQueryWrapper.eq(SysUser::getIsDelete, CommonConstant.UN_DELETE);
         lambdaQueryWrapper.ne(SysUser::getUserName, CommonConstant.SUPER_ADMIN);
