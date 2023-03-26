@@ -1,0 +1,67 @@
+package com.moli.common.exception;
+
+/**
+ * 业务异常类
+ */
+public class BaseException extends RuntimeException {
+
+    private static final long serialVersionUID = 1L;
+
+    /**
+     * 错误码
+     */
+    protected Integer errorCode;
+    /**
+     * 错误信息
+     */
+    protected String errorMsg;
+
+    public BaseException() {
+        super();
+    }
+
+
+    public BaseException(String errorMsg) {
+        super(errorMsg);
+        this.errorMsg = errorMsg;
+    }
+
+    public BaseException(Integer errorCode, String errorMsg) {
+        super(errorMsg);
+        this.errorCode = errorCode;
+        this.errorMsg = errorMsg;
+    }
+
+    public BaseException(Integer errorCode, String errorMsg, Throwable cause) {
+        super(errorMsg, cause);
+        this.errorCode = errorCode;
+        this.errorMsg = errorMsg;
+    }
+
+    public Integer getErrorCode() {
+        return errorCode;
+    }
+
+    public void setErrorCode(Integer errorCode) {
+        this.errorCode = errorCode;
+    }
+
+    public String getErrorMsg() {
+        return errorMsg;
+    }
+
+    public void setErrorMsg(String errorMsg) {
+        this.errorMsg = errorMsg;
+    }
+
+    public String getMessage() {
+        return errorMsg;
+    }
+
+
+    @Override
+    public Throwable fillInStackTrace() {
+        return this;
+    }
+
+}
