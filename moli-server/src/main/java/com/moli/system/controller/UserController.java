@@ -19,6 +19,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -56,6 +57,7 @@ public class UserController {
 
     @GetMapping("/list")
     @ApiOperation(value = "用户列表", notes = "用户列表")
+    @RequiresPermissions("sys:user:info")
     public MoliResult<PageRes<UserVo>> list(UserVo userVo) {
 
         return MoliResult.success(userService.list(userVo));

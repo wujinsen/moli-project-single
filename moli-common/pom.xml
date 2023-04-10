@@ -30,6 +30,12 @@
             <artifactId>servlet-api</artifactId>
         </dependency>
 
+        <!-- swagger支持包 -->
+        <dependency>
+            <groupId>com.github.xiaoymin</groupId>
+            <artifactId>knife4j-spring-boot-starter</artifactId>
+        </dependency>
+
         <!--utils工具类-->
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -40,16 +46,7 @@
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-boot-starter</artifactId>
         </dependency>
-        <!-- 集成swagger接口文档 -->
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger2</artifactId>
-        </dependency>
-        <!-- swagger-ui -->
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger-ui</artifactId>
-        </dependency>
+
         <!-- 包含了jsr 303的很多注解 -->
         <dependency>
             <groupId>javax.validation</groupId>
