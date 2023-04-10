@@ -57,7 +57,6 @@ public class UserController {
 
     @GetMapping("/list")
     @ApiOperation(value = "用户列表", notes = "用户列表")
-    @RequiresPermissions("sys:user:info")
     public MoliResult<PageRes<UserVo>> list(UserVo userVo) {
 
         return MoliResult.success(userService.list(userVo));
@@ -65,6 +64,7 @@ public class UserController {
 
     @PostMapping
     @ApiOperation(value = "添加用户", notes = "添加用户")
+    @RequiresPermissions("sys:user:add")
     public MoliResult<Boolean> insert(@RequestBody UserVo userVo) {
         SysUser user = new SysUser();
         BeanUtils.copyProperties(userVo, user);
@@ -95,6 +95,7 @@ public class UserController {
 
     @GetMapping(value = "/{id}")
     @ApiOperation(value = "查询单个用户", notes = "查询单个用户")
+    @RequiresPermissions("sys:user:info")
     public MoliResult<SysUser> getInfo(@PathVariable Long id) {
         return MoliResult.success(sysUserMapper.selectById(id));
     }

@@ -3,10 +3,11 @@ package com.moli.config.shiro;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.moli.common.constant.CommonConstant;
-import com.moli.common.domain.entity.SysUser;
+import com.moli.common.domain.entity.*;
 import com.moli.config.util.ShiroUtils;
-import com.moli.system.mapper.SysUserMapper;
+import com.moli.system.mapper.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
@@ -15,6 +16,11 @@ import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.util.ByteSource;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 自定义Realm, 实现Shiro安全认证
@@ -25,17 +31,17 @@ public class ShiroRealm extends AuthorizingRealm {
 
 //    @Resource
 //    private UserMapper userMapper;
-//    @Resource
-//    private UserRoleMapper userRoleMapper;
-//
-//    @Resource
-//    private RoleMenuMapper roleMenuMapper;
-//
-//    @Resource
-//    private RoleMapper roleMapper;
-//
-//    @Resource
-//    private MenuMapper menuMapper;
+    @Resource
+    private SysUserRoleMapper userRoleMapper;
+
+    @Resource
+    private RoleMenuMapper roleMenuMapper;
+
+    @Resource
+    private RoleMapper roleMapper;
+
+    @Resource
+    private MenuMapper menuMapper;
 
     @Resource
     private SysUserMapper sysUserMapper;
@@ -85,34 +91,34 @@ public class ShiroRealm extends AuthorizingRealm {
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principalCollection) {
         //获取用户ID
         SimpleAuthorizationInfo authorizationInfo = new SimpleAuthorizationInfo();
-//        HtgUser htgUser = (HtgUser) principalCollection.getPrimaryPrincipal();
-//        String userId = htgUser.getId();
-//        //角色
-//        Set<String> rolesSet = new HashSet<>();
-//        //权限
-//        Set<String> permsSet = new HashSet<>();
-//
-//        List<HtgUserRole> userRoleList = userRoleMapper.selectList(new QueryWrapper<HtgUserRole>().lambda().eq(HtgUserRole::getUserId, userId));
-//        List<String> roleIdList = userRoleList.stream().map(e -> e.getRoleId()).collect(Collectors.toList());
-//        if (CollectionUtils.isNotEmpty(roleIdList)) {
-//            List<HtgRole> roleList = roleMapper.selectList(new QueryWrapper<HtgRole>().lambda().in(HtgRole::getId, roleIdList));
+        SysUser sysUser = (SysUser) principalCollection.getPrimaryPrincipal();
+        Long userId = sysUser.getId();
+        //角色
+     //   Set<String> rolesSet = new HashSet<>();
+        //权限
+        Set<String> permsSet = new HashSet<>();
+
+        List<SysUserRole> userRoleList = userRoleMapper.selectList(new QueryWrapper<SysUserRole>().lambda().eq(SysUserRole::getUserId, userId));
+        List<Long> roleIdList = userRoleList.stream().map(e -> e.getRoleId()).collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(roleIdList)) {
+            List<SysRole> roleList = roleMapper.selectList(new QueryWrapper<SysRole>().lambda().in(SysRole::getId, roleIdList));
 //            for (HtgRole htgRole : roleList) {
 //                //添加角色
 //                rolesSet.add(htgRole.getRoleName());
 //            }
-//
-//            List<HtgRoleMenu> roleMenuList = roleMenuMapper.selectList(new QueryWrapper<HtgRoleMenu>().lambda().in(HtgRoleMenu::getRoleId, roleIdList));
-//            List<String> menuIdList = roleMenuList.stream().map(e -> e.getMenuId()).collect(Collectors.toList());
-//            List<HtgMenu> menuList = new ArrayList<>();
-//            if (CollectionUtils.isNotEmpty(menuIdList)) {
-//                menuList = menuMapper.selectList(new QueryWrapper<HtgMenu>().lambda().in(HtgMenu::getId, menuIdList).eq(HtgMenu::getMenuType, MenuTypeEnum.BUTTON.getCode()));
-//
-//            }
-//            permsSet.addAll(menuList.stream().map(e -> e.getPerms()).collect(Collectors.toSet()));
-//            //将查到的权限和角色分别传入authorizationInfo中
-//            authorizationInfo.setStringPermissions(permsSet);
-//            authorizationInfo.setRoles(rolesSet);
-//        }
+
+            List<SysRoleMenu> roleMenuList = roleMenuMapper.selectList(new QueryWrapper<SysRoleMenu>().lambda().in(SysRoleMenu::getRoleId, roleIdList));
+            List<Long> menuIdList = roleMenuList.stream().map(e -> e.getMenuId()).collect(Collectors.toList());
+            List<SysMenu> menuList = new ArrayList<>();
+            if (CollectionUtils.isNotEmpty(menuIdList)) {
+              //  menuList = menuMapper.selectList(new QueryWrapper<SysMenu>().lambda().in(SysMenu::getId, menuIdList).eq(SysMenu::getMenuType, MenuTypeEnum.BUTTON.getCode()));
+
+            }
+            permsSet.addAll(menuList.stream().map(e -> e.getPerms()).collect(Collectors.toSet()));
+            //将查到的权限和角色分别传入authorizationInfo中
+            authorizationInfo.setStringPermissions(permsSet);
+         //   authorizationInfo.setRoles(rolesSet);
+        }
         return authorizationInfo;
     }
 

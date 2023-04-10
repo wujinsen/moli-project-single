@@ -2,7 +2,10 @@ package com.moli.common.exception;
 
 
 import com.moli.common.core.MoliResult;
+import com.moli.common.enums.ResponseCodeEnums;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.authz.AuthorizationException;
+import org.apache.shiro.authz.UnauthorizedException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -27,6 +30,17 @@ public class GlobalExceptionHandler {
         return MoliResult.error(e.getErrorCode(), e.getErrorMsg());
     }
 
+    @ExceptionHandler(value = UnauthorizedException.class)
+    public MoliResult unauthorizedExceptionHandler(HttpServletRequest req, Exception e) {
+        log.error("unauthorizedExceptionHandler unauthorizedException  error: ", req.getRequestURI(), e);
+        return MoliResult.error(ResponseCodeEnums.AUTHOR_ERROR_CODE.getCode(), null, ResponseCodeEnums.AUTHOR_ERROR_CODE.getMessage());
+    }
+
+    @ExceptionHandler(value =  AuthorizationException.class)
+    public MoliResult authorizationExceptionHandler(HttpServletRequest req, Exception e) {
+        log.error("authorizationExceptionHandler authorizationException  error: ", req.getRequestURI(), e);
+        return MoliResult.error(ResponseCodeEnums.AUTHOR_ERROR_CODE.getCode(), null, ResponseCodeEnums.AUTHOR_ERROR_CODE.getMessage());
+    }
     /**
      * 处理空指针的异常
      */

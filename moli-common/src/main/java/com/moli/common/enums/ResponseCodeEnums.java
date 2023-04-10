@@ -4,6 +4,7 @@ public enum ResponseCodeEnums {
 
     SUCCESS_CODE(200, "成功", "成功"),
     NO_DATA_CODE(201, "返回数据为空", "成功，无数据"),
+    UNAUTHORIZED(401, "认证失败，无法访问系统资源", "认证失败，无法访问系统资源"),
     ERROR(500, "系统内部错误", "系统内部错误"),
     LOG_ERROR(5001, "日志记录错误", "日志记录错误"),
     ASPECT_ERROR(5002, "切面运行错误", "日志记录错误"),
@@ -19,7 +20,7 @@ public enum ResponseCodeEnums {
     TOKEN_INVALID_ERROR_CODE(10006, "请登录", "token值无效"),
     TIMESTAMP_ERROR_CODE(10007, "时间戳错误", "时间戳错误"),
     JSON_PARAM_ERROR_CODE(10008, "参数JSON解析错误", "参数JSON解析错误"),
-    AUTHOR_ERROR_CODE(10009, "无访问权限", "无访问权限"),
+    AUTHOR_ERROR_CODE(402, "无操作权限", "无操作权限"),
     VALIDATE_ERROR_CODE(10010, "规则校验不通过", "规则校验不通过"),
     REPEAT_ERROR_CODE(10011, "请勿重复提交", "重复提交"),
     BIZ_ERROR_CODE(10012, "业务异常", "业务逻辑错误");

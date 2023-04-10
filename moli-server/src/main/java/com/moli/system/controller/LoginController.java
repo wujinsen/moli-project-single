@@ -68,7 +68,7 @@ public class LoginController {
         SysUser user = sysUserMapper.selectOne(new QueryWrapper<SysUser>().lambda().eq(SysUser::getUserName, userName).eq(SysUser::getIsDelete, CommonConstant.UN_DELETE));
         if (null == user) {
             result.setMsg("用户不存在或者密码错误");
-            result.setCode(ResponseCodeEnums.ERROR.getCode());
+            result.setCode(ResponseCodeEnums.UNAUTHORIZED.getCode());
             insertLoginLog(user, result.getMsg(), 0);
             return result;
         }
@@ -81,7 +81,7 @@ public class LoginController {
             subject.login(token);
         } catch (IncorrectCredentialsException e) {
             result.setMsg("用户不存在或者密码错误");
-            result.setCode(ResponseCodeEnums.ERROR.getCode());
+            result.setCode(ResponseCodeEnums.UNAUTHORIZED.getCode());
             log.error("login IncorrectCredentialsException: {}", e.getMessage());
             user.setPassword("");
             user.setSalt("");
@@ -91,19 +91,19 @@ public class LoginController {
             return result;
         } catch (LockedAccountException e) {
             result.setMsg("登录失败，该用户已被冻结");
-            result.setCode(ResponseCodeEnums.ERROR.getCode());
+            result.setCode(ResponseCodeEnums.UNAUTHORIZED.getCode());
             log.error("login LockedAccountException: {}", e.getMessage());
             insertLoginLog(ShiroUtils.getUserInfo(), result.getMsg(), 0);
             return result;
         } catch (AuthenticationException e) {
             result.setMsg("用户认证失败");
-            result.setCode(ResponseCodeEnums.ERROR.getCode());
+            result.setCode(ResponseCodeEnums.UNAUTHORIZED.getCode());
             log.error("login AuthenticationException: {} ", e.getMessage());
             insertLoginLog(ShiroUtils.getUserInfo(), result.getMsg(), 0);
             return result;
         } catch (Exception e) {
             result.setMsg("未知异常");
-            result.setCode(ResponseCodeEnums.ERROR.getCode());
+            result.setCode(ResponseCodeEnums.UNAUTHORIZED.getCode());
             log.error("login Exception: {} ", e.getMessage());
             insertLoginLog(ShiroUtils.getUserInfo(), result.getMsg(), 0);
             return result;
