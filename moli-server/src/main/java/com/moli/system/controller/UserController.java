@@ -64,7 +64,7 @@ public class UserController {
 
     @PostMapping
     @ApiOperation(value = "添加用户", notes = "添加用户")
-    @RequiresPermissions("sys:user:add")
+    @RequiresPermissions("system:user:add")
     public MoliResult<Boolean> insert(@RequestBody UserVo userVo) {
         SysUser user = new SysUser();
         BeanUtils.copyProperties(userVo, user);
@@ -158,12 +158,12 @@ public class UserController {
     @ApiOperation(value = "查询单个用户下的角色信息", notes = "查询单个用户下的角色信息")
     public MoliResult<UserRoleVo> getRoleByUserId(@PathVariable Long userId) {
         UserRoleVo userRoleVo = new UserRoleVo();
+        SysUser user = sysUserMapper.selectById(userId);
+        userRoleVo.setUser(user);
         List<SysUserRole> userRoleList = sysUserRoleMapper.selectList(new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getUserId, userId));
         if (CollectionUtils.isEmpty(userRoleList)) {
             return MoliResult.success(userRoleVo);
         }
-        SysUser user = sysUserMapper.selectById(userId);
-        userRoleVo.setUser(user);
         List<Long> roleIdList = userRoleList.stream().map(e -> e.getRoleId()).collect(Collectors.toList());
         List<SysRole> roleList = roleMapper.selectList(new LambdaQueryWrapper<SysRole>().in(SysRole::getId, roleIdList));
         userRoleVo.setRoleList(roleList);

@@ -92,8 +92,8 @@ public class MenuServiceImpl implements MenuService {
     public List<MenuVo> selectMenuListByUserId(MenuVo menuVo) {
         SysUser user = sysUserMapper.selectById(menuVo.getUserId());
         //超级管理员
-        if (StringUtils.isNotBlank(user.getUserName()) && user.getUserName().equals("admin")) {
-            List<SysMenu> menuList = menuMapper.selectList(new LambdaQueryWrapper<>());
+        if (StringUtils.isNotBlank(user.getUserName()) && user.getUserName().equals(CommonConstant.SUPER_ADMIN)) {
+            List<SysMenu> menuList = menuMapper.selectList(new LambdaQueryWrapper<SysMenu>().ne(SysMenu::getMenuType, CommonConstant.TYPE_BUTTON));
             List<MenuVo> menuVoList = new ArrayList<>();
             menuList.forEach(e -> {
                 MenuVo htgMenuVo = new MenuVo();

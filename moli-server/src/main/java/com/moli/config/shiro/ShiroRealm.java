@@ -101,7 +101,7 @@ public class ShiroRealm extends AuthorizingRealm {
         List<SysUserRole> userRoleList = userRoleMapper.selectList(new QueryWrapper<SysUserRole>().lambda().eq(SysUserRole::getUserId, userId));
         List<Long> roleIdList = userRoleList.stream().map(e -> e.getRoleId()).collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(roleIdList)) {
-            List<SysRole> roleList = roleMapper.selectList(new QueryWrapper<SysRole>().lambda().in(SysRole::getId, roleIdList));
+  //          List<SysRole> roleList = roleMapper.selectList(new QueryWrapper<SysRole>().lambda().in(SysRole::getId, roleIdList));
 //            for (HtgRole htgRole : roleList) {
 //                //添加角色
 //                rolesSet.add(htgRole.getRoleName());
