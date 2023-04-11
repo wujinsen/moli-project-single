@@ -45,9 +45,14 @@ public interface MenuService {
     List<MenuVo> selectMenuTreeByRoleId(Long roleId);
 
     /**
-     * 所有菜单列表树结构
+     * 所有菜单列表树结构--不包含按钮权限
      * @return
      */
     List<MenuVo> getMenuTreeAll();
+    /**
+     * 所有菜单列表树结构--包含按钮权限
+     * @return
+     */
+    List<MenuVo> getMenuPermissionsTreeAll();
 
 }

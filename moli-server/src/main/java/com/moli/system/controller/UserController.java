@@ -64,7 +64,7 @@ public class UserController {
 
     @PostMapping
     @ApiOperation(value = "添加用户", notes = "添加用户")
-    @RequiresPermissions("system:user:add")
+    @RequiresPermissions("sys:user:add")
     public MoliResult<Boolean> insert(@RequestBody UserVo userVo) {
         SysUser user = new SysUser();
         BeanUtils.copyProperties(userVo, user);

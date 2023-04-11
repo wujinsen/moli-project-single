@@ -95,11 +95,11 @@ public class MenuController {
      *
      * @return 菜单列表
      */
-    @GetMapping("getMenuTreeAll")
-    @ApiOperation(value = "删除单个部门", notes = "删除单个部门")
-    public MoliResult getMenuTreeAll() {
+    @GetMapping("getMenuPermissionsTreeAll")
+    @ApiOperation(value = "查询所有菜单树", notes = "查询所有菜单树")
+    public MoliResult getMenuPermissionsTreeAll() {
 
-        List<MenuVo> menuVoList = menuService.getMenuTreeAll();
+        List<MenuVo> menuVoList = menuService.getMenuPermissionsTreeAll();
         return MoliResult.success(menuVoList);
     }
 }

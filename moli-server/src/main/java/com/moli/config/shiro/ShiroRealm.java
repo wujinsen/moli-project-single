@@ -1,6 +1,7 @@
 package com.moli.config.shiro;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.moli.common.constant.CommonConstant;
 import com.moli.common.domain.entity.*;
@@ -111,7 +112,7 @@ public class ShiroRealm extends AuthorizingRealm {
             List<Long> menuIdList = roleMenuList.stream().map(e -> e.getMenuId()).collect(Collectors.toList());
             List<SysMenu> menuList = new ArrayList<>();
             if (CollectionUtils.isNotEmpty(menuIdList)) {
-              //  menuList = menuMapper.selectList(new QueryWrapper<SysMenu>().lambda().in(SysMenu::getId, menuIdList).eq(SysMenu::getMenuType, MenuTypeEnum.BUTTON.getCode()));
+               menuList = menuMapper.selectList(new LambdaQueryWrapper<SysMenu>().in(SysMenu::getId, menuIdList).eq(SysMenu::getMenuType, CommonConstant.TYPE_BUTTON));
 
             }
             permsSet.addAll(menuList.stream().map(e -> e.getPerms()).collect(Collectors.toSet()));

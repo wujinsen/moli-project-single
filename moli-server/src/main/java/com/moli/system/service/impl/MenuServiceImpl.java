@@ -146,9 +146,34 @@ public class MenuServiceImpl implements MenuService {
         return menuVoList;
     }
 
+    /**
+     * 查询所有菜单树--不包含按钮
+     * @return
+     */
     @Override
     public List<MenuVo> getMenuTreeAll() {
-        List<SysMenu> menuList = menuMapper.selectList(new QueryWrapper<>());
+        List<SysMenu> menuList = menuMapper.selectList(new LambdaQueryWrapper<SysMenu>().ne(SysMenu::getMenuType, CommonConstant.TYPE_BUTTON));
+        List<MenuVo> menuVoList = new ArrayList<>();
+        menuList.forEach(e -> {
+            MenuVo htgMenuVo = new MenuVo();
+            BeanUtils.copyProperties(e, htgMenuVo);
+            htgMenuVo.setHidden("1".equals(e.getStatus()));
+            htgMenuVo.setName(getRouteName(htgMenuVo));
+            htgMenuVo.setPath(getRouterPath(htgMenuVo));
+            htgMenuVo.setComponent(getComponent(htgMenuVo));
+            htgMenuVo.setRedirect(CommonConstant.NO_REDIRECT);
+            menuVoList.add(htgMenuVo);
+        });
+        return createTree(menuVoList);
+    }
+
+    /**
+     * 查询所有菜单树--包含按钮权限
+     * @return
+     */
+    @Override
+    public List<MenuVo> getMenuPermissionsTreeAll() {
+        List<SysMenu> menuList = menuMapper.selectList(new LambdaQueryWrapper<>());
         List<MenuVo> menuVoList = new ArrayList<>();
         menuList.forEach(e -> {
             MenuVo htgMenuVo = new MenuVo();
