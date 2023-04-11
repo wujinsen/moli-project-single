@@ -19,7 +19,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -118,7 +117,7 @@ public class MenuServiceImpl implements MenuService {
         if (CollectionUtils.isEmpty(menuIdList)) {
             return new ArrayList<>();
         }
-        List<SysMenu> menuList = menuMapper.selectList(new QueryWrapper<SysMenu>().lambda().in(SysMenu::getId, menuIdList));
+        List<SysMenu> menuList = menuMapper.selectList(new LambdaQueryWrapper<SysMenu>().in(SysMenu::getId, menuIdList).ne(SysMenu::getMenuType, CommonConstant.TYPE_BUTTON));
         List<MenuVo> menuVoList = new ArrayList<>();
         menuList.forEach(e -> {
             MenuVo htgMenuVo = new MenuVo();
@@ -138,7 +137,7 @@ public class MenuServiceImpl implements MenuService {
 
         List<SysRoleMenu> roleMenuList = roleMenuMapper.selectList(new QueryWrapper<SysRoleMenu>().lambda().eq(SysRoleMenu::getRoleId, roleId));
         List<Long> menuIdList = roleMenuList.stream().map(e -> e.getMenuId()).collect(Collectors.toList());
-        List<MenuVo> menuVoList = this.getMenuTreeAll();
+        List<MenuVo> menuVoList = this.getMenuPermissionsTreeAll();
         createTree(menuVoList);
         if (CollectionUtils.isNotEmpty(menuIdList)) {
             menuVoList.get(0).setMenuIds(menuIdList);

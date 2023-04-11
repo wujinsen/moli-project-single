@@ -90,6 +90,7 @@ public class MenuController {
         List<MenuVo> menuVoList = menuService.selectMenuTreeByRoleId(roleId);
         return MoliResult.success(menuVoList);
     }
+
     /**
      * 获取菜单列表
      *
@@ -102,5 +103,6 @@ public class MenuController {
         List<MenuVo> menuVoList = menuService.getMenuPermissionsTreeAll();
         return MoliResult.success(menuVoList);
     }
+
 }
 
