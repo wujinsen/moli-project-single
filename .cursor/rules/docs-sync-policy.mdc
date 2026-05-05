@@ -1,0 +1,16 @@
+---
+description: 保持迭代文档与代码和接口变更同步
+globs: "{docs/**/*.md,moli-server/src/main/java/**/*.java,moli-common/src/main/java/**/*.java}"
+alwaysApply: false
+---
+
+# 文档同步策略
+
+当后端行为发生变化时：
+
+- 如果接口路径、方法、参数或返回行为变化，更新 `docs/api-iteration-map.md`。
+- 如果架构、风险或优先级变化，更新 `docs/project-iteration-baseline.md`。
+- 未完成事项必须记录为后续跟进项。
+- 文档更新保持简洁、基于事实，避免主观猜测。
+- 若修改了中文规范文档，需同步更新对应英文文档。
+

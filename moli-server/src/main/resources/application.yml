@@ -8,3 +8,6 @@ spring:
     name: moli-server
   profiles:
     active: dev
+
+captcha:
+  enabled: false

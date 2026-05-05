@@ -163,9 +163,9 @@ public class DictController {
      * 删除用户
      */
     @DeleteMapping("/data/{dictIds}")
-    public MoliResult deleteData(@PathVariable Long[] dataIds) {
+    public MoliResult deleteData(@PathVariable("dictIds") Long[] dataIds) {
         for (Long id : dataIds) {
-            dictTypeMapper.deleteById(id);
+            dictDataMapper.deleteById(id);
         }
         return MoliResult.success(Boolean.TRUE);
     }

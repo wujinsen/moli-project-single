@@ -3,6 +3,7 @@ package com.moli.system.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.moli.common.constant.CommonConstant;
+import com.moli.common.constant.Constants;
 import com.moli.common.core.MoliResult;
 import com.moli.common.domain.entity.SysLoginLog;
 import com.moli.common.domain.entity.SysUser;
@@ -14,6 +15,7 @@ import com.moli.common.exception.BaseException;
 import com.moli.common.utils.IpUtils;
 import com.moli.common.utils.ServletUtils;
 import com.moli.common.utils.SpringUtil;
+import com.moli.config.util.RedisUtil;
 import com.moli.config.util.ShiroUtils;
 import com.moli.system.mapper.SysLoginLogMapper;
 import com.moli.system.mapper.SysUserMapper;
@@ -30,16 +32,21 @@ import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.subject.Subject;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.FastByteArrayOutputStream;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 @RestController
 @RequestMapping("")
@@ -52,6 +59,12 @@ public class LoginController {
 
     @Autowired
     private SysUserMapper sysUserMapper;
+
+    @Autowired
+    private RedisUtil redisUtil;
+
+    @Value("${captcha.enabled:false}")
+    private boolean captchaEnabled;
 
     /**
      * 登录方法
@@ -146,24 +159,52 @@ public class LoginController {
     @PostMapping("/captchaImage")
     @ApiOperation(value = "验证码")
     public MoliResult<CaptchaImageVo> captchaImage() {
+        if (!captchaEnabled) {
+            return MoliResult.errorMsg(ResponseCodeEnums.SERVICE_ERROR_CODE.getCode(), "验证码功能暂时关闭");
+        }
         CaptchaImageVo captchaImageVo = new CaptchaImageVo();
-        BufferedImage image = null;
-//        String capText = captchaProducerMath.createText();
-//        capStr = capText.substring(0, capText.lastIndexOf("@"));
-//        code = capText.substring(capText.lastIndexOf("@") + 1);
-//        image = captchaProducerMath.createImage(capStr);
-        // 转换流信息写出
+        String code = generateCaptchaCode(4);
+        String uuid = UUID.randomUUID().toString();
+        BufferedImage image = createCaptchaImage(code);
         FastByteArrayOutputStream os = new FastByteArrayOutputStream();
         try {
             ImageIO.write(image, "jpg", os);
-        } catch (Exception e) {
-            new BaseException("验证码异常");
+            String key = Constants.CAPTCHA_CODE_KEY + uuid;
+            redisUtil.set(key, code, Constants.CAPTCHA_EXPIRATION * 60L);
+            captchaImageVo.setUuid(uuid);
+            captchaImageVo.setImg(java.util.Base64.getEncoder().encodeToString(os.toByteArray()));
+        } catch (IOException e) {
+            log.error("captchaImage IOException: {}", e.getMessage(), e);
+            throw new BaseException("验证码异常");
         }
-
-//        Base64.encode(os.toByteArray()));
-//        captchaImageVo.setImg();
-//        captchaImageVo.setUuid();
         return MoliResult.success(captchaImageVo);
+    }
+
+    private String generateCaptchaCode(int length) {
+        final String chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+        StringBuilder sb = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            sb.append(chars.charAt(ThreadLocalRandom.current().nextInt(chars.length())));
+        }
+        return sb.toString();
+    }
+
+    private BufferedImage createCaptchaImage(String code) {
+        int width = 120;
+        int height = 40;
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = image.createGraphics();
+        try {
+            g.setColor(Color.WHITE);
+            g.fillRect(0, 0, width, height);
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g.setFont(new Font("Arial", Font.BOLD, 26));
+            g.setColor(new Color(40, 40, 40));
+            g.drawString(code, 22, 30);
+        } finally {
+            g.dispose();
+        }
+        return image;
     }
 
     public void insertLoginLog(SysUser sysUser, String msg, Integer status) {

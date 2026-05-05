@@ -1,0 +1,17 @@
+---
+description: 本仓库 Java 后端迭代核心规范
+alwaysApply: true
+---
+
+# Java 后端迭代规则
+
+- 每次需求做最小且聚焦的改动。
+- 非用户要求，不破坏既有 API 契约。
+- 统一保持 `MoliResult<T>` 与 `PageRes<T>` 风格。
+- 遵循模块边界：`moli-server`（业务/接口）、`moli-common`（共享模型/工具）。
+- 临时开关需求优先配置化，避免硬编码屏蔽。
+- API 变更需更新 `docs/api-iteration-map.md`。
+- 重大技术决策或风险变化需更新 `docs/project-iteration-baseline.md`。
+- 修改后检查改动文件 lint，并修复明显问题。
+- 若修改了中文规范文档，需同步更新对应英文文档。
+
