@@ -7,12 +7,17 @@
         <artifactId>moli-parent</artifactId>
         <groupId>com.moli</groupId>
         <version>1.0-RELEASE</version>
+        <relativePath>moli-parent/pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.moli</groupId>
     <artifactId>moli-project-single</artifactId>
     <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <lombok.version>1.18.36</lombok.version>
+    </properties>
 
     <modules>
         <module>moli-server</module>
