@@ -33,3 +33,6 @@ build/
 # system ignore
 .DS_Store
 Thumbs.db
+
+# local production secrets (use application-pro.yml.example as template)
+moli-server/src/main/resources/application-pro.yml
