@@ -12,6 +12,7 @@ import com.moli.common.domain.vo.UserVo;
 import com.moli.common.page.PageRes;
 import com.moli.config.util.SHA256Util;
 import com.moli.config.util.ShiroUtils;
+import com.moli.common.utils.I18nUtils;
 import com.moli.system.mapper.*;
 import com.moli.system.service.UserRoleService;
 import com.moli.system.service.UserService;
@@ -118,7 +119,9 @@ public class UserController {
         SysUser user = sysUserMapper.selectById(sysUser.getId());
         BeanUtils.copyProperties(user, sysUserVo);
         SysDept sysDept = deptMapper.selectById(sysUser.getDeptId());
-        sysUserVo.setDeptName(sysDept.getDeptName());
+        if(sysDept != null){
+            sysUserVo.setDeptName(sysDept.getDeptName());
+        }
         List<SysUserPost> userPostList = userPostMapper.selectList(new LambdaQueryWrapper<SysUserPost>().eq(SysUserPost::getUserId, user.getId()));
         if(CollectionUtils.isNotEmpty(userPostList)){
             List<Long> postIdList = userPostList.stream().map(e->e.getPostId()).collect(Collectors.toList());
@@ -126,6 +129,19 @@ public class UserController {
             sysUserVo.setPostNames(String.join(",",postList.stream().map(e->e.getPostName()).collect(Collectors.toList())));
         }
         return MoliResult.success(sysUserVo);
+    }
+
+    @PutMapping("/language")
+    @ApiOperation(value = "更新界面语言", notes = "更新界面语言")
+    public MoliResult<Boolean> updateLanguage(@RequestBody SysUser req) {
+        if (!I18nUtils.isSupported(req.getLanguage())) {
+            return MoliResult.errorMsg(com.moli.common.enums.ResponseCodeEnums.ERROR.getCode(), "unsupported language");
+        }
+        SysUser user = new SysUser();
+        user.setId(ShiroUtils.getUserInfo().getId());
+        user.setLanguage(req.getLanguage());
+        sysUserMapper.updateById(user);
+        return MoliResult.success(Boolean.TRUE);
     }
 
 

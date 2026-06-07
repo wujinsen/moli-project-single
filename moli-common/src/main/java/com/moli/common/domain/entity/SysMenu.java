@@ -10,6 +10,12 @@ public class SysMenu extends BaseEntity {
     @ApiModelProperty(value = "菜单名称")
     private String menuName;
 
+    @ApiModelProperty(value = "菜单名称(英文)")
+    private String menuNameEn;
+
+    @ApiModelProperty(value = "菜单名称(日文)")
+    private String menuNameJa;
+
     @ApiModelProperty(value = "父ID")
     private Long parentId;
 

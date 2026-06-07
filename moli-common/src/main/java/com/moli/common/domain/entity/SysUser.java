@@ -54,6 +54,9 @@ public class SysUser extends BaseEntity {
     @ApiModelProperty(value = "头像")
     private String avatar;
 
+    @ApiModelProperty(value = "界面语言 zh-CN/en-US/ja-JP")
+    private String language;
+
     @ApiModelProperty(value = "盐值")
     private String salt;
 

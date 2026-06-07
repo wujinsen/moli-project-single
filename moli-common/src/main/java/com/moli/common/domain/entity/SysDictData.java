@@ -20,6 +20,12 @@ public class SysDictData extends BaseEntity {
     @ApiModelProperty(value = "字典value")
     private String dictValue;
 
+    @ApiModelProperty(value = "字典value(英文)")
+    private String dictValueEn;
+
+    @ApiModelProperty(value = "字典value(日文)")
+    private String dictValueJa;
+
     @ApiModelProperty(value = "字典类型")
     private String dictType;
 

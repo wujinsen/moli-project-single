@@ -14,6 +14,7 @@ import com.moli.system.mapper.RoleMenuMapper;
 import com.moli.system.mapper.SysUserMapper;
 import com.moli.system.mapper.SysUserRoleMapper;
 import com.moli.system.service.MenuService;
+import com.moli.common.utils.I18nUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -75,16 +76,7 @@ public class MenuServiceImpl implements MenuService {
         lambdaQueryWrapper.orderByAsc(SysMenu::getOrderNum);
         List<SysMenu> menuList = menuMapper.selectList(lambdaQueryWrapper);
         List<MenuVo> menuVoList = new ArrayList<>();
-        menuList.forEach(e -> {
-            MenuVo htgMenuVo = new MenuVo();
-            BeanUtils.copyProperties(e, htgMenuVo);
-            htgMenuVo.setHidden("1".equals(e.getStatus()));
-            htgMenuVo.setName(getRouteName(htgMenuVo));
-            htgMenuVo.setPath(getRouterPath(htgMenuVo));
-            htgMenuVo.setComponent(getComponent(htgMenuVo));
-            htgMenuVo.setRedirect(CommonConstant.NO_REDIRECT);
-            menuVoList.add(htgMenuVo);
-        });
+        menuList.forEach(e -> menuVoList.add(toMenuVo(e, false)));
         return menuVoList;
     }
 
@@ -95,17 +87,7 @@ public class MenuServiceImpl implements MenuService {
         if (StringUtils.isNotBlank(user.getUserName()) && user.getUserName().equals("admin")) {
             List<SysMenu> menuList = menuMapper.selectList(new LambdaQueryWrapper<>());
             List<MenuVo> menuVoList = new ArrayList<>();
-            menuList.forEach(e -> {
-                MenuVo htgMenuVo = new MenuVo();
-                BeanUtils.copyProperties(e, htgMenuVo);
-                htgMenuVo.setHidden("1".equals(e.getStatus()));
-                //路由名称
-                htgMenuVo.setName(getRouteName(htgMenuVo));
-                htgMenuVo.setPath(getRouterPath(htgMenuVo));
-                htgMenuVo.setComponent(getComponent(htgMenuVo));
-                htgMenuVo.setRedirect(CommonConstant.NO_REDIRECT);
-                menuVoList.add(htgMenuVo);
-            });
+            menuList.forEach(e -> menuVoList.add(toMenuVo(e, true)));
             return menuVoList;
         }
         List<SysUserRole> userRoleList = sysUserRoleMapper.selectList(new QueryWrapper<SysUserRole>().lambda().eq(SysUserRole::getUserId, menuVo.getUserId()));
@@ -120,16 +102,7 @@ public class MenuServiceImpl implements MenuService {
         }
         List<SysMenu> menuList = menuMapper.selectList(new QueryWrapper<SysMenu>().lambda().in(SysMenu::getId, menuIdList));
         List<MenuVo> menuVoList = new ArrayList<>();
-        menuList.forEach(e -> {
-            MenuVo htgMenuVo = new MenuVo();
-            BeanUtils.copyProperties(e, htgMenuVo);
-            htgMenuVo.setHidden("1".equals(e.getStatus()));
-            htgMenuVo.setName(getRouteName(htgMenuVo));
-            htgMenuVo.setPath(getRouterPath(htgMenuVo));
-            htgMenuVo.setComponent(getComponent(htgMenuVo));
-            htgMenuVo.setRedirect(CommonConstant.NO_REDIRECT);
-            menuVoList.add(htgMenuVo);
-        });
+        menuList.forEach(e -> menuVoList.add(toMenuVo(e, true)));
         return menuVoList;
     }
 
@@ -150,17 +123,24 @@ public class MenuServiceImpl implements MenuService {
     public List<MenuVo> getMenuTreeAll() {
         List<SysMenu> menuList = menuMapper.selectList(new QueryWrapper<>());
         List<MenuVo> menuVoList = new ArrayList<>();
-        menuList.forEach(e -> {
-            MenuVo htgMenuVo = new MenuVo();
-            BeanUtils.copyProperties(e, htgMenuVo);
-            htgMenuVo.setHidden("1".equals(e.getStatus()));
-            htgMenuVo.setName(getRouteName(htgMenuVo));
-            htgMenuVo.setPath(getRouterPath(htgMenuVo));
-            htgMenuVo.setComponent(getComponent(htgMenuVo));
-            htgMenuVo.setRedirect(CommonConstant.NO_REDIRECT);
-            menuVoList.add(htgMenuVo);
-        });
+        menuList.forEach(e -> menuVoList.add(toMenuVo(e, true)));
         return createTree(menuVoList);
+    }
+
+    private MenuVo toMenuVo(SysMenu menu, boolean localize) {
+        String lang = I18nUtils.resolveLanguage();
+        MenuVo menuVo = new MenuVo();
+        BeanUtils.copyProperties(menu, menuVo);
+        if (localize) {
+            menuVo.setMenuName(I18nUtils.resolveLocalizedText(
+                    menu.getMenuName(), menu.getMenuNameEn(), menu.getMenuNameJa(), lang));
+        }
+        menuVo.setHidden("1".equals(menu.getStatus()));
+        menuVo.setName(getRouteName(menuVo));
+        menuVo.setPath(getRouterPath(menuVo));
+        menuVo.setComponent(getComponent(menuVo));
+        menuVo.setRedirect(CommonConstant.NO_REDIRECT);
+        return menuVo;
     }
 
     /**

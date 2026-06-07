@@ -12,6 +12,7 @@ import com.moli.common.page.PageRes;
 import com.moli.common.utils.MoliDateUtils;
 import com.moli.system.mapper.DictDataMapper;
 import com.moli.system.mapper.DictTypeMapper;
+import com.moli.common.utils.I18nUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +20,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("dict")
@@ -104,6 +108,29 @@ public class DictController {
         return MoliResult.success(Boolean.TRUE);
     }
 
+
+    /**
+     * 根据字典类型查询字典数据（前端下拉/标签）
+     */
+    @GetMapping("/data/type/{dictType}")
+    @ApiOperation(value = "按类型查询字典", notes = "按类型查询字典")
+    public MoliResult<List<Map<String, Object>>> dictType(@PathVariable String dictType) {
+        String lang = I18nUtils.resolveLanguage();
+        List<SysDictData> list = dictDataMapper.selectList(new LambdaQueryWrapper<SysDictData>()
+                .eq(SysDictData::getDictType, dictType)
+                .eq(SysDictData::getStatus, 1)
+                .orderByAsc(SysDictData::getSort));
+        List<Map<String, Object>> result = list.stream().map(item -> {
+            Map<String, Object> map = new HashMap<>(4);
+            map.put("dictLabel", I18nUtils.resolveLocalizedText(
+                    item.getDictValue(), item.getDictValueEn(), item.getDictValueJa(), lang));
+            map.put("dictValue", item.getDictKey());
+            map.put("dictType", item.getDictType());
+            map.put("status", item.getStatus());
+            return map;
+        }).collect(Collectors.toList());
+        return MoliResult.success(result);
+    }
 
     /**
      * 字典数据列表
