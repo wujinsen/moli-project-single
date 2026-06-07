@@ -7,7 +7,7 @@ spring:
   application:
     name: moli-server
   profiles:
-    active: dev
+    active: pro
 
 captcha:
   enabled: false

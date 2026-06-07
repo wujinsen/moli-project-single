@@ -3,7 +3,7 @@ package com.moli.common.utils;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * 多语言解析工具（zh-CN / en-US / ja-JP）
+ * Language resolver for zh-CN, en-US and ja-JP.
  */
 public final class I18nUtils {
 
