@@ -27,7 +27,7 @@ spring:
     host: ${SPRING_REDIS_HOST:localhost}
     port: ${SPRING_REDIS_PORT:6379}
     password: ${SPRING_REDIS_PASSWORD:}
-    database: ${SPRING_REDIS_DATABASE:1}
+    database: ${SPRING_REDIS_DATABASE:0}
     timeout: 86400000
     jedis:
       pool:

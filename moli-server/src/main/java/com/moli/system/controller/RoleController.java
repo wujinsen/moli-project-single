@@ -4,16 +4,22 @@ package com.moli.system.controller;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.moli.common.constant.CommonConstant;
+import com.moli.common.constant.PermissionConstants;
 import com.moli.common.core.MoliResult;
 import com.moli.common.domain.entity.SysRole;
 import com.moli.common.domain.entity.SysRoleMenu;
+import com.moli.common.domain.entity.SysUser;
+import com.moli.common.domain.entity.SysUserRole;
 import com.moli.common.domain.vo.RoleVo;
 import com.moli.common.domain.vo.SysRoleVo;
 import com.moli.common.enums.BusinessTypeEnum;
 import com.moli.common.log.MoliLog;
 import com.moli.common.page.PageRes;
+import com.moli.config.util.PermissionAuthUtils;
 import com.moli.system.mapper.RoleMapper;
 import com.moli.system.mapper.RoleMenuMapper;
+import com.moli.system.mapper.SysUserMapper;
+import com.moli.system.mapper.SysUserRoleMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.collections.CollectionUtils;
@@ -21,11 +27,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 import java.util.List;
 
 @RestController
 @RequestMapping("/role")
 @Api(tags = "角色管理")
+@RequiresPermissions(PermissionConstants.SYSTEM_ROLE_LIST)
 public class RoleController {
 
     @Autowired
@@ -33,6 +41,12 @@ public class RoleController {
 
     @Autowired
     private RoleMenuMapper roleMenuMapper;
+
+    @Autowired
+    private SysUserRoleMapper sysUserRoleMapper;
+
+    @Autowired
+    private SysUserMapper sysUserMapper;
 
 
     /**
@@ -88,7 +102,7 @@ public class RoleController {
 
 
     @PutMapping
-    @MoliLog(title = "角色管理", businessType = BusinessTypeEnum.UPDATE)
+    @MoliLog(title = "角色菜单授权", businessType = BusinessTypeEnum.UPDATE)
     @ApiOperation(value = "更新角色", notes = "更新角色")
     public MoliResult<Boolean> update(@RequestBody SysRoleVo roleVo) {
         SysRole sysRole = new SysRole();
@@ -103,8 +117,25 @@ public class RoleController {
                 roleMenuMapper.insert(roleMenu);
             }
         }
-        ;
-        return MoliResult.success(Boolean.TRUE);
+        clearAuthorizationCacheByRoleId(roleVo.getId());
+        return MoliResult.success(Boolean.TRUE, PermissionConstants.ROLE_ASSIGN_REFRESH_MSG);
+    }
+
+    private void clearAuthorizationCacheByRoleId(Long roleId) {
+        if (roleId == null) {
+            return;
+        }
+        List<SysUserRole> userRoleList = sysUserRoleMapper.selectList(
+                new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getRoleId, roleId));
+        if (CollectionUtils.isEmpty(userRoleList)) {
+            return;
+        }
+        for (SysUserRole userRole : userRoleList) {
+            SysUser user = sysUserMapper.selectById(userRole.getUserId());
+            if (user != null) {
+                PermissionAuthUtils.clearUserAuthorizationCache(user.getUserName());
+            }
+        }
     }
 
     @GetMapping(value = "/{id}")

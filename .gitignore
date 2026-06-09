@@ -36,3 +36,6 @@ Thumbs.db
 
 # local production secrets (use application-pro.yml.example as template)
 moli-server/src/main/resources/application-pro.yml
+
+# SQL scripts (local / deployment only, not pushed to GitHub)
+sql/

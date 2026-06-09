@@ -1,11 +1,13 @@
 package com.moli.system.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.moli.common.constant.PermissionConstants;
 import com.moli.common.core.MoliResult;
 import com.moli.common.domain.entity.SysDept;
 import com.moli.common.domain.vo.DeptVo;
 import com.moli.common.domain.vo.PostVo;
 import com.moli.system.mapper.DeptMapper;
+import com.moli.system.service.DeptService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,10 +28,14 @@ import java.util.stream.Collectors;
 @RequestMapping("dept")
 @Api(tags = "部门管理")
 @Slf4j
+@RequiresPermissions(PermissionConstants.SYSTEM_DEPT_LIST)
 public class DeptController {
 
     @Autowired
     private DeptMapper deptMapper;
+
+    @Autowired
+    private DeptService deptService;
 
     @GetMapping("/list")
     @ApiOperation(value = "部门列表", notes = "部门列表")
@@ -93,10 +100,9 @@ public class DeptController {
 
 
     @DeleteMapping("/{id}")
-    @ApiOperation(value = "删除单个部门", notes = "删除单个部门")
-    public MoliResult remove(@PathVariable("id") Long id) {
-        deptMapper.deleteById(id);
-        return MoliResult.success(Boolean.TRUE);
+    @ApiOperation(value = "删除单个部门", notes = "删除指定部门，并级联删除其下所有子部门")
+    public MoliResult<Boolean> remove(@PathVariable("id") Long id) {
+        return MoliResult.success(deptService.deleteWithChildren(id));
     }
 
     private static List<DeptVo> createTree(List<DeptVo> deptList) {

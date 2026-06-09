@@ -9,4 +9,9 @@ public interface DeptService extends IService<SysDept> {
 
     void findChildrenDeptIdTree(List<Long> result, List<SysDept> deptList, Long deptId);
 
+    /**
+     * 删除部门及其所有子部门。
+     */
+    boolean deleteWithChildren(Long deptId);
+
 }

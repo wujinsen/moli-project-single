@@ -1,6 +1,6 @@
 # 项目迭代基线（Moli 后台）
 
-最后更新: 2026-05-06
+最后更新: 2026-06-08
 维护方式: 每次迭代后更新本文件，作为需求/技术/风险的单一基准事实来源
 
 ## 1. 项目概览
@@ -102,6 +102,9 @@
 - Maven 打包默认跳过测试（存在回归风险）
 - 仓库中未见 CI 配置（未发现 `.github/workflows`）
 - 未发现前端工程、Node 构建或前端 lint/test 配置
+- AWS 单机部署步骤见 `docs/aws-deployment-guide.md`（MySQL/Nginx/Redis 自建；Redis 勿用 Serverless）
+- 数据库表关系图见 `docs/database-schema-diagram.md`（Mermaid ER 图，对应 `sql/schema_moli.sql`）
+- 多系统 SSO：在 **moli-admin**（本仓库，模块目录 `moli-server`）做登录、系统门户、用户-系统分配；其他系统各自 RBAC。见 `docs/multi-system-sso-design.md`
 
 ## 6. 现阶段风险与技术债（基于仓库事实）
 

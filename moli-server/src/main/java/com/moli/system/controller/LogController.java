@@ -3,10 +3,10 @@ package com.moli.system.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.moli.common.constant.PermissionConstants;
 import com.moli.common.core.MoliResult;
 import com.moli.common.domain.entity.SysLoginLog;
 import com.moli.common.domain.entity.SysOperationLog;
-import com.moli.common.page.PageReq;
 import com.moli.common.page.PageRes;
 import com.moli.system.mapper.SysLoginLogMapper;
 import com.moli.system.mapper.SysOperationLogMapper;
@@ -15,7 +15,11 @@ import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @Api(tags = "系统操作日志管理")
@@ -29,6 +33,7 @@ public class LogController {
     private SysOperationLogMapper sysOperationLogMapper;
 
     @GetMapping("/loginLogList")
+    @RequiresPermissions(PermissionConstants.SYSTEM_LOGINLOG_LIST)
     @ApiOperation(value = "登录日志列表")
     public MoliResult<PageRes<SysLoginLog>> loginLogList(SysLoginLog sysLoginLog) {
         PageRes<SysLoginLog> result = new PageRes<>();
@@ -51,7 +56,31 @@ public class LogController {
 
     }
 
+    @DeleteMapping("/loginLog/{ids}")
+    @RequiresPermissions(PermissionConstants.SYSTEM_LOGINLOG_LIST)
+    @ApiOperation(value = "删除登录日志")
+    public MoliResult<Boolean> deleteLoginLog(@PathVariable String ids) {
+        List<Long> idList = Arrays.stream(ids.split(","))
+                .filter(StringUtils::isNotBlank)
+                .map(Long::valueOf)
+                .collect(Collectors.toList());
+        if (idList.isEmpty()) {
+            return MoliResult.success(true);
+        }
+        sysLoginLogMapper.deleteBatchIds(idList);
+        return MoliResult.success(true);
+    }
+
+    @DeleteMapping("/loginLog/clean")
+    @RequiresPermissions(PermissionConstants.SYSTEM_LOGINLOG_LIST)
+    @ApiOperation(value = "清空登录日志")
+    public MoliResult<Boolean> cleanLoginLog() {
+        sysLoginLogMapper.delete(null);
+        return MoliResult.success(true);
+    }
+
     @GetMapping("/operationLogList")
+    @RequiresPermissions(PermissionConstants.SYSTEM_OPERLOG_LIST)
     @ApiOperation(value = "操作日志列表")
     public MoliResult<PageRes<SysOperationLog>> operationLogList(SysOperationLog req) {
 
@@ -60,7 +89,10 @@ public class LogController {
         Page<SysOperationLog> page = new Page<>(req.getPageNum(), req.getPageSize());
         LambdaQueryWrapper<SysOperationLog> lambdaQueryWrapper = new LambdaQueryWrapper();
         if (StringUtils.isNotBlank(req.getUserName())) {
-            lambdaQueryWrapper.eq(SysOperationLog::getUserName, req.getUserName());
+            lambdaQueryWrapper.like(SysOperationLog::getUserName, req.getUserName());
+        }
+        if (StringUtils.isNotBlank(req.getTitle())) {
+            lambdaQueryWrapper.like(SysOperationLog::getTitle, req.getTitle());
         }
 
         if (req.getStatus() != null) {
@@ -77,6 +109,29 @@ public class LogController {
         result.setPageSize(req.getPageSize());
         result.setTotal((int) page.getTotal());
         return MoliResult.success(result);
+    }
+
+    @DeleteMapping("/operationLog/{ids}")
+    @RequiresPermissions(PermissionConstants.SYSTEM_OPERLOG_LIST)
+    @ApiOperation(value = "删除操作日志")
+    public MoliResult<Boolean> deleteOperationLog(@PathVariable String ids) {
+        List<Long> idList = Arrays.stream(ids.split(","))
+                .filter(StringUtils::isNotBlank)
+                .map(Long::valueOf)
+                .collect(Collectors.toList());
+        if (idList.isEmpty()) {
+            return MoliResult.success(true);
+        }
+        sysOperationLogMapper.deleteBatchIds(idList);
+        return MoliResult.success(true);
+    }
+
+    @DeleteMapping("/operationLog/clean")
+    @RequiresPermissions(PermissionConstants.SYSTEM_OPERLOG_LIST)
+    @ApiOperation(value = "清空操作日志")
+    public MoliResult<Boolean> cleanOperationLog() {
+        sysOperationLogMapper.delete(null);
+        return MoliResult.success(true);
     }
 
 }

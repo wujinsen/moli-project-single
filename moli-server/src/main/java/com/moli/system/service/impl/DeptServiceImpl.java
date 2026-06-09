@@ -6,6 +6,7 @@ import com.moli.system.mapper.DeptMapper;
 import com.moli.system.service.DeptService;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -19,6 +20,7 @@ public class DeptServiceImpl  extends ServiceImpl<DeptMapper, SysDept> implement
      * @param deptList 所有部门内容
      * @param deptId   当前部门id
      */
+    @Override
     public void findChildrenDeptIdTree(List<Long> result, List<SysDept> deptList, Long deptId) {
         for (SysDept entity : deptList) {
             if (deptId != null && deptId.equals(entity.getParentId())) {
@@ -26,6 +28,17 @@ public class DeptServiceImpl  extends ServiceImpl<DeptMapper, SysDept> implement
                 findChildrenDeptIdTree(result, deptList, entity.getId());
             }
         }
+    }
+
+    @Override
+    public boolean deleteWithChildren(Long deptId) {
+        if (deptId == null || getById(deptId) == null) {
+            return false;
+        }
+        List<Long> idsToDelete = new ArrayList<>();
+        idsToDelete.add(deptId);
+        findChildrenDeptIdTree(idsToDelete, list(), deptId);
+        return removeByIds(idsToDelete);
     }
 
 }

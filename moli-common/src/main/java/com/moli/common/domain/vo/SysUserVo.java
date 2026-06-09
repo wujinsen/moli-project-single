@@ -47,7 +47,7 @@ public class SysUserVo extends BaseEntity {
     @ApiModelProperty(value = "是否在职(0-在职；1-离职)")
     private Integer isJob;
 
-    @ApiModelProperty(value = "是否锁定(0-未锁；1-已锁)")
+    @ApiModelProperty(value = "账号状态(1-正常；0-停用，停用不可登录)")
     private Integer status;
 
     @ApiModelProperty(value = "密码错误数量")

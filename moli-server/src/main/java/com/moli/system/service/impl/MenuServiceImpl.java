@@ -4,12 +4,14 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.moli.common.constant.CommonConstant;
 import com.moli.common.domain.entity.SysMenu;
+import com.moli.common.domain.entity.SysRole;
 import com.moli.common.domain.entity.SysRoleMenu;
 import com.moli.common.domain.entity.SysUser;
 import com.moli.common.domain.entity.SysUserRole;
 import com.moli.common.domain.vo.MenuMetaVo;
 import com.moli.common.domain.vo.MenuVo;
 import com.moli.system.mapper.MenuMapper;
+import com.moli.system.mapper.RoleMapper;
 import com.moli.system.mapper.RoleMenuMapper;
 import com.moli.system.mapper.SysUserMapper;
 import com.moli.system.mapper.SysUserRoleMapper;
@@ -22,7 +24,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,6 +40,9 @@ public class MenuServiceImpl implements MenuService {
 
     @Autowired
     private RoleMenuMapper roleMenuMapper;
+
+    @Autowired
+    private RoleMapper roleMapper;
 
     @Autowired
     private SysUserRoleMapper sysUserRoleMapper;
@@ -84,7 +91,7 @@ public class MenuServiceImpl implements MenuService {
     public List<MenuVo> selectMenuListByUserId(MenuVo menuVo) {
         SysUser user = sysUserMapper.selectById(menuVo.getUserId());
         //超级管理员
-        if (StringUtils.isNotBlank(user.getUserName()) && user.getUserName().equals("admin")) {
+        if (CommonConstant.isSuperAdmin(user.getUserName())) {
             List<SysMenu> menuList = menuMapper.selectList(new LambdaQueryWrapper<>());
             List<MenuVo> menuVoList = new ArrayList<>();
             menuList.forEach(e -> menuVoList.add(toMenuVo(e, true)));
@@ -94,16 +101,47 @@ public class MenuServiceImpl implements MenuService {
         if (CollectionUtils.isEmpty(userRoleList)) {
             return new ArrayList<>();
         }
-        List<Long> roleIdList = userRoleList.stream().map(e -> e.getRoleId()).collect(Collectors.toList());
+        List<Long> roleIdList = userRoleList.stream().map(SysUserRole::getRoleId).collect(Collectors.toList());
+        List<SysRole> enabledRoles = roleMapper.selectList(new LambdaQueryWrapper<SysRole>()
+                .in(SysRole::getId, roleIdList)
+                .eq(SysRole::getStatus, CommonConstant.YES));
+        if (CollectionUtils.isEmpty(enabledRoles)) {
+            return new ArrayList<>();
+        }
+        roleIdList = enabledRoles.stream().map(SysRole::getId).collect(Collectors.toList());
         List<SysRoleMenu> roleMenuList = roleMenuMapper.selectList(new QueryWrapper<SysRoleMenu>().lambda().in(SysRoleMenu::getRoleId, roleIdList));
-        List<Long> menuIdList = roleMenuList.stream().map(e -> e.getMenuId()).collect(Collectors.toList());
+        List<Long> menuIdList = roleMenuList.stream().map(SysRoleMenu::getMenuId).distinct().collect(Collectors.toList());
         if (CollectionUtils.isEmpty(menuIdList)) {
             return new ArrayList<>();
         }
-        List<SysMenu> menuList = menuMapper.selectList(new QueryWrapper<SysMenu>().lambda().in(SysMenu::getId, menuIdList));
+        List<SysMenu> menuList = loadMenusWithAncestors(menuIdList);
         List<MenuVo> menuVoList = new ArrayList<>();
         menuList.forEach(e -> menuVoList.add(toMenuVo(e, true)));
         return menuVoList;
+    }
+
+    /**
+     * 角色仅勾选子菜单时，自动补齐父级目录，否则前端树形菜单无法展示。
+     */
+    private List<SysMenu> loadMenusWithAncestors(List<Long> menuIdList) {
+        Set<Long> allIds = new LinkedHashSet<>(menuIdList);
+        List<Long> pending = new ArrayList<>(menuIdList);
+
+        while (!pending.isEmpty()) {
+            Long menuId = pending.remove(pending.size() - 1);
+            SysMenu menu = menuMapper.selectById(menuId);
+            if (menu == null || menu.getParentId() == null || menu.getParentId() <= 0) {
+                continue;
+            }
+            if (allIds.add(menu.getParentId())) {
+                pending.add(menu.getParentId());
+            }
+        }
+
+        return menuMapper.selectList(new QueryWrapper<SysMenu>().lambda()
+                .in(SysMenu::getId, allIds)
+                .eq(SysMenu::getStatus, CommonConstant.YES)
+                .orderByAsc(SysMenu::getOrderNum));
     }
 
     @Override
@@ -135,7 +173,7 @@ public class MenuServiceImpl implements MenuService {
             menuVo.setMenuName(I18nUtils.resolveLocalizedText(
                     menu.getMenuName(), menu.getMenuNameEn(), menu.getMenuNameJa(), lang));
         }
-        menuVo.setHidden("1".equals(menu.getStatus()));
+        menuVo.setHidden(!CommonConstant.YES.equals(menu.getStatus()));
         menuVo.setName(getRouteName(menuVo));
         menuVo.setPath(getRouterPath(menuVo));
         menuVo.setComponent(getComponent(menuVo));

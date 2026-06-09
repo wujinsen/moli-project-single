@@ -2,6 +2,7 @@ package com.moli.operation.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.moli.common.constant.PermissionConstants;
 import com.moli.common.core.MoliResult;
 import com.moli.common.domain.entity.OperationProjectDeployInfo;
 import com.moli.common.domain.entity.OperationServerInfo;
@@ -14,6 +15,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 
 import javax.annotation.Resource;
 
@@ -21,6 +23,7 @@ import javax.annotation.Resource;
 @RequestMapping("/operation/project")
 @Api(tags = "项目管理")
 @Slf4j
+@RequiresPermissions(PermissionConstants.OPERATION_PROJECT_LIST)
 public class OperationProjectController {
 
     @Resource

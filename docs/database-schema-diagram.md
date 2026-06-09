@@ -1,0 +1,281 @@
+# 数据库表关系图
+
+最后更新: 2026-06-08  
+数据来源: `sql/schema_moli.sql` 与 `moli-common` 实体类  
+数据库名: `moli`（utf8mb4）
+
+## 1. 说明
+
+- 共 **18** 张业务表，分 **系统模块**（12 张）与 **运维模块**（6 张）。
+- 表间为 **逻辑关联**，DDL 中 **未声明数据库外键**（`FOREIGN_KEY_CHECKS = 0`），由应用层维护一致性。
+- 主键 `id` 由应用侧 `CustomIdGenerator` 赋值，非数据库自增。
+- 结构变更时请同步更新本文件与 `sql/schema_moli.sql`。
+
+## 2. 总览
+
+```mermaid
+flowchart TB
+    subgraph RBAC["系统 · 权限与组织"]
+        dept[sys_dept]
+        user[sys_user]
+        role[sys_role]
+        menu[sys_menu]
+        post[sys_post]
+        ur[sys_user_role]
+        rm[sys_role_menu]
+        up[sys_user_post]
+        dept --> user
+        user --> ur --> role
+        role --> rm --> menu
+        user --> up --> post
+        dept -.自关联.-> dept
+        menu -.自关联.-> menu
+    end
+
+    subgraph DICT["系统 · 字典"]
+        dt[sys_dict_type]
+        dd[sys_dict_data]
+        dt --> dd
+    end
+
+    subgraph LOG["系统 · 日志"]
+        ll[sys_login_log]
+        ol[sys_operation_log]
+    end
+
+    subgraph OPS["运维模块"]
+        plat[operation_platform_info]
+        srv[operation_server_info]
+        proj[operation_project_deploy_info]
+        comp[operation_component_deploy_info]
+        sp[operation_server_project]
+        sc[operation_server_component]
+        srv --> proj
+        srv --> sp --> proj
+        srv --> sc --> comp
+    end
+
+    user -.用户名.-> ll
+    user -.用户名.-> ol
+```
+
+## 3. 系统模块 · 权限与组织（RBAC）
+
+```mermaid
+erDiagram
+    sys_dept {
+        bigint id PK "主键"
+        bigint parent_id "父部门ID"
+        varchar dept_name "部门名称"
+        int status "1正常 0停用"
+    }
+
+    sys_user {
+        bigint id PK "主键"
+        bigint dept_id FK "部门ID"
+        varchar user_name UK "用户名"
+        varchar telephone UK "电话"
+        int is_delete "逻辑删除"
+    }
+
+    sys_role {
+        bigint id PK "主键"
+        varchar role_name "角色名称"
+        int status "1正常 0停用"
+    }
+
+    sys_menu {
+        bigint id PK "主键"
+        bigint parent_id "父菜单ID"
+        varchar menu_type "M目录 C菜单 F按钮"
+        varchar perms "权限标识"
+    }
+
+    sys_post {
+        bigint id PK "主键"
+        varchar post_code "岗位编码"
+        varchar post_name "岗位名称"
+    }
+
+    sys_user_role {
+        bigint id PK "主键"
+        bigint user_id FK "用户ID"
+        bigint role_id FK "角色ID"
+    }
+
+    sys_role_menu {
+        bigint id PK "主键"
+        bigint role_id FK "角色ID"
+        bigint menu_id FK "菜单ID"
+    }
+
+    sys_user_post {
+        bigint id PK "主键"
+        bigint user_id FK "用户ID"
+        bigint post_id FK "岗位ID"
+    }
+
+    sys_dept ||--o{ sys_dept : "parent_id 树形"
+    sys_dept ||--o{ sys_user : "dept_id"
+    sys_user ||--o{ sys_user_role : "user_id"
+    sys_role ||--o{ sys_user_role : "role_id"
+    sys_role ||--o{ sys_role_menu : "role_id"
+    sys_menu ||--o{ sys_role_menu : "menu_id"
+    sys_menu ||--o{ sys_menu : "parent_id 树形"
+    sys_user ||--o{ sys_user_post : "user_id"
+    sys_post ||--o{ sys_user_post : "post_id"
+```
+
+**关系摘要**
+
+| 关系 | 类型 | 关联字段 | 业务含义 |
+|------|------|----------|----------|
+| 部门 ↔ 部门 | 1:N 树 | `sys_dept.parent_id` → `sys_dept.id` | 组织架构层级 |
+| 部门 → 用户 | 1:N | `sys_user.dept_id` → `sys_dept.id` | 用户归属部门 |
+| 用户 ↔ 角色 | M:N | `sys_user_role` | 一个用户可多角色 |
+| 角色 ↔ 菜单 | M:N | `sys_role_menu` | 角色授权菜单/按钮 |
+| 菜单 ↔ 菜单 | 1:N 树 | `sys_menu.parent_id` → `sys_menu.id` | 目录/菜单/按钮树 |
+| 用户 ↔ 岗位 | M:N | `sys_user_post` | 用户兼任岗位 |
+
+**鉴权链路**: 用户 → `sys_user_role` → 角色 → `sys_role_menu` → 菜单（`perms` 为接口/按钮权限标识）。
+
+## 4. 系统模块 · 字典
+
+```mermaid
+erDiagram
+    sys_dict_type {
+        bigint id PK "主键"
+        varchar dict_type UK "字典类型编码"
+        varchar dict_name "字典名称"
+    }
+
+    sys_dict_data {
+        bigint id PK "主键"
+        varchar dict_type FK "字典类型编码"
+        varchar dict_key "字典键"
+        varchar dict_value "字典值"
+    }
+
+    sys_dict_type ||--o{ sys_dict_data : "dict_type"
+```
+
+`sys_dict_data.dict_type` 与 `sys_dict_type.dict_type` 通过 **字符串编码** 关联，非 `id` 外键。
+
+## 5. 系统模块 · 日志
+
+```mermaid
+erDiagram
+    sys_user {
+        varchar user_name UK "用户名"
+    }
+
+    sys_login_log {
+        bigint id PK "主键"
+        varchar user_name "用户名"
+        varchar ip_address "IP"
+        datetime login_time "登录时间"
+    }
+
+    sys_operation_log {
+        bigint id PK "主键"
+        varchar user_name "操作人"
+        varchar request_url "请求URL"
+        datetime create_time "操作时间"
+    }
+
+    sys_user ||--o{ sys_login_log : "user_name 逻辑关联"
+    sys_user ||--o{ sys_operation_log : "user_name 逻辑关联"
+```
+
+- `sys_login_log`：登录成功/失败时由 `LoginController` 写入。
+- `sys_operation_log`：由 AOP 切面记录接口操作，与用户表无物理外键。
+
+## 6. 运维模块
+
+```mermaid
+erDiagram
+    operation_platform_info {
+        bigint id PK "主键"
+        varchar platform_name "平台名称"
+        int environment "1dev 2test 3pre 4pro"
+    }
+
+    operation_server_info {
+        bigint id PK "主键"
+        varchar server_name "服务器名"
+        varchar ip "公网IP"
+        varchar inner_ip "内网IP"
+    }
+
+    operation_project_deploy_info {
+        bigint id PK "主键"
+        bigint server_id FK "服务器ID"
+        varchar project_name "项目名称"
+        varchar deploy_path "部署路径"
+    }
+
+    operation_component_deploy_info {
+        bigint id PK "主键"
+        varchar component_name "组件名"
+        varchar server_ip "服务器IP"
+    }
+
+    operation_server_project {
+        bigint id PK "主键"
+        bigint server_id FK "服务器ID"
+        bigint project_id FK "项目ID"
+    }
+
+    operation_server_component {
+        bigint id PK "主键"
+        bigint server_id FK "服务器ID"
+        bigint component_id FK "组件ID"
+    }
+
+    operation_server_info ||--o{ operation_project_deploy_info : "server_id"
+    operation_server_info ||--o{ operation_server_project : "server_id"
+    operation_project_deploy_info ||--o{ operation_server_project : "project_id"
+    operation_server_info ||--o{ operation_server_component : "server_id"
+    operation_component_deploy_info ||--o{ operation_server_component : "component_id"
+```
+
+**关系摘要**
+
+| 关系 | 类型 | 关联字段 | 说明 |
+|------|------|----------|------|
+| 服务器 → 项目部署 | 1:N | `operation_project_deploy_info.server_id` | 项目落在哪台服务器 |
+| 服务器 ↔ 项目 | M:N | `operation_server_project` | 多对多关联表 |
+| 服务器 ↔ 组件 | M:N | `operation_server_component` | 组件部署关联 |
+| 平台信息 | 独立 | — | `operation_platform_info` 无外键关联 |
+
+`operation_component_deploy_info` 通过 `server_ip` 与服务器做 **弱关联**（字符串 IP），未使用 `server_id`。
+
+## 7. 表清单
+
+| 表名 | 中文名 | 模块 |
+|------|--------|------|
+| `sys_dept` | 部门 | 系统 |
+| `sys_user` | 用户 | 系统 |
+| `sys_role` | 角色 | 系统 |
+| `sys_menu` | 菜单 | 系统 |
+| `sys_post` | 岗位 | 系统 |
+| `sys_user_role` | 用户-角色 | 系统 |
+| `sys_role_menu` | 角色-菜单 | 系统 |
+| `sys_user_post` | 用户-岗位 | 系统 |
+| `sys_dict_type` | 字典类型 | 系统 |
+| `sys_dict_data` | 字典数据 | 系统 |
+| `sys_login_log` | 登录日志 | 系统 |
+| `sys_operation_log` | 操作日志 | 系统 |
+| `operation_platform_info` | 运营平台 | 运维 |
+| `operation_server_info` | 服务器 | 运维 |
+| `operation_project_deploy_info` | 项目部署 | 运维 |
+| `operation_component_deploy_info` | 组件部署 | 运维 |
+| `operation_server_project` | 服务器-项目 | 运维 |
+| `operation_server_component` | 服务器-组件 | 运维 |
+
+## 8. 相关文件
+
+- DDL: [`sql/schema_moli.sql`](../sql/schema_moli.sql)
+- 种子数据: `sql/seed_sys_*.sql`、`sql/seed_operation.sql`
+- 实体类: `moli-common/src/main/java/com/moli/common/domain/entity/`
+- 英文版: [database-schema-diagram.en.md](database-schema-diagram.en.md)

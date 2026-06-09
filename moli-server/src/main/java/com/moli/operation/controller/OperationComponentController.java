@@ -2,6 +2,7 @@ package com.moli.operation.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.moli.common.constant.PermissionConstants;
 import com.moli.common.core.MoliResult;
 import com.moli.common.domain.entity.OperationComponentDeployInfo;
 import com.moli.common.domain.entity.OperationServerInfo;
@@ -14,11 +15,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 
 @RestController
 @RequestMapping("/operation/component")
 @Api(tags = "运维组件管理")
 @Slf4j
+@RequiresPermissions(PermissionConstants.OPERATION_COMPONENT_LIST)
 public class OperationComponentController {
 
     @Autowired

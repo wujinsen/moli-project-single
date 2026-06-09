@@ -1,6 +1,7 @@
 package com.moli.system.controller;
 
 import com.moli.common.constant.CommonConstant;
+import com.moli.common.constant.PermissionConstants;
 import com.moli.common.core.MoliResult;
 import com.moli.common.domain.entity.SysMenu;
 import com.moli.common.domain.entity.SysUser;
@@ -12,6 +13,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 
 import java.util.List;
 
@@ -33,7 +35,7 @@ public class MenuController {
     public MoliResult<List<MenuVo>> getRouters() {
         Long userId = ShiroUtils.getUserInfo().getId();
         SysUser sysUser = ShiroUtils.getUserInfo();
-        if(sysUser.getUserName().equals(CommonConstant.SUPER_ADMIN)){
+        if (CommonConstant.isSuperAdmin(sysUser.getUserName())) {
             return MoliResult.success(menuService.getMenuTreeAll());
         }
         List<MenuVo> menuVoList = menuService.selectMenuTreeByUserId(userId);
@@ -43,6 +45,7 @@ public class MenuController {
 
 
     @GetMapping("list")
+    @RequiresPermissions(PermissionConstants.SYSTEM_MENU_LIST)
     @ApiOperation(value = "获取菜单列表", notes = "获取菜单列表")
     public MoliResult list(String menuName, Integer status) {
         MenuVo menuVo = new MenuVo();
@@ -53,6 +56,7 @@ public class MenuController {
     }
 
     @PostMapping
+    @RequiresPermissions(PermissionConstants.SYSTEM_MENU_LIST)
     @ApiOperation(value = "添加菜单", notes = "添加菜单")
     public MoliResult<Boolean> insert(@RequestBody SysMenu menu) {
         menuService.insert(menu);
@@ -60,6 +64,7 @@ public class MenuController {
     }
 
     @PutMapping
+    @RequiresPermissions(PermissionConstants.SYSTEM_MENU_LIST)
     @ApiOperation(value = "更新菜单", notes = "更新菜单")
     public MoliResult<Boolean> update(@RequestBody SysMenu menu) {
         menuService.update(menu);
@@ -67,6 +72,7 @@ public class MenuController {
     }
 
     @GetMapping(value = "/{id}")
+    @RequiresPermissions(PermissionConstants.SYSTEM_MENU_LIST)
     @ApiOperation(value = "查询菜单", notes = "查询菜单")
     public MoliResult<SysMenu> getInfo(@PathVariable Long id) {
 
@@ -74,6 +80,7 @@ public class MenuController {
     }
 
     @DeleteMapping("/{id}")
+    @RequiresPermissions(PermissionConstants.SYSTEM_MENU_LIST)
     @ApiOperation(value = "删除菜单", notes = "删除菜单")
     public MoliResult remove(@PathVariable Long id) {
         menuMapper.deleteById(id);
@@ -85,6 +92,7 @@ public class MenuController {
      * @return 全部菜单列表及该角色下的所有菜单id
      */
     @GetMapping("selectMenuTreeByRoleId/{roleId}")
+    @RequiresPermissions(PermissionConstants.SYSTEM_MENU_LIST)
     @ApiOperation(value = "根据角色获取该角色下的所有菜单", notes = "根据角色获取该角色下的所有菜单")
     public MoliResult selectMenuTreeByRoleId(@PathVariable Long roleId) {
         List<MenuVo> menuVoList = menuService.selectMenuTreeByRoleId(roleId);
@@ -96,7 +104,8 @@ public class MenuController {
      * @return 菜单列表
      */
     @GetMapping("getMenuTreeAll")
-    @ApiOperation(value = "删除单个部门", notes = "删除单个部门")
+    @RequiresPermissions(PermissionConstants.SYSTEM_MENU_LIST)
+    @ApiOperation(value = "获取菜单列表", notes = "获取菜单列表")
     public MoliResult getMenuTreeAll() {
 
         List<MenuVo> menuVoList = menuService.getMenuTreeAll();

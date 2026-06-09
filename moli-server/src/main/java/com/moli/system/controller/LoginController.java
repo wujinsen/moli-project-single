@@ -4,25 +4,31 @@ package com.moli.system.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.moli.common.constant.CommonConstant;
 import com.moli.common.constant.Constants;
+import com.moli.common.constant.SystemConstant;
 import com.moli.common.core.MoliResult;
 import com.moli.common.domain.entity.SysLoginLog;
 import com.moli.common.domain.entity.SysUser;
 import com.moli.common.domain.vo.CaptchaImageVo;
 import com.moli.common.domain.vo.LoginVo;
 import com.moli.common.domain.vo.MenuVo;
+import com.moli.common.domain.vo.SystemEnterVo;
+import com.moli.common.domain.vo.SystemVo;
 import com.moli.common.enums.ResponseCodeEnums;
 import com.moli.common.exception.BaseException;
 import com.moli.common.utils.IpUtils;
 import com.moli.common.utils.ServletUtils;
+import com.moli.common.utils.UserAgentUtils;
 import com.moli.common.utils.SpringUtil;
 import com.moli.config.util.RedisUtil;
 import com.moli.config.util.ShiroUtils;
 import com.moli.system.mapper.SysLoginLogMapper;
 import com.moli.system.mapper.SysUserMapper;
 import com.moli.system.service.MenuService;
+import com.moli.system.service.SysSystemService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
@@ -39,6 +45,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import javax.imageio.ImageIO;
+import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -56,6 +63,9 @@ public class LoginController {
 
     @Autowired
     private MenuService menuService;
+
+    @Autowired
+    private SysSystemService sysSystemService;
 
     @Autowired
     private SysUserMapper sysUserMapper;
@@ -123,18 +133,12 @@ public class LoginController {
         }
         //token
         loginVo.setToken(ShiroUtils.getSession().getId().toString());
+        ShiroUtils.bindUserSession(user.getUserName());
         user.setPassword("");
         user.setSalt("");
         //用户信息
         loginVo.setUser(user);
-        List<MenuVo> menuVoList = new ArrayList<>();
-        if(user.getUserName().equals(CommonConstant.SUPER_ADMIN)){
-            menuVoList = menuService.getMenuTreeAll();
-        }else{
-            menuVoList = menuService.selectMenuTreeByUserId(user.getId());
-        }
-        //菜单信息
-        loginVo.setMenuVoList(menuVoList);
+        fillLoginContext(loginVo, user);
         result.setMsg("登录成功");
         result.setCode(ResponseCodeEnums.SUCCESS_CODE.getCode());
         result.setData(loginVo);
@@ -207,16 +211,51 @@ public class LoginController {
         return image;
     }
 
+    private void fillLoginContext(LoginVo loginVo, SysUser user) {
+        boolean portalEnabled = sysSystemService.isPortalEnabled();
+        loginVo.setSystemPortalEnabled(portalEnabled);
+        if (!portalEnabled) {
+            loginVo.setMenuVoList(resolveMenus(user));
+            return;
+        }
+        List<SystemVo> systemList = sysSystemService.listByUserId(user.getId(), user.getUserName());
+        loginVo.setSystemList(systemList);
+        if (CollectionUtils.isEmpty(systemList)) {
+            loginVo.setMenuVoList(new ArrayList<>());
+            return;
+        }
+        if (systemList.size() == 1 && isInternalSystem(systemList.get(0))) {
+            SystemEnterVo enter = sysSystemService.enterSystem(user.getId(), user.getUserName(), systemList.get(0).getId());
+            loginVo.setCurrentSystem(enter.getCurrentSystem());
+            loginVo.setMenuVoList(enter.getMenuVoList());
+            return;
+        }
+        loginVo.setMenuVoList(new ArrayList<>());
+    }
+
+    private List<MenuVo> resolveMenus(SysUser user) {
+        if (CommonConstant.isSuperAdmin(user.getUserName())) {
+            return menuService.getMenuTreeAll();
+        }
+        return menuService.selectMenuTreeByUserId(user.getId());
+    }
+
+    private boolean isInternalSystem(SystemVo system) {
+        return !SystemConstant.SSO_MODE_EXTERNAL.equalsIgnoreCase(system.getSsoMode());
+    }
+
     public void insertLoginLog(SysUser sysUser, String msg, Integer status) {
             // 保存数据库
             SysLoginLog sysLoginLog = new SysLoginLog();
             if (sysUser != null && StringUtils.isNotBlank(sysUser.getUserName())) {
                 sysLoginLog.setUserName(sysUser.getUserName());
             }
-            String ip = IpUtils.getIpAddr(ServletUtils.getRequest());
+            HttpServletRequest request = ServletUtils.getRequest();
+            String ip = IpUtils.getIpAddr(request);
             sysLoginLog.setIpAddress(ip);
-//            sysLoginLog.setBrowser(browser);
-//            sysLoginLog.setLoginAddress(os);
+            sysLoginLog.setLoginAddress(IpUtils.getLoginLocation(ip));
+            sysLoginLog.setBrowser(UserAgentUtils.getBrowser(request));
+            sysLoginLog.setOs(UserAgentUtils.getOs(request));
             sysLoginLog.setStatus(status);
             sysLoginLog.setRemark(msg);
             sysLoginLog.setLoginTime(new Date());

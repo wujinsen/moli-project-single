@@ -192,6 +192,7 @@ mysql -u root -p moli < sql/seed_sys_menu.sql
 
 ## 相关文档
 
+- [AWS 部署指南（MySQL + Nginx + Redis）](docs/aws-deployment-guide.md)
 - [接口迭代地图](docs/api-iteration-map.md)
 - [项目迭代基线](docs/project-iteration-baseline.md)
 - [依赖安全治理路线图](docs/dependency-security-roadmap.md)

@@ -2,6 +2,7 @@ package com.moli.system.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.moli.common.constant.PermissionConstants;
 import com.moli.common.core.MoliResult;
 import com.moli.common.domain.entity.SysPost;
 import com.moli.common.domain.vo.PostVo;
@@ -13,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 
 import java.util.List;
 
@@ -21,6 +23,7 @@ import java.util.List;
 @RequestMapping("post")
 @Api(tags = "岗位管理")
 @Slf4j
+@RequiresPermissions(PermissionConstants.SYSTEM_POST_LIST)
 public class PostController {
 
     @Autowired

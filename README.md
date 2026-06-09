@@ -192,6 +192,8 @@ Paginated lists use `PageRes<T>` (`records`, `total`, `pageNum`, `pageSize`).
 
 ## Documentation
 
+- [AWS deployment guide (MySQL + Nginx + Redis)](docs/aws-deployment-guide.en.md)
+- [Database schema diagram](docs/database-schema-diagram.en.md)
 - [API iteration map](docs/api-iteration-map.md)
 - [Project iteration baseline](docs/project-iteration-baseline.md)
 - [Dependency security roadmap](docs/dependency-security-roadmap.md)

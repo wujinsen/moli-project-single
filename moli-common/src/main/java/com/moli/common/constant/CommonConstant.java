@@ -37,7 +37,15 @@ public class CommonConstant {
 
     public static final String NO_REDIRECT = "noRedirect";
 
+    /** 超级管理员：拥有系统最大权限 */
     public static final String SUPER_ADMIN = "superadmin";
 
+    /** 特殊管理员账号：对外隐藏，仅特殊账号互相可见 */
+    public static final String LEGACY_SUPER_ADMIN = "admin";
+
+    /** superadmin 与 admin 均属于需保护的特殊账号 */
+    public static boolean isSuperAdmin(String userName) {
+        return SUPER_ADMIN.equals(userName) || LEGACY_SUPER_ADMIN.equals(userName);
+    }
 
 }

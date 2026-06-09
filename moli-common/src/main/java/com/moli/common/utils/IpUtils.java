@@ -1,5 +1,7 @@
 package com.moli.common.utils;
 
+import org.apache.commons.lang3.StringUtils;
+
 import javax.servlet.http.HttpServletRequest;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -154,5 +156,21 @@ public class IpUtils {
         } catch (UnknownHostException e) {
         }
         return "未知";
+    }
+
+    /**
+     * 根据 IP 推断登录地点（无第三方 IP 库时的基础实现）。
+     */
+    public static String getLoginLocation(String ip) {
+        if (StringUtils.isBlank(ip) || "unknown".equalsIgnoreCase(ip)) {
+            return "未知";
+        }
+        if ("127.0.0.1".equals(ip) || "0:0:0:0:0:0:0:1".equals(ip) || "localhost".equalsIgnoreCase(ip)) {
+            return "本地";
+        }
+        if (internalIp(ip)) {
+            return "内网IP";
+        }
+        return "外网IP";
     }
 }

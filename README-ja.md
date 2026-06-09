@@ -83,6 +83,7 @@ mvn -pl moli-common,moli-server -am -DskipTests package
 
 ## ドキュメント
 
+- [AWS デプロイガイド（MySQL + Nginx + Redis）](docs/aws-deployment-guide.en.md)
 - [API イテレーションマップ](docs/api-iteration-map.md)
 - [プロジェクトイテレーション基線](docs/project-iteration-baseline.md)
 - [依存関係セキュリティロードマップ](docs/dependency-security-roadmap.md)
