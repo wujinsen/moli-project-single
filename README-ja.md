@@ -66,8 +66,9 @@
 ## データベース初期化
 
 ```bash
-mysql -u root -p < sql/schema_moli.sql
-mysql -u root -p moli < sql/seed_sys_menu.sql
+mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS moli DEFAULT CHARSET utf8mb4;"
+mysql -u root -p moli < docs/sql/00_schema.sql
+mysql -u root -p moli < docs/sql/01_baseline_data.sql
 ```
 
 ## クイックスタート

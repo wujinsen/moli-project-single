@@ -43,7 +43,7 @@
 - `GET /action/list?menuId=`：页面可分配动作（角色授权 UI）
 - **P4 动作目录**：`GET /action/page`、`GET /action/{id}`、`POST/PUT/DELETE /action`、`PUT /action/changeStatus`；权限与菜单管理一致（读 `system:menu:list`，写 `system:menu:edit` + `list`）
 - `GET/POST/PUT/DELETE /system`：系统注册维护（权限 `system:system:list`；增删改另需 `superadmin`/`admin`）；`SysSystem.systemGroup` 支持 `governance`/`business`/`ai`/`tech`/`ops`/`data`/`office`；`GET /system/list` 可按 `systemGroup` 筛选
-- SQL：`sql/patch_sys_system_group.sql` 增加列并回填已有系统分组
+- SQL：`patch_sys_system_group` 已合并至 `docs/sql` 基线（`sys_system.group_code` 等）
 - 侧栏菜单：`path=system`，`component=system/system/index`，`route_name=SystemRegistry`，`perms=system:system:list`（先执行 `patch_sys_menu_route_name.sql`）
 
 ### `SsoController`（前缀 `/sso`）
@@ -185,7 +185,7 @@
 - 已调整（2026-05-06）: 验证码接口改为配置开关模式（`captcha.enabled`）
 - 已调整（2026-06-08）: 系统/运维 Controller 补充 `@RequiresPermissions`，与菜单 perms 对齐
 - 已调整（2026-06-08）: 角色授权接口返回刷新提示；授权后清除 Shiro 授权缓存
-- 已调整（2026-06-08）: 操作/登录日志菜单需执行 `sql/patch_sys_menu_log_perms.sql` 补全 perms
+- 已调整（2026-06-08）: 操作/登录日志菜单 perms 已含于 `docs/sql` 基线
 - 控制器层已覆盖主要管理接口权限注解；`/menu/getRouters`、`/dict/data/type/{dictType}`、`/user/profile` 等仍仅要求登录
 - 多数接口直接接收 Entity 作为入参，需评估字段越权更新风险
 

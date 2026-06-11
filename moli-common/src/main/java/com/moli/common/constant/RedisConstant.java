@@ -7,9 +7,14 @@ public class RedisConstant {
     public static String REDIS_PREFIX_LOGIN = "login_token_%s";
 
     /**
-     * Shiro 用户与 Session 映射（避免 SCAN 枚举，兼容 Serverless Redis）
+     * Shiro 用户与 Session 映射（单端登录模式，避免 SCAN 枚举）
      */
     public static String SHIRO_USER_SESSION_KEY = "moli:shiro:user-session:%s";
+
+    /**
+     * Shiro 用户多端 Session 集合（多端并存模式）
+     */
+    public static String SHIRO_USER_SESSIONS_KEY = "moli:shiro:user-sessions:%s";
     /**
      * 过期时间2小时
      */

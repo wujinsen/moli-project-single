@@ -97,8 +97,8 @@ FLUSH PRIVILEGES;
 Import schema:
 
 ```bash
-mysql -u moli -p moli < /opt/moli/sql/schema_moli.sql
-mysql -u moli -p moli < /opt/moli/sql/seed_sys_menu.sql
+mysql -u moli -p moli < /opt/moli/docs/sql/00_schema.sql
+mysql -u moli -p moli < /opt/moli/docs/sql/01_baseline_data.sql
 ```
 
 Ensure MySQL listens on `127.0.0.1:3306` only.
@@ -114,13 +114,18 @@ Edit `/etc/redis6/redis6.conf` (or `/etc/redis/redis.conf`):
 
 ```conf
 bind 127.0.0.1
+supervised systemd
+daemonize no
 requirepass your-redis-password
 ```
+
+> With systemd, **`daemonize` must be `no`**; `daemonize yes` often makes `redis6` fail to start.
 
 ```bash
 sudo systemctl enable redis6
 sudo systemctl restart redis6
-redis-cli -a your-redis-password ping   # expect PONG
+sudo systemctl status redis6 --no-pager
+redis6-cli -a your-redis-password ping   # AL2023: redis6-cli, not redis-cli
 ```
 
 Use `spring.redis.database: 0`.

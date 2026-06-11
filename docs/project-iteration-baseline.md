@@ -103,7 +103,7 @@
 - 仓库中未见 CI 配置（未发现 `.github/workflows`）
 - 未发现前端工程、Node 构建或前端 lint/test 配置
 - AWS 单机部署步骤见 `docs/aws-deployment-guide.md`（MySQL/Nginx/Redis 自建；Redis 勿用 Serverless）
-- 数据库表关系图见 `docs/database-schema-diagram.md`（Mermaid ER 图，对应 `sql/schema_moli.sql`）
+- 数据库表关系图见 `docs/database-schema-diagram.md`（Mermaid ER 图，对应 `docs/sql/00_schema.sql`）
 - 多系统 SSO：在 **moli-admin**（本仓库，模块目录 `moli-server`）做登录、系统门户、用户-系统分配；其他系统各自 RBAC。见 `docs/multi-system-sso-design.md`
 - Linux 部署脚本：`scripts/linux/moli-server.sh`（启停）、`moli-server.env.example`、`moli-server.service`（systemd）
 
@@ -146,13 +146,13 @@
 - 目标: moli-admin 统一登录 + 系统门户；超管可进任意系统并在 INTERNAL 系统内拥有全菜单与 `*:*:*`
 - 变更模块: `moli-common`、`moli-server`
 - 关键能力:
-  - `sys_system` / `sys_user_system` 表与迁移脚本 `sql/migrate_sys_system.sql`
+  - `sys_system` / `sys_user_system` 表（已含于 `docs/sql/00_schema.sql`）
   - `SystemController`、`SsoController`、`LoginController` 扩展
   - 超管 `hasFullPermission`；SSO `fullPermission` 字段
   - 登录响应 `LoginVo.fullPermission`
 - 配置: `sso.enabled`、`SSO_SHARED_SECRET`（见 `application.yml` 与 `scripts/linux/moli-server.env.example`）
 - 验证: `mvn -pl moli-common,moli-server -am -DskipTests package` 编译通过；需执行 SQL 后联调登录与 `/system/enter`
-- 遗留: 执行 `sql/patch_sys_menu_system_registry.sql` 后出现「系统注册」菜单；前端 `meiling-ui` 在独立仓库联调
+- 遗留: 「系统注册」菜单已含于基线种子；前端 `meiling-ui` 在独立仓库联调
 - 前端开发文档: `meiling-ui/docs/sso-frontend-dev-guide.md`、`meiling-ui/AGENTS.md`
 
 ## 10. 动作权限（P1–P4 已落地，2026-06-11）
@@ -163,8 +163,13 @@
 - 后端: `PermissionService` 并集页面+动作；`GET /auth/capabilities`、`GET /action/list`、`GET /role/{id}/auth`
 - 下发: `LoginVo` / `SystemEnterVo` 含 `permissions`；`fillLoginContext` 门户关/单系统自动进已拷贝
 - 前端（meiling-ui）: `constants/permissions.ts`、`guardAction`、角色页动作勾选、按钮常显点击拦截
-- SQL: `docs/sql/migrate_sys_action.sql`（新环境）；增量 `patch_sys_action_role_menu_dept_post.sql`、`patch_sys_action_p3.sql`；菜单 `patch_sys_menu_action_manage.sql`
+- SQL 基线: `docs/sql/00_schema.sql` + `01_baseline_data.sql`（自稳定库导出；新环境按 `docs/sql/README.md` 初始化）；重导出: `python scripts/export_db_baseline.py`
 - 设计: [action-permission-design.md](action-permission-design.md)
+
+## 11. 登录会话策略（2026-06-11）
+
+- 配置 `shiro.single-session`（`application.yml`）：`false`（默认）= 同一用户多端登录互不影响；`true` = 新登录踢掉旧会话
+- 实现：`ShiroRealm` 仅在单端模式登录前 `deleteCache`；多端模式用 Redis Set 记录各 Session，退出只移除当前 Session；停用用户仍 `deleteCache` 清理全部 Session
 
 ## 12. 最近一次修复记录（2026-05-06）
 

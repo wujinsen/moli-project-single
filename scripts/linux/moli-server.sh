@@ -7,6 +7,8 @@
 #   ./moli-server.sh stop
 #   ./moli-server.sh restart
 #   ./moli-server.sh status
+#   ./moli-server.sh logs          # 跟踪日志（tail -f）
+#   ./moli-server.sh logs 200      # 查看最后 200 行
 #
 # 配置:
 #   1. 复制 moli-server.env.example 到部署目录 conf/moli-server.env 并修改
@@ -39,6 +41,7 @@ load_env() {
   if [[ -z "$env_file" ]]; then
     for candidate in \
       "${APP_HOME}/conf/moli-server.env" \
+      "/opt/moli/conf/moli-server.env" \
       "${SCRIPT_DIR}/moli-server.env" \
       "${SCRIPT_DIR}/moli-server.env.local"; do
       if [[ -f "$candidate" ]]; then
@@ -55,7 +58,10 @@ load_env() {
     set +a
     echo "[INFO] loaded env: $env_file"
   else
-    echo "[WARN] env file not found, using defaults (APP_HOME=$APP_HOME)"
+    if [[ "${MOLI_WARN_MISSING_ENV:-1}" == "1" ]]; then
+      echo "[INFO] env file not found, using defaults (APP_HOME=$APP_HOME)"
+      echo "       tip: copy moli-server.env.example to conf/moli-server.env for production"
+    fi
   fi
 
   APP_HOME="${APP_HOME:-/opt/moli/backend}"
@@ -134,11 +140,97 @@ read_pid() {
   echo "$pid"
 }
 
+find_running_pids() {
+  local jar_name="${JAR_FILE:-}"
+  if [[ -z "$jar_name" ]]; then
+    resolve_jar 2>/dev/null || true
+  fi
+  jar_name="$(basename "${JAR_FILE:-moli-server.jar}")"
+
+  local pids=()
+  if command -v pgrep >/dev/null 2>&1; then
+    local pid
+    while IFS= read -r pid; do
+      [[ -n "$pid" ]] && pids+=("$pid")
+    done < <(pgrep -f "[j]ava.*${jar_name}" 2>/dev/null || true)
+  else
+    local line pid
+    while IFS= read -r line; do
+      pid="$(echo "$line" | awk '{print $2}')"
+      [[ "$pid" =~ ^[0-9]+$ ]] && pids+=("$pid")
+    done < <(ps -ef 2>/dev/null | grep -E "[j]ava.*${jar_name}" || true)
+  fi
+
+  if ((${#pids[@]} == 0)); then
+    return 1
+  fi
+
+  printf '%s\n' "${pids[@]}" | sort -u
+}
+
+kill_pid_gracefully() {
+  local pid="$1"
+  [[ "$pid" =~ ^[0-9]+$ ]] || return 1
+  if ! is_running "$pid"; then
+    return 0
+  fi
+
+  echo "[INFO] stopping ${APP_NAME} (pid=$pid)"
+  kill -15 "$pid" 2>/dev/null || true
+
+  local waited=0
+  while ((waited < STOP_TIMEOUT)); do
+    if ! is_running "$pid"; then
+      echo "[OK] ${APP_NAME} stopped (pid=$pid)"
+      return 0
+    fi
+    sleep 1
+    waited=$((waited + 1))
+  done
+
+  echo "[WARN] graceful stop timeout for pid=$pid, sending SIGKILL"
+  kill -9 "$pid" 2>/dev/null || true
+  if ! is_running "$pid"; then
+    echo "[OK] ${APP_NAME} force stopped (pid=$pid)"
+    return 0
+  fi
+  return 1
+}
+
 ensure_dirs() {
   mkdir -p "$LOG_DIR" "$(dirname "$PID_FILE")"
 }
 
+check_java() {
+  if ! command -v "$JAVA_CMD" >/dev/null 2>&1; then
+    echo "[ERROR] java not found: $JAVA_CMD"
+    echo "        set JAVA_HOME or JAVA_CMD in conf/moli-server.env"
+    return 1
+  fi
+  echo "[INFO] java: $($JAVA_CMD -version 2>&1 | head -n 1)"
+  return 0
+}
+
+preflight_checks() {
+  if [[ "$SPRING_PROFILES_ACTIVE" == "pro" ]]; then
+    if [[ -z "${SPRING_DATASOURCE_PASSWORD:-}" || "${SPRING_DATASOURCE_PASSWORD}" == *"请替换"* ]]; then
+      echo "[ERROR] SPRING_DATASOURCE_PASSWORD is not set in conf/moli-server.env"
+      return 1
+    fi
+    if [[ -z "${SSO_SHARED_SECRET:-}" || "${SSO_SHARED_SECRET}" == *"请替换"* ]]; then
+      echo "[WARN] SSO_SHARED_SECRET looks like placeholder, please change for production"
+    fi
+  fi
+  if [[ ! -f "${APP_HOME}/application-${SPRING_PROFILES_ACTIVE}.yml" && ! -f "${APP_HOME}/application-pro.yml" ]]; then
+    echo "[WARN] no external application-${SPRING_PROFILES_ACTIVE}.yml under $APP_HOME"
+    echo "       using classpath config + environment variables only"
+  fi
+  return 0
+}
+
 start_server() {
+  check_java || return 1
+  preflight_checks || return 1
   resolve_jar || return 1
   ensure_dirs
 
@@ -182,45 +274,58 @@ start_server() {
 stop_server() {
   resolve_jar || true
 
+  local stopped=0
   local pid
-  if ! pid="$(read_pid 2>/dev/null || true)"; then
-    echo "[INFO] ${APP_NAME} is not running (no pid file)"
-    return 0
-  fi
 
-  if ! is_running "$pid"; then
-    echo "[WARN] stale pid file (pid=$pid), cleaning up"
+  if pid="$(read_pid 2>/dev/null || true)"; then
+    if is_running "$pid"; then
+      kill_pid_gracefully "$pid" && stopped=1
+    else
+      echo "[WARN] stale pid file (pid=$pid), will scan java process"
+    fi
+  elif [[ -f "$PID_FILE" ]]; then
+    echo "[WARN] invalid pid file: $PID_FILE (empty or malformed), will scan java process"
+  fi
+  rm -f "$PID_FILE"
+
+  local scan_pid
+  while IFS= read -r scan_pid; do
+    [[ -z "$scan_pid" ]] && continue
+    if is_running "$scan_pid"; then
+      kill_pid_gracefully "$scan_pid" && stopped=1
+    fi
+  done < <(find_running_pids 2>/dev/null || true)
+
+  if ((stopped == 1)); then
     rm -f "$PID_FILE"
     return 0
   fi
 
-  echo "[INFO] stopping ${APP_NAME} (pid=$pid)"
-  kill -15 "$pid" 2>/dev/null || true
-
-  local waited=0
-  while ((waited < STOP_TIMEOUT)); do
-    if ! is_running "$pid"; then
-      rm -f "$PID_FILE"
-      echo "[OK] ${APP_NAME} stopped"
-      return 0
-    fi
-    sleep 1
-    waited=$((waited + 1))
-  done
-
-  echo "[WARN] graceful stop timeout, sending SIGKILL"
-  kill -9 "$pid" 2>/dev/null || true
-  rm -f "$PID_FILE"
-  echo "[OK] ${APP_NAME} force stopped"
+  echo "[INFO] ${APP_NAME} is not running"
+  return 0
 }
 
 status_server() {
   resolve_jar || return 1
 
-  local pid
+  local pid found=0
   if pid="$(read_pid 2>/dev/null || true)" && is_running "$pid"; then
-    echo "[OK] ${APP_NAME} is running (pid=$pid)"
+    echo "[OK] ${APP_NAME} is running (pid=$pid, source=pid file)"
+    found=1
+  fi
+
+  local scan_pid
+  while IFS= read -r scan_pid; do
+    [[ -z "$scan_pid" ]] && continue
+    if is_running "$scan_pid"; then
+      echo "[OK] ${APP_NAME} is running (pid=$scan_pid, source=process scan)"
+      found=1
+    fi
+  done < <(find_running_pids 2>/dev/null || true)
+
+  if ((found == 1)); then
     echo "     jar: $JAR_FILE"
+    echo "     profile: $SPRING_PROFILES_ACTIVE"
     echo "     log: $LOG_FILE"
     return 0
   fi
@@ -232,9 +337,23 @@ status_server() {
   return 1
 }
 
+logs_server() {
+  ensure_dirs
+  local lines="${1:-}"
+  if [[ ! -f "$LOG_FILE" ]]; then
+    echo "[WARN] log file not found: $LOG_FILE"
+    return 1
+  fi
+  if [[ -n "$lines" && "$lines" =~ ^[0-9]+$ ]]; then
+    tail -n "$lines" "$LOG_FILE"
+  else
+    tail -f "$LOG_FILE"
+  fi
+}
+
 usage() {
   cat <<EOF
-Usage: $0 {start|stop|restart|status}
+Usage: $0 {start|stop|restart|status|logs [lines]}
 
 Environment:
   MOLI_ENV_FILE   optional path to env file
@@ -263,6 +382,9 @@ main() {
       ;;
     status)
       status_server
+      ;;
+    logs)
+      logs_server "${2:-}"
       ;;
     *)
       usage

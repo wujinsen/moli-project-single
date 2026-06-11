@@ -7,7 +7,9 @@ import com.moli.common.domain.entity.SysUser;
 import com.moli.config.util.ShiroUtils;
 import com.moli.system.mapper.SysUserMapper;
 import com.moli.system.service.PermissionService;
+import com.moli.common.utils.SpringUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.env.Environment;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
@@ -57,8 +59,19 @@ public class ShiroRealm extends AuthorizingRealm {
                 ByteSource.Util.bytes(user.getSalt()),
                 getName()
         );
-        ShiroUtils.deleteCache(userName, true);
+        if (isSingleSession()) {
+            ShiroUtils.deleteCache(userName, true);
+        }
         return authenticationInfo;
+    }
+
+    private boolean isSingleSession() {
+        try {
+            Environment env = SpringUtil.getBean(Environment.class);
+            return Boolean.TRUE.equals(env.getProperty("shiro.single-session", Boolean.class, false));
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     /**

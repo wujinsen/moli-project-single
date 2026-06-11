@@ -159,11 +159,11 @@ FLUSH PRIVILEGES;
 
 ### 6.4 导入表结构与种子数据
 
-将仓库中 `sql/schema_moli.sql`、`sql/seed_sys_menu.sql` 上传到服务器后执行：
+将仓库中 `docs/sql/00_schema.sql`、`docs/sql/01_baseline_data.sql` 上传到服务器后执行：
 
 ```bash
-mysql -u moli -p moli < /opt/moli/sql/schema_moli.sql
-mysql -u moli -p moli < /opt/moli/sql/seed_sys_menu.sql
+mysql -u moli -p moli < /opt/moli/docs/sql/00_schema.sql
+mysql -u moli -p moli < /opt/moli/docs/sql/01_baseline_data.sql
 ```
 
 ### 6.5 确认仅本机访问
@@ -190,17 +190,26 @@ sudo ss -lntp | grep 3306
 sudo vi /etc/redis6/redis6.conf
 ```
 
-修改：
+修改（**systemd 托管时必须 `daemonize no`**，否则 `systemctl restart redis6` 会失败）：
 
 ```conf
 bind 127.0.0.1
+supervised systemd
+daemonize no
 requirepass 你的Redis密码
-daemonize yes
 ```
 
 ```bash
 sudo systemctl enable redis6
 sudo systemctl restart redis6
+sudo systemctl status redis6 --no-pager
+```
+
+若仍失败，先看日志：
+
+```bash
+sudo journalctl -u redis6 -n 50 --no-pager
+sudo redis-server /etc/redis6/redis6.conf --test-memory 1
 ```
 
 ### 7.2 配置密码（Ubuntu）
@@ -219,10 +228,11 @@ sudo systemctl restart redis-server
 ### 7.3 验证
 
 ```bash
-redis-cli -a 你的Redis密码 ping
+# Amazon Linux 2023 客户端名为 redis6-cli（不是 redis-cli）
+redis6-cli -a 你的Redis密码 ping
 # 期望：PONG
 
-redis-cli -a 你的Redis密码
+redis6-cli -a 你的Redis密码
 127.0.0.1:6379> SELECT 0
 OK
 ```
@@ -442,7 +452,7 @@ sudo certbot --nginx -d admin.wu-jinsen.com -d api.wu-jinsen.com
 ## 11. 生产检查清单
 
 - [ ] MySQL 仅 `127.0.0.1:3306` 监听
-- [ ] Redis 仅 `127.0.0.1:6379` 监听，且 `redis-cli ping` 返回 PONG
+- [ ] Redis 仅 `127.0.0.1:6379` 监听，且 `redis6-cli ping`（AL2023）返回 PONG
 - [ ] `spring.redis.database=0`
 - [ ] 后端 `systemctl status moli-server` 为 active
 - [ ] `curl` 本机 `/login` 成功
@@ -463,6 +473,7 @@ sudo certbot --nginx -d admin.wu-jinsen.com -d api.wu-jinsen.com
 | `ERR unknown command 'SELECT'` | 连了 Serverless Redis | 改用 EC2 自建 Redis |
 | `ERR unknown command 'SCAN'` | 同上，或 shiro-redis 扫 Session | 改用标准 Redis；确保代码已避免 SCAN 枚举 |
 | `Access denied for user` | MySQL 账号密码错误 | 核对 `application-pro.yml` / 环境变量 |
+| `Public Key Retrieval is not allowed` | MySQL 8 默认 `caching_sha2_password`，JDBC 未允许取公钥 | JDBC URL 加 `allowPublicKeyRetrieval=true`（见 `application-pro.yml.example`），重启后端 |
 
 ### 12.2 前端刷新 404
 

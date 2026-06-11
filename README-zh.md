@@ -117,7 +117,7 @@ sequenceDiagram
 
 ### 权限配置典型流程
 
-1. 在**菜单管理**维护菜单（或执行 `sql/seed_sys_menu.sql` 初始化）。
+1. 在**菜单管理**维护菜单（或执行 `docs/sql/` 基线初始化，见下文）。
 2. 创建**角色**，勾选菜单 ID 写入 `sys_role_menu`。
 3. 创建**用户**，分配角色 ID 到 `sys_user_role`。
 4. 用户登录 → 前端根据 `menuVoList` 渲染侧边栏 → 仅可访问已授权页面。
@@ -136,14 +136,12 @@ sequenceDiagram
 ## 数据库初始化
 
 ```bash
-# 1. 建表
-mysql -u root -p < sql/schema_moli.sql
-
-# 2. 初始化菜单及默认角色绑定（可选）
-mysql -u root -p moli < sql/seed_sys_menu.sql
+mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS moli DEFAULT CHARSET utf8mb4;"
+mysql -u root -p moli < docs/sql/00_schema.sql
+mysql -u root -p moli < docs/sql/01_baseline_data.sql
 ```
 
-`sql/moli.sql` 为 Navicat 全量导出，仅供参考；全新环境建议使用 `schema_moli.sql` + 种子脚本。
+详见 `docs/sql/README.md`。结构或种子变更后可在本机执行 `python scripts/export_db_baseline.py` 重新导出。
 
 ## 快速开始
 

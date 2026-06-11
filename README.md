@@ -117,7 +117,7 @@ sequenceDiagram
 
 ### Role assignment (typical workflow)
 
-1. Create menus in **Menu management** (or run `sql/seed_sys_menu.sql`).
+1. Create menus in **Menu management** (or run the `docs/sql/` baseline; see below).
 2. Create a **Role** and bind menu IDs (`sys_role_menu`).
 3. Create a **User** and assign role IDs (`sys_user_role`).
 4. User logs in → frontend builds sidebar from `menuVoList` → only authorized pages are reachable.
@@ -136,14 +136,12 @@ sequenceDiagram
 ## Database setup
 
 ```bash
-# 1. Create schema
-mysql -u root -p < sql/schema_moli.sql
-
-# 2. Seed menus and default role bindings (optional)
-mysql -u root -p moli < sql/seed_sys_menu.sql
+mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS moli DEFAULT CHARSET utf8mb4;"
+mysql -u root -p moli < docs/sql/00_schema.sql
+mysql -u root -p moli < docs/sql/01_baseline_data.sql
 ```
 
-`sql/moli.sql` is a full Navicat export for reference; prefer `schema_moli.sql` + seeds for a clean install.
+See `docs/sql/README.md`. Re-export after schema/seed changes: `python scripts/export_db_baseline.py`.
 
 ## Quick start
 

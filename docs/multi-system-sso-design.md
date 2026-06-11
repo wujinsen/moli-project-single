@@ -62,7 +62,7 @@ flowchart LR
 | `data` | 数据平台 | BI、报表 |
 | `office` | 办公协同 | OA |
 
-迁移：`sql/patch_sys_system_group.sql`。
+迁移：已合并至 `docs/sql/00_schema.sql` + `01_baseline_data.sql`。
 
 ## 4. 流程简述
 
@@ -110,4 +110,4 @@ flowchart LR
 - [动作权限与 permissions 下发](action-permission-design.md) — `LoginVo` / enter / capabilities 主次与登录路径
 - [接口迭代地图](api-iteration-map.md)
 - [前端开发与联调指南](../meiling-ui/docs/sso-frontend-dev-guide.md)（`meiling-ui` 仓库）
-- 迁移脚本：`sql/migrate_sys_system.sql`
+- 迁移脚本：已合并至 `docs/sql/` 基线

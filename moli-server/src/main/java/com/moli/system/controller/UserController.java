@@ -442,29 +442,24 @@ public class UserController {
     @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_LIST)
     @ApiOperation(value = "查询角色未授权用户列表", notes = "查询角色未授权用户列表")
     public MoliResult<PageRes<SysUser>> unauthorizedUsers(UserVo req) {
-        PageRes<SysUser> result = new PageRes<>();
-        LambdaQueryWrapper<SysUser> lambdaQueryWrapper = new LambdaQueryWrapper();
         List<SysUserRole> userRoleList = sysUserRoleMapper.selectList(new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getRoleId, req.getRoleId()));
         if (CollectionUtils.isNotEmpty(userRoleList)) {
             req.setUserIds(userRoleList.stream().map(e -> e.getUserId()).collect(Collectors.toList()));
         }
 
+        LambdaQueryWrapper<SysUser> lambdaQueryWrapper = new LambdaQueryWrapper();
         if (CollectionUtils.isNotEmpty(req.getUserIds())) {
             lambdaQueryWrapper.notIn(SysUser::getId, req.getUserIds());
         }
+        if (StringUtils.isNotBlank(req.getUserName())) {
+            lambdaQueryWrapper.like(SysUser::getUserName, req.getUserName());
+        }
+        if (StringUtils.isNotBlank(req.getTelephone())) {
+            lambdaQueryWrapper.like(SysUser::getTelephone, req.getTelephone());
+        }
         lambdaQueryWrapper.eq(SysUser::getIsDelete, CommonConstant.UN_DELETE);
         userService.applyPrivilegedUserVisibility(lambdaQueryWrapper);
-        Page page = new Page();
-        page.setCurrent(req.getPageNum());
-        page.setSize(req.getPageSize());
-        sysUserMapper.selectPage(page, lambdaQueryWrapper);
-        Long total = page.getTotal();
-        result.setTotal(total.intValue());
-        result.setList(page.getRecords());
-        result.setPageNum(req.getPageNum());
-        result.setPageSize(req.getPageSize());
-
-        return MoliResult.success(result);
+        return MoliResult.success(selectUserPage(req, lambdaQueryWrapper));
     }
 
     @PutMapping("/resetPassword")

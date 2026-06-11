@@ -1,7 +1,7 @@
 # 数据库表关系图
 
 最后更新: 2026-06-10  
-数据来源: `sql/schema_moli.sql`、`sql/migrate_sys_system.sql` 与 `moli-common` 实体类  
+数据来源: `docs/sql/00_schema.sql` 与 `moli-common` 实体类  
 数据库名: `moli`（utf8mb4）
 
 ## 1. 说明
@@ -9,7 +9,7 @@
 - 共 **20** 张业务表：系统模块 **14** 张（含多系统 SSO **2** 张）、运维模块 **6** 张。
 - 表间为 **逻辑关联**，DDL 中 **未声明数据库外键**（`FOREIGN_KEY_CHECKS = 0`），由应用层维护一致性。
 - 主键 `id` 由应用侧 `CustomIdGenerator` 赋值，非数据库自增。
-- 结构变更时请同步更新本文件与 `sql/schema_moli.sql`。
+- 结构变更时请同步更新本文件，并执行 `python scripts/export_db_baseline.py` 重导出 `docs/sql/00_schema.sql`。
 
 ## 2. 总览
 
@@ -111,7 +111,7 @@ erDiagram
 | `sys_user_role` / `sys_role_menu` / `sys_menu` | **不变**；管 moli-admin **内部**菜单按钮权限 |
 | `operation_platform_info` | **无关**；运维外部平台账号，不是 SSO 业务系统 |
 
-DDL：`sql/migrate_sys_system.sql`（在 `schema_moli.sql` 全量建库之后执行，或合并进全量脚本）。
+DDL：已合并进 `docs/sql/00_schema.sql`（含 `sys_system` / `sys_user_system`）。
 
 ## 4. 系统模块 · 权限与组织（RBAC）
 
@@ -331,7 +331,6 @@ erDiagram
 
 ## 9. 相关文件
 
-- DDL: [`sql/schema_moli.sql`](../sql/schema_moli.sql)、[`sql/migrate_sys_system.sql`](../sql/migrate_sys_system.sql)
-- 种子数据: `sql/seed_sys_*.sql`、`sql/seed_operation.sql`
+- DDL + 种子: [`docs/sql/00_schema.sql`](sql/00_schema.sql)、[`docs/sql/01_baseline_data.sql`](sql/01_baseline_data.sql)
 - 实体类: `moli-common/src/main/java/com/moli/common/domain/entity/`
 - 英文版: [database-schema-diagram.en.md](database-schema-diagram.en.md)

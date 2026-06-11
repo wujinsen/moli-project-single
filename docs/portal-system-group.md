@@ -34,14 +34,14 @@
 
 某分组下无系统时不显示该分组标题。
 
-**演示数据：** 执行 `sql/seed_sys_system_portal_demo.sql` 可注册 7 个系统覆盖全部分组，详见 [portal-system-group-catalog.md](portal-system-group-catalog.md)。
+**演示数据：** `docs/sql/01_baseline_data.sql` 已含门户演示系统；详见 [portal-system-group-catalog.md](portal-system-group-catalog.md)。
 
 ## 3. 数据库
 
 执行：
 
 ```bash
-mysql -u root -p moli < sql/patch_sys_system_group.sql
+mysql -u root -p moli < docs/sql/00_schema.sql && mysql -u root -p moli < docs/sql/01_baseline_data.sql
 ```
 
 新增列：

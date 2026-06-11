@@ -18,7 +18,7 @@ Last updated: 2026-06-11
 
 - `GET /system/my` → `SystemVo.systemGroup`
 - `POST/PUT /system` → `SysSystem.systemGroup`
-- SQL: `sql/patch_sys_system_group.sql`
+- SQL: `docs/sql/00_schema.sql` + `01_baseline_data.sql`
 
 ## Frontend (meiling-ui)
 

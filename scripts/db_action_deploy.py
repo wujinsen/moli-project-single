@@ -213,10 +213,13 @@ def main():
         before = query_status(conn)
         print(f"before: {before['action_count']} actions, dict={before['dict_actions']}")
 
+        # Fresh DB: use docs/sql/00_schema.sql + 01_baseline_data.sql (see README.md)
         migrate = SQL_DIR / "migrate_sys_action.sql"
         if migrate.exists():
             n = run_sql_file(conn, migrate)
             print(f"OK {migrate.name}: {n} statements")
+        else:
+            print("INFO: no migrate_sys_action.sql; baseline is docs/sql/00_schema.sql + 01_baseline_data.sql")
         try:
             ensure_action_menu(conn)
         except Exception as e:

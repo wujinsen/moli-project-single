@@ -126,7 +126,7 @@
 
 ---
 
-## 当前演示数据（执行 `sql/seed_sys_system_portal_demo.sql` 后）
+## 当前演示数据（`docs/sql/01_baseline_data.sql` 基线）
 
 | 分组 | 数量 | 系统 |
 |------|------|------|

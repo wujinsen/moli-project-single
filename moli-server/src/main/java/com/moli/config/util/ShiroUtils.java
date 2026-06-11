@@ -14,6 +14,9 @@ import org.apache.shiro.subject.SimplePrincipalCollection;
 import org.apache.shiro.subject.support.DefaultSubjectContext;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.crazycake.shiro.RedisSessionDAO;
+import org.springframework.core.env.Environment;
+
+import java.util.Set;
 
 @Slf4j
 public class ShiroUtils {
@@ -30,6 +33,15 @@ public class ShiroUtils {
         return redisSessionDAO;
     }
 
+    private static boolean isSingleSession() {
+        try {
+            Environment env = SpringUtil.getBean(Environment.class);
+            return Boolean.TRUE.equals(env.getProperty("shiro.single-session", Boolean.class, false));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     public static Session getSession() {
         return SecurityUtils.getSubject().getSession();
     }
@@ -37,7 +49,7 @@ public class ShiroUtils {
     public static void logout() {
         SysUser user = getUserInfo();
         if (user != null) {
-            clearUserSessionIndex(user.getUserName());
+            removeCurrentUserSessionIndex(user.getUserName());
         }
         SecurityUtils.getSubject().logout();
     }
@@ -47,7 +59,7 @@ public class ShiroUtils {
     }
 
     /**
-     * 登录成功后绑定用户名与 Session，供下次登录时定点清理旧会话。
+     * 登录成功后记录 Session，供单端踢下线或停用用户时清理。
      */
     public static void bindUserSession(String userName) {
         if (userName == null || userName.isEmpty()) {
@@ -59,49 +71,82 @@ public class ShiroUtils {
                 return;
             }
             RedisUtil redisUtil = SpringUtil.getBean(RedisUtil.class);
-            String indexKey = String.format(RedisConstant.SHIRO_USER_SESSION_KEY, userName);
+            String sessionId = session.getId().toString();
             long ttlSeconds = session.getTimeout() > 0
                     ? session.getTimeout() / 1000
                     : RedisConstant.REDIS_EXPIRE_TWO;
-            redisUtil.set(indexKey, session.getId().toString(), ttlSeconds);
+            if (isSingleSession()) {
+                String indexKey = String.format(RedisConstant.SHIRO_USER_SESSION_KEY, userName);
+                redisUtil.set(indexKey, sessionId, ttlSeconds);
+            } else {
+                String sessionsKey = String.format(RedisConstant.SHIRO_USER_SESSIONS_KEY, userName);
+                redisUtil.sSet(sessionsKey, sessionId);
+                redisUtil.expire(sessionsKey, ttlSeconds);
+            }
         } catch (Exception e) {
             log.warn("Failed to bind shiro session index for user [{}]: {}", userName, e.getMessage());
         }
     }
 
     /**
-     * 删除用户缓存与旧 Session。Redis 异常时不阻断登录流程。
+     * 删除用户缓存与 Session。Redis 异常时不阻断登录流程。
      */
     public static void deleteCache(String userName, boolean isRemoveSession) {
         if (userName == null || userName.isEmpty()) {
             return;
         }
         try {
-            RedisUtil redisUtil = SpringUtil.getBean(RedisUtil.class);
-            String indexKey = String.format(RedisConstant.SHIRO_USER_SESSION_KEY, userName);
-            Object sessionIdObj = redisUtil.get(indexKey);
-            if (sessionIdObj == null) {
-                return;
+            if (isSingleSession()) {
+                deleteSingleSession(userName, isRemoveSession);
+            } else {
+                deleteAllUserSessions(userName, isRemoveSession);
             }
-            String sessionId = sessionIdObj.toString();
-            Session session = getRedisSessionDAO().readSession(sessionId);
-            if (session == null) {
-                redisUtil.del(indexKey);
-                return;
-            }
-            Object attribute = session.getAttribute(DefaultSubjectContext.PRINCIPALS_SESSION_KEY);
-            if (isRemoveSession) {
-                getRedisSessionDAO().delete(session);
-            }
-            if (attribute != null) {
-                DefaultWebSecurityManager securityManager =
-                        (DefaultWebSecurityManager) SecurityUtils.getSecurityManager();
-                Authenticator authc = securityManager.getAuthenticator();
-                ((LogoutAware) authc).onLogout((SimplePrincipalCollection) attribute);
-            }
-            redisUtil.del(indexKey);
         } catch (Exception e) {
             log.warn("Failed to delete shiro cache for user [{}], skipped: {}", userName, e.getMessage());
+        }
+    }
+
+    private static void deleteSingleSession(String userName, boolean isRemoveSession) {
+        RedisUtil redisUtil = SpringUtil.getBean(RedisUtil.class);
+        String indexKey = String.format(RedisConstant.SHIRO_USER_SESSION_KEY, userName);
+        Object sessionIdObj = redisUtil.get(indexKey);
+        if (sessionIdObj == null) {
+            return;
+        }
+        removeSessionById(sessionIdObj.toString(), isRemoveSession);
+        redisUtil.del(indexKey);
+    }
+
+    private static void deleteAllUserSessions(String userName, boolean isRemoveSession) {
+        RedisUtil redisUtil = SpringUtil.getBean(RedisUtil.class);
+        String sessionsKey = String.format(RedisConstant.SHIRO_USER_SESSIONS_KEY, userName);
+        Set<Object> sessionIds = redisUtil.sGet(sessionsKey);
+        if (sessionIds == null || sessionIds.isEmpty()) {
+            redisUtil.del(sessionsKey);
+            return;
+        }
+        for (Object sessionIdObj : sessionIds) {
+            if (sessionIdObj != null) {
+                removeSessionById(sessionIdObj.toString(), isRemoveSession);
+            }
+        }
+        redisUtil.del(sessionsKey);
+    }
+
+    private static void removeSessionById(String sessionId, boolean isRemoveSession) {
+        Session session = getRedisSessionDAO().readSession(sessionId);
+        if (session == null) {
+            return;
+        }
+        Object attribute = session.getAttribute(DefaultSubjectContext.PRINCIPALS_SESSION_KEY);
+        if (isRemoveSession) {
+            getRedisSessionDAO().delete(session);
+        }
+        if (attribute != null) {
+            DefaultWebSecurityManager securityManager =
+                    (DefaultWebSecurityManager) SecurityUtils.getSecurityManager();
+            Authenticator authc = securityManager.getAuthenticator();
+            ((LogoutAware) authc).onLogout((SimplePrincipalCollection) attribute);
         }
     }
 
@@ -141,10 +186,24 @@ public class ShiroUtils {
         return null;
     }
 
-    private static void clearUserSessionIndex(String userName) {
+    private static void removeCurrentUserSessionIndex(String userName) {
         try {
+            Session session = getSession();
+            if (session == null || session.getId() == null) {
+                return;
+            }
             RedisUtil redisUtil = SpringUtil.getBean(RedisUtil.class);
-            redisUtil.del(String.format(RedisConstant.SHIRO_USER_SESSION_KEY, userName));
+            String sessionId = session.getId().toString();
+            if (isSingleSession()) {
+                String indexKey = String.format(RedisConstant.SHIRO_USER_SESSION_KEY, userName);
+                Object indexed = redisUtil.get(indexKey);
+                if (indexed != null && sessionId.equals(indexed.toString())) {
+                    redisUtil.del(indexKey);
+                }
+            } else {
+                String sessionsKey = String.format(RedisConstant.SHIRO_USER_SESSIONS_KEY, userName);
+                redisUtil.setRemove(sessionsKey, sessionId);
+            }
         } catch (Exception e) {
             log.warn("Failed to clear shiro session index for user [{}]: {}", userName, e.getMessage());
         }

@@ -1,7 +1,7 @@
 # Database Schema Diagram
 
 Last updated: 2026-06-10  
-Source: `sql/schema_moli.sql`, `sql/migrate_sys_system.sql`, `moli-common` entities  
+Source: `docs/sql/00_schema.sql`, `moli-common` entities  
 Database: `moli` (utf8mb4)
 
 ## 1. Notes
@@ -9,7 +9,7 @@ Database: `moli` (utf8mb4)
 - **20** business tables: **14** system (incl. **2** multi-system SSO) + **6** operations.
 - Relationships are **logical only** — no database foreign keys in DDL.
 - Primary keys are assigned by the application (`CustomIdGenerator`), not DB auto-increment.
-- Keep this file in sync with `sql/schema_moli.sql` when the schema changes.
+- Keep this file in sync with `docs/sql/00_schema.sql` when the schema changes; re-export via `python scripts/export_db_baseline.py`.
 
 ## 2. Overview
 
@@ -220,7 +220,7 @@ erDiagram
 
 Tickets live in **Redis**, not MySQL. RBAC tables unchanged.
 
-DDL: `sql/migrate_sys_system.sql`
+DDL: merged into `docs/sql/00_schema.sql` (`sys_system` / `sys_user_system`)
 
 ## 7. Table Index
 
@@ -249,6 +249,6 @@ DDL: `sql/migrate_sys_system.sql`
 
 ## 8. Related Files
 
-- DDL: [`sql/schema_moli.sql`](../sql/schema_moli.sql)
+- DDL + seed: [`docs/sql/00_schema.sql`](sql/00_schema.sql), [`docs/sql/01_baseline_data.sql`](sql/01_baseline_data.sql)
 - Entities: `moli-common/src/main/java/com/moli/common/domain/entity/`
 - Chinese version: [database-schema-diagram.md](database-schema-diagram.md)
