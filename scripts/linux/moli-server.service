@@ -1,0 +1,27 @@
+[Unit]
+Description=Moli Admin Backend (moli-server)
+Documentation=https://github.com/your-org/moli-project-single
+After=network-online.target mysqld.service redis.service
+Wants=network-online.target
+
+[Service]
+Type=forking
+User=ec2-user
+Group=ec2-user
+WorkingDirectory=/opt/moli/backend
+
+# 与 moli-server.env 相同格式（KEY=VALUE，无 export）
+EnvironmentFile=-/opt/moli/backend/conf/moli-server.env
+
+PIDFile=/opt/moli/backend/run/moli-server.pid
+ExecStart=/opt/moli/backend/moli-server.sh start
+ExecStop=/opt/moli/backend/moli-server.sh stop
+ExecReload=/opt/moli/backend/moli-server.sh restart
+
+Restart=on-failure
+RestartSec=10
+SuccessExitStatus=0
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

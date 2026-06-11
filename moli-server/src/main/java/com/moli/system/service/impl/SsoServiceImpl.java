@@ -1,6 +1,7 @@
 package com.moli.system.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.moli.common.constant.CommonConstant;
 import com.moli.common.constant.RedisConstant;
 import com.moli.common.constant.SystemConstant;
 import com.moli.common.domain.dto.SsoTicketPayload;
@@ -38,6 +39,7 @@ public class SsoServiceImpl implements SsoService {
         payload.setSystemId(system.getId());
         payload.setSystemCode(system.getSystemCode());
         payload.setHubToken(hubToken);
+        payload.setFullPermission(CommonConstant.hasFullPermission(user.getUserName()));
 
         String ticketId = UUID.randomUUID().toString().replace("-", "");
         String key = String.format(RedisConstant.SSO_TICKET_KEY, ticketId);
@@ -63,6 +65,7 @@ public class SsoServiceImpl implements SsoService {
         vo.setNickName(payload.getNickName());
         vo.setSystemCode(payload.getSystemCode());
         vo.setHubToken(payload.getHubToken());
+        vo.setFullPermission(payload.getFullPermission());
         return vo;
     }
 

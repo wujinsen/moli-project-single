@@ -18,9 +18,16 @@ import org.crazycake.shiro.RedisSessionDAO;
 @Slf4j
 public class ShiroUtils {
 
-    private static RedisSessionDAO redisSessionDAO = SpringUtil.getBean(RedisSessionDAO.class);
+    private static RedisSessionDAO redisSessionDAO;
 
     private ShiroUtils() {
+    }
+
+    private static RedisSessionDAO getRedisSessionDAO() {
+        if (redisSessionDAO == null) {
+            redisSessionDAO = SpringUtil.getBean(RedisSessionDAO.class);
+        }
+        return redisSessionDAO;
     }
 
     public static Session getSession() {
@@ -77,14 +84,14 @@ public class ShiroUtils {
                 return;
             }
             String sessionId = sessionIdObj.toString();
-            Session session = redisSessionDAO.readSession(sessionId);
+            Session session = getRedisSessionDAO().readSession(sessionId);
             if (session == null) {
                 redisUtil.del(indexKey);
                 return;
             }
             Object attribute = session.getAttribute(DefaultSubjectContext.PRINCIPALS_SESSION_KEY);
             if (isRemoveSession) {
-                redisSessionDAO.delete(session);
+                getRedisSessionDAO().delete(session);
             }
             if (attribute != null) {
                 DefaultWebSecurityManager securityManager =

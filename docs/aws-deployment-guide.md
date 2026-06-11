@@ -271,45 +271,42 @@ export SPRING_REDIS_PASSWORD=你的Redis密码
 export SPRING_REDIS_DATABASE=0
 ```
 
-### 8.4 systemd 服务
+### 8.4 启停脚本与 systemd
+
+项目自带 Linux 脚本（`scripts/linux/`）：
 
 ```bash
-sudo vi /etc/systemd/system/moli-server.service
+# 上传到服务器
+scp -i "你的密钥.pem" scripts/linux/moli-server.sh scripts/linux/moli-server.env.example \
+  ec2-user@EC2公网IP:/opt/moli/backend/
+
+ssh -i "你的密钥.pem" ec2-user@EC2公网IP <<'EOF'
+cd /opt/moli/backend
+mkdir -p conf logs run
+cp moli-server.env.example conf/moli-server.env
+chmod 600 conf/moli-server.env
+chmod +x moli-server.sh
+vi conf/moli-server.env   # 修改密码、SSO_SHARED_SECRET 等
+./moli-server.sh start
+./moli-server.sh status
+EOF
 ```
 
-```ini
-[Unit]
-Description=Moli Server
-After=network.target mysqld.service redis6.service
+常用命令：`start` / `stop` / `restart` / `status`
 
-[Service]
-Type=simple
-User=ec2-user
-WorkingDirectory=/opt/moli/backend
-Environment=SPRING_PROFILES_ACTIVE=pro
-Environment=DB_HOST=127.0.0.1
-Environment=DB_PORT=3306
-Environment=DB_NAME=moli
-Environment=SPRING_DATASOURCE_USERNAME=moli
-Environment=SPRING_DATASOURCE_PASSWORD=你的MySQL密码
-Environment=SPRING_REDIS_HOST=127.0.0.1
-Environment=SPRING_REDIS_PORT=6379
-Environment=SPRING_REDIS_PASSWORD=你的Redis密码
-Environment=SPRING_REDIS_DATABASE=0
-ExecStart=/usr/bin/java -jar /opt/moli/backend/moli-server.jar
-Restart=on-failure
-RestartSec=10
-
-[Install]
-WantedBy=multi-user.target
-```
+**开机自启（systemd）**：
 
 ```bash
+sudo cp /opt/moli/backend/../scripts/linux/moli-server.service /etc/systemd/system/moli-server.service
+# 或从仓库复制 scripts/linux/moli-server.service 到服务器后：
+sudo cp moli-server.service /etc/systemd/system/moli-server.service
 sudo systemctl daemon-reload
 sudo systemctl enable moli-server
 sudo systemctl start moli-server
 sudo systemctl status moli-server
 ```
+
+`moli-server.service` 会读取 `/opt/moli/backend/conf/moli-server.env`，并调用 `moli-server.sh` 启停。
 
 ### 8.5 验证后端
 

@@ -25,6 +25,9 @@ public class SysMenu extends BaseEntity {
     @ApiModelProperty(value = "菜单路由名称")
     private String component;
 
+    @ApiModelProperty(value = "Vue 路由名称（getRouters 的 name）；空则保存时自动生成")
+    private String routeName;
+
     @ApiModelProperty(value = "菜单类型 M目录 C菜单 F按钮")
     private String menuType;
 

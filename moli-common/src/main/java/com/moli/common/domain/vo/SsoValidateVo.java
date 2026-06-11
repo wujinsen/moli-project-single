@@ -24,4 +24,7 @@ public class SsoValidateVo {
     @ApiModelProperty("认证中心 Session Token；仅用于回调中心 API，不能代替子系统本地鉴权")
     private String hubToken;
 
+    @ApiModelProperty("是否超管（外部系统可据此授予本地最大权限）")
+    private Boolean fullPermission;
+
 }

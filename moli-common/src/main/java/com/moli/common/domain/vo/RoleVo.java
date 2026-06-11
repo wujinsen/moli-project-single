@@ -31,4 +31,7 @@ public class RoleVo extends BaseEntity {
     @ApiModelProperty(value = "菜单id集合")
     private List<Long> menuIds;
 
+    @ApiModelProperty("动作权限码")
+    private List<String> actionCodes;
+
 }

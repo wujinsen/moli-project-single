@@ -12,21 +12,22 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.web.bind.annotation.*;
+import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 
 @RestController
 @RequestMapping("/operation/server")
 @Api(tags = "服务器管理")
 @Slf4j
-@RequiresPermissions(PermissionConstants.OPERATION_SERVER_LIST)
 public class OperationServerController {
 
     @Resource
     private OperationServerMapper operationServerMapper;
 
     @GetMapping("/list")
+    @RequiresPermissions(PermissionConstants.OPERATION_SERVER_LIST)
     @ApiOperation(value = "服务器列表", notes = "服务器列表")
     public MoliResult<PageRes<OperationServerInfo>> list(OperationServerInfoVo operationServerInfoVo) {
         PageRes<OperationServerInfo> result = new PageRes<>();
@@ -56,6 +57,7 @@ public class OperationServerController {
     }
 
     @PostMapping
+    @RequiresPermissions(value = {PermissionConstants.OPERATION_SERVER_ADD, PermissionConstants.OPERATION_SERVER_LIST}, logical = Logical.AND)
     @ApiOperation(value = "添加服务器", notes = "添加服务器")
     public MoliResult<Boolean> insert(@RequestBody OperationServerInfo operationServerInfo) {
         operationServerMapper.insert(operationServerInfo);
@@ -64,6 +66,7 @@ public class OperationServerController {
 
 
     @PutMapping
+    @RequiresPermissions(value = {PermissionConstants.OPERATION_SERVER_EDIT, PermissionConstants.OPERATION_SERVER_LIST}, logical = Logical.AND)
     @ApiOperation(value = "更新服务器", notes = "更新服务器")
     public MoliResult<Boolean> update(@RequestBody OperationServerInfo operationServerInfo) {
         operationServerMapper.updateById(operationServerInfo);
@@ -71,6 +74,7 @@ public class OperationServerController {
     }
 
     @GetMapping(value = "/{id}")
+    @RequiresPermissions(PermissionConstants.OPERATION_SERVER_LIST)
     @ApiOperation(value = "查询单个服务器", notes = "查询单个服务器")
     public MoliResult<OperationServerInfo> selectOne(@PathVariable Long id) {
 
@@ -78,6 +82,7 @@ public class OperationServerController {
     }
 
     @DeleteMapping("/{ids}")
+    @RequiresPermissions(value = {PermissionConstants.OPERATION_SERVER_REMOVE, PermissionConstants.OPERATION_SERVER_LIST}, logical = Logical.AND)
     @ApiOperation(value = "删除服务器", notes = "删除服务器")
     public MoliResult remove(@PathVariable Long[] ids) {
         for (Long id : ids) {

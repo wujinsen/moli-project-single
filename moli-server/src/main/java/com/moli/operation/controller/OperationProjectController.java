@@ -5,17 +5,15 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.moli.common.constant.PermissionConstants;
 import com.moli.common.core.MoliResult;
 import com.moli.common.domain.entity.OperationProjectDeployInfo;
-import com.moli.common.domain.entity.OperationServerInfo;
-import com.moli.common.domain.vo.OperationServerInfoVo;
 import com.moli.common.page.PageRes;
 import com.moli.operation.mapper.OperationProjectDeployInfoMapper;
-import com.moli.operation.mapper.OperationServerMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.web.bind.annotation.*;
+import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 
@@ -23,13 +21,13 @@ import javax.annotation.Resource;
 @RequestMapping("/operation/project")
 @Api(tags = "项目管理")
 @Slf4j
-@RequiresPermissions(PermissionConstants.OPERATION_PROJECT_LIST)
 public class OperationProjectController {
 
     @Resource
     private OperationProjectDeployInfoMapper operationProjectDeployInfoMapper;
 
     @GetMapping("/list")
+    @RequiresPermissions(PermissionConstants.OPERATION_PROJECT_LIST)
     @ApiOperation(value = "项目列表", notes = "项目列表")
     public MoliResult<PageRes<OperationProjectDeployInfo>> list(OperationProjectDeployInfo operationProjectDeployInfo) {
         PageRes<OperationProjectDeployInfo> result = new PageRes<>();
@@ -58,6 +56,7 @@ public class OperationProjectController {
     }
 
     @PostMapping
+    @RequiresPermissions(value = {PermissionConstants.OPERATION_PROJECT_ADD, PermissionConstants.OPERATION_PROJECT_LIST}, logical = Logical.AND)
     @ApiOperation(value = "添加项目", notes = "添加项目")
     public MoliResult<Boolean> insert(@RequestBody OperationProjectDeployInfo operationProjectDeployInfo) {
         operationProjectDeployInfoMapper.insert(operationProjectDeployInfo);
@@ -66,6 +65,7 @@ public class OperationProjectController {
 
 
     @PutMapping
+    @RequiresPermissions(value = {PermissionConstants.OPERATION_PROJECT_EDIT, PermissionConstants.OPERATION_PROJECT_LIST}, logical = Logical.AND)
     @ApiOperation(value = "更新项目", notes = "更新项目")
     public MoliResult<Boolean> update(@RequestBody OperationProjectDeployInfo operationProjectDeployInfo) {
         operationProjectDeployInfoMapper.updateById(operationProjectDeployInfo);
@@ -73,6 +73,7 @@ public class OperationProjectController {
     }
 
     @GetMapping(value = "/{id}")
+    @RequiresPermissions(PermissionConstants.OPERATION_PROJECT_LIST)
     @ApiOperation(value = "查询单个项目", notes = "查询单个项目")
     public MoliResult<OperationProjectDeployInfo> selectOne(@PathVariable Long id) {
 
@@ -80,6 +81,7 @@ public class OperationProjectController {
     }
 
     @DeleteMapping("/{ids}")
+    @RequiresPermissions(value = {PermissionConstants.OPERATION_PROJECT_REMOVE, PermissionConstants.OPERATION_PROJECT_LIST}, logical = Logical.AND)
     @ApiOperation(value = "删除项目", notes = "删除项目")
     public MoliResult remove(@PathVariable Long[] ids) {
         for (Long id : ids) {

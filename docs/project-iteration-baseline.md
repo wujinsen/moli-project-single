@@ -1,6 +1,6 @@
 # 项目迭代基线（Moli 后台）
 
-最后更新: 2026-06-08
+最后更新: 2026-06-11
 维护方式: 每次迭代后更新本文件，作为需求/技术/风险的单一基准事实来源
 
 ## 1. 项目概览
@@ -105,6 +105,7 @@
 - AWS 单机部署步骤见 `docs/aws-deployment-guide.md`（MySQL/Nginx/Redis 自建；Redis 勿用 Serverless）
 - 数据库表关系图见 `docs/database-schema-diagram.md`（Mermaid ER 图，对应 `sql/schema_moli.sql`）
 - 多系统 SSO：在 **moli-admin**（本仓库，模块目录 `moli-server`）做登录、系统门户、用户-系统分配；其他系统各自 RBAC。见 `docs/multi-system-sso-design.md`
+- Linux 部署脚本：`scripts/linux/moli-server.sh`（启停）、`moli-server.env.example`、`moli-server.service`（systemd）
 
 ## 6. 现阶段风险与技术债（基于仓库事实）
 
@@ -140,7 +141,32 @@
 - 结果:
 - 遗留事项:
 
-## 9. 最近一次修复记录（2026-05-06）
+## 9. 多系统 SSO 与超管权限（2026-06-11）
+
+- 目标: moli-admin 统一登录 + 系统门户；超管可进任意系统并在 INTERNAL 系统内拥有全菜单与 `*:*:*`
+- 变更模块: `moli-common`、`moli-server`
+- 关键能力:
+  - `sys_system` / `sys_user_system` 表与迁移脚本 `sql/migrate_sys_system.sql`
+  - `SystemController`、`SsoController`、`LoginController` 扩展
+  - 超管 `hasFullPermission`；SSO `fullPermission` 字段
+  - 登录响应 `LoginVo.fullPermission`
+- 配置: `sso.enabled`、`SSO_SHARED_SECRET`（见 `application.yml` 与 `scripts/linux/moli-server.env.example`）
+- 验证: `mvn -pl moli-common,moli-server -am -DskipTests package` 编译通过；需执行 SQL 后联调登录与 `/system/enter`
+- 遗留: 执行 `sql/patch_sys_menu_system_registry.sql` 后出现「系统注册」菜单；前端 `meiling-ui` 在独立仓库联调
+- 前端开发文档: `meiling-ui/docs/sso-frontend-dev-guide.md`、`meiling-ui/AGENTS.md`
+
+## 10. 动作权限（P1–P4 已落地，2026-06-11）
+
+- 模型: `sys_action` + `sys_role_action`；页面 list 仍在 C 菜单 `perms`；废弃菜单 F
+- **P3**：字典/系统注册/日志/运维四模块动作种子 + Controller 写接口 `add/edit/remove` + `list` 双重鉴权；前端各管理页 `guardAction`
+- **P4**：`GET /action/page` 等动作目录 CRUD（权限复用 `system:menu:list` / `edit`）；`ActionManageView` + `patch_sys_menu_action_manage.sql`
+- 后端: `PermissionService` 并集页面+动作；`GET /auth/capabilities`、`GET /action/list`、`GET /role/{id}/auth`
+- 下发: `LoginVo` / `SystemEnterVo` 含 `permissions`；`fillLoginContext` 门户关/单系统自动进已拷贝
+- 前端（meiling-ui）: `constants/permissions.ts`、`guardAction`、角色页动作勾选、按钮常显点击拦截
+- SQL: `docs/sql/migrate_sys_action.sql`（新环境）；增量 `patch_sys_action_role_menu_dept_post.sql`、`patch_sys_action_p3.sql`；菜单 `patch_sys_menu_action_manage.sql`
+- 设计: [action-permission-design.md](action-permission-design.md)
+
+## 12. 最近一次修复记录（2026-05-06）
 
 - 修复 `DictController#deleteData`:
   - 路径变量显式绑定为 `@PathVariable("dictIds")`
@@ -148,10 +174,9 @@
 - 修复 `LoginController#captchaImage`:
   - 改为配置开关模式（`captcha.enabled`，默认 `false`）
   - 开启时生成验证码图片并写入 Redis；关闭时返回关闭提示
-- 当前阻塞:
-  - 本机缺少 `mvn` 命令，暂无法在本地执行编译验证
+- 当前阻塞: 已解除（本机已配置 Maven，2026-06-11 编译通过）
 
-## 10. AI 迭代基础设施（2026-05-06）
+## 13. AI 迭代基础设施（2026-05-06）
 
 - 已新增项目级 AI 协作基线文件:
   - `.cursor/skills/bugfix-triage/SKILL.md`
@@ -174,7 +199,7 @@
   - 严格校验命令: `python3 ~/.cursor/hooks/init-bilingual-docs.py <项目根目录> --dry-run --sync-skeleton --strict`
   - 说明: 可将中文文档标题结构同步到英文镜像中的待翻译清单块（不覆盖原英文正文）。
 
-## 11. 依赖安全治理记录（2026-05-06）
+## 14. 依赖安全治理记录（2026-05-06）
 
 - 已完成第一批低风险依赖升级（父 `pom` 统一版本管理）:
   - `fastjson`: `1.2.46/1.2.70` -> `1.2.83`

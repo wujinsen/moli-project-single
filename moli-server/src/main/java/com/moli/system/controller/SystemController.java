@@ -14,6 +14,7 @@ import com.moli.system.service.SysSystemService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -51,14 +52,14 @@ public class SystemController {
     }
 
     @GetMapping("/list")
-    @RequiresPermissions(PermissionConstants.SYSTEM_USER_LIST)
+    @RequiresPermissions(PermissionConstants.SYSTEM_SYSTEM_LIST)
     @ApiOperation(value = "系统列表（管理）")
     public MoliResult<PageRes<SysSystem>> list(SysSystem query) {
         return MoliResult.success(sysSystemService.page(query));
     }
 
     @PostMapping
-    @RequiresPermissions(PermissionConstants.SYSTEM_USER_LIST)
+    @RequiresPermissions(value = {PermissionConstants.SYSTEM_SYSTEM_ADD, PermissionConstants.SYSTEM_SYSTEM_LIST}, logical = Logical.AND)
     @ApiOperation(value = "新增系统")
     public MoliResult<Boolean> insert(@RequestBody SysSystem system) {
         if (!CommonConstant.isSuperAdmin(ShiroUtils.getUserInfo().getUserName())) {
@@ -68,7 +69,7 @@ public class SystemController {
     }
 
     @PutMapping
-    @RequiresPermissions(PermissionConstants.SYSTEM_USER_LIST)
+    @RequiresPermissions(value = {PermissionConstants.SYSTEM_SYSTEM_EDIT, PermissionConstants.SYSTEM_SYSTEM_LIST}, logical = Logical.AND)
     @ApiOperation(value = "更新系统")
     public MoliResult<Boolean> update(@RequestBody SysSystem system) {
         if (!CommonConstant.isSuperAdmin(ShiroUtils.getUserInfo().getUserName())) {
@@ -78,7 +79,7 @@ public class SystemController {
     }
 
     @DeleteMapping("/{ids}")
-    @RequiresPermissions(PermissionConstants.SYSTEM_USER_LIST)
+    @RequiresPermissions(value = {PermissionConstants.SYSTEM_SYSTEM_REMOVE, PermissionConstants.SYSTEM_SYSTEM_LIST}, logical = Logical.AND)
     @ApiOperation(value = "删除系统")
     public MoliResult<Boolean> delete(@PathVariable String ids) {
         if (!CommonConstant.isSuperAdmin(ShiroUtils.getUserInfo().getUserName())) {

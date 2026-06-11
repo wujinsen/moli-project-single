@@ -20,4 +20,10 @@ public class SystemEnterVo {
     @ApiModelProperty("认证中心 token，子系统可复用")
     private String hubToken;
 
+    @ApiModelProperty("有效权限码")
+    private java.util.List<String> permissions;
+
+    @ApiModelProperty("是否拥有全部权限（超管）")
+    private Boolean fullPermission;
+
 }

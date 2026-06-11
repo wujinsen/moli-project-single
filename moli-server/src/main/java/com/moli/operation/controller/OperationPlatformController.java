@@ -11,21 +11,22 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.web.bind.annotation.*;
+import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 
 @RestController
 @RequestMapping("/operation/platform")
 @Api(tags = "运维平台管理")
 @Slf4j
-@RequiresPermissions(PermissionConstants.OPERATION_PLATFORM_LIST)
 public class OperationPlatformController {
 
     @Resource
     private OperationPlatformMapper operationPlatformMapper;
 
     @GetMapping("/list")
+    @RequiresPermissions(PermissionConstants.OPERATION_PLATFORM_LIST)
     @ApiOperation(value = "运维平台列表", notes = "运维平台列表")
     public MoliResult<PageRes<OperationPlatformInfo>> list(OperationPlatformInfo operationPlatformInfo) {
         PageRes<OperationPlatformInfo> result = new PageRes<>();
@@ -53,6 +54,7 @@ public class OperationPlatformController {
     }
 
     @PostMapping
+    @RequiresPermissions(value = {PermissionConstants.OPERATION_PLATFORM_ADD, PermissionConstants.OPERATION_PLATFORM_LIST}, logical = Logical.AND)
     @ApiOperation(value = "添加运维平台", notes = "添加运维平台")
     public MoliResult<Boolean> insert(@RequestBody OperationPlatformInfo operationPlatformInfo) {
         operationPlatformMapper.insert(operationPlatformInfo);
@@ -61,6 +63,7 @@ public class OperationPlatformController {
 
 
     @PutMapping
+    @RequiresPermissions(value = {PermissionConstants.OPERATION_PLATFORM_EDIT, PermissionConstants.OPERATION_PLATFORM_LIST}, logical = Logical.AND)
     @ApiOperation(value = "更新运维平台", notes = "更新运维平台")
     public MoliResult<Boolean> update(@RequestBody OperationPlatformInfo operationPlatformInfo) {
         operationPlatformMapper.updateById(operationPlatformInfo);
@@ -68,6 +71,7 @@ public class OperationPlatformController {
     }
 
     @GetMapping(value = "/{id}")
+    @RequiresPermissions(PermissionConstants.OPERATION_PLATFORM_LIST)
     @ApiOperation(value = "查询单个运维平台", notes = "查询单个运维平台")
     public MoliResult<OperationPlatformInfo> selectOne(@PathVariable Long id) {
 
@@ -75,6 +79,7 @@ public class OperationPlatformController {
     }
 
     @DeleteMapping("/{ids}")
+    @RequiresPermissions(value = {PermissionConstants.OPERATION_PLATFORM_REMOVE, PermissionConstants.OPERATION_PLATFORM_LIST}, logical = Logical.AND)
     @ApiOperation(value = "删除运维平台", notes = "删除运维平台")
     public MoliResult remove(@PathVariable Long[] ids) {
         for (Long id : ids) {

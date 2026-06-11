@@ -1,12 +1,12 @@
 # 数据库表关系图
 
-最后更新: 2026-06-08  
-数据来源: `sql/schema_moli.sql` 与 `moli-common` 实体类  
+最后更新: 2026-06-10  
+数据来源: `sql/schema_moli.sql`、`sql/migrate_sys_system.sql` 与 `moli-common` 实体类  
 数据库名: `moli`（utf8mb4）
 
 ## 1. 说明
 
-- 共 **18** 张业务表，分 **系统模块**（12 张）与 **运维模块**（6 张）。
+- 共 **20** 张业务表：系统模块 **14** 张（含多系统 SSO **2** 张）、运维模块 **6** 张。
 - 表间为 **逻辑关联**，DDL 中 **未声明数据库外键**（`FOREIGN_KEY_CHECKS = 0`），由应用层维护一致性。
 - 主键 `id` 由应用侧 `CustomIdGenerator` 赋值，非数据库自增。
 - 结构变更时请同步更新本文件与 `sql/schema_moli.sql`。
@@ -55,11 +55,65 @@ flowchart TB
         srv --> sc --> comp
     end
 
+    subgraph SSO["多系统 SSO"]
+        sys[sys_system]
+        us[sys_user_system]
+        user --> us --> sys
+    end
+
     user -.用户名.-> ll
     user -.用户名.-> ol
 ```
 
-## 3. 系统模块 · 权限与组织（RBAC）
+## 3. 多系统 SSO（新增 2 表）
+
+多系统门户 **只新增下面 2 张表**；Ticket 存 **Redis**，不落库。本系统内角色菜单仍用既有 RBAC 表（`sys_user_role` 等），**未新增** `system_id` 字段。
+
+```mermaid
+erDiagram
+    sys_user {
+        bigint id PK "主键"
+        varchar user_name UK "用户名"
+    }
+
+    sys_system {
+        bigint id PK "主键"
+        varchar system_code UK "系统编码 如 moli-admin"
+        varchar system_name "显示名称"
+        varchar base_url "访问地址"
+        varchar sso_mode "INTERNAL 本项目 / EXTERNAL 外链"
+        varchar entry_path "SSO 入口 默认 /sso/login"
+        int status "1启用 0停用"
+        int sort "排序"
+    }
+
+    sys_user_system {
+        bigint id PK "主键"
+        bigint user_id FK "用户ID"
+        bigint system_id FK "系统ID"
+        int is_default "1默认系统"
+    }
+
+    sys_user ||--o{ sys_user_system : "user_id"
+    sys_system ||--o{ sys_user_system : "system_id"
+```
+
+| 表 | 作用 |
+|----|------|
+| `sys_system` | 登记可进入的**业务系统**（本项目 `moli-admin`、CRM 等）；含跳转 URL、SSO 模式 |
+| `sys_user_system` | 用户**能进哪些系统**（系统准入）；与 `sys_user_role`（本系统内能干什么）分开 |
+
+**与现有表的关系**
+
+| 已有表 | 与 SSO 的关系 |
+|--------|----------------|
+| `sys_user` | `sys_user_system.user_id` → 谁被分配了哪些系统 |
+| `sys_user_role` / `sys_role_menu` / `sys_menu` | **不变**；管 moli-admin **内部**菜单按钮权限 |
+| `operation_platform_info` | **无关**；运维外部平台账号，不是 SSO 业务系统 |
+
+DDL：`sql/migrate_sys_system.sql`（在 `schema_moli.sql` 全量建库之后执行，或合并进全量脚本）。
+
+## 4. 系统模块 · 权限与组织（RBAC）
 
 ```mermaid
 erDiagram
@@ -139,7 +193,7 @@ erDiagram
 
 **鉴权链路**: 用户 → `sys_user_role` → 角色 → `sys_role_menu` → 菜单（`perms` 为接口/按钮权限标识）。
 
-## 4. 系统模块 · 字典
+## 5. 系统模块 · 字典
 
 ```mermaid
 erDiagram
@@ -161,7 +215,7 @@ erDiagram
 
 `sys_dict_data.dict_type` 与 `sys_dict_type.dict_type` 通过 **字符串编码** 关联，非 `id` 外键。
 
-## 5. 系统模块 · 日志
+## 6. 系统模块 · 日志
 
 ```mermaid
 erDiagram
@@ -190,7 +244,7 @@ erDiagram
 - `sys_login_log`：登录成功/失败时由 `LoginController` 写入。
 - `sys_operation_log`：由 AOP 切面记录接口操作，与用户表无物理外键。
 
-## 6. 运维模块
+## 7. 运维模块
 
 ```mermaid
 erDiagram
@@ -250,10 +304,12 @@ erDiagram
 
 `operation_component_deploy_info` 通过 `server_ip` 与服务器做 **弱关联**（字符串 IP），未使用 `server_id`。
 
-## 7. 表清单
+## 8. 表清单
 
 | 表名 | 中文名 | 模块 |
 |------|--------|------|
+| `sys_system` | 业务系统注册 | 多系统 SSO |
+| `sys_user_system` | 用户-系统准入 | 多系统 SSO |
 | `sys_dept` | 部门 | 系统 |
 | `sys_user` | 用户 | 系统 |
 | `sys_role` | 角色 | 系统 |
@@ -273,9 +329,9 @@ erDiagram
 | `operation_server_project` | 服务器-项目 | 运维 |
 | `operation_server_component` | 服务器-组件 | 运维 |
 
-## 8. 相关文件
+## 9. 相关文件
 
-- DDL: [`sql/schema_moli.sql`](../sql/schema_moli.sql)
+- DDL: [`sql/schema_moli.sql`](../sql/schema_moli.sql)、[`sql/migrate_sys_system.sql`](../sql/migrate_sys_system.sql)
 - 种子数据: `sql/seed_sys_*.sql`、`sql/seed_operation.sql`
 - 实体类: `moli-common/src/main/java/com/moli/common/domain/entity/`
 - 英文版: [database-schema-diagram.en.md](database-schema-diagram.en.md)

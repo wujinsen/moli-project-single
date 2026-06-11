@@ -34,4 +34,7 @@ public class SysSystem extends BaseEntity {
     @ApiModelProperty("备注")
     private String remark;
 
+    @ApiModelProperty("门户分组：governance/business/ai/tech/ops/data/office")
+    private String systemGroup;
+
 }

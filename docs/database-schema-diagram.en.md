@@ -1,12 +1,12 @@
 # Database Schema Diagram
 
-Last updated: 2026-06-08  
-Source: `sql/schema_moli.sql` and `moli-common` entities  
+Last updated: 2026-06-10  
+Source: `sql/schema_moli.sql`, `sql/migrate_sys_system.sql`, `moli-common` entities  
 Database: `moli` (utf8mb4)
 
 ## 1. Notes
 
-- **18** business tables: **12** system + **6** operations.
+- **20** business tables: **14** system (incl. **2** multi-system SSO) + **6** operations.
 - Relationships are **logical only** — no database foreign keys in DDL.
 - Primary keys are assigned by the application (`CustomIdGenerator`), not DB auto-increment.
 - Keep this file in sync with `sql/schema_moli.sql` when the schema changes.
@@ -211,10 +211,23 @@ erDiagram
 
 `operation_platform_info` is standalone. Component deploy info also references servers via `server_ip` (weak string link).
 
+## 3. Multi-System SSO (2 tables)
+
+| Table | Purpose |
+|-------|---------|
+| `sys_system` | Registered apps (moli-admin, CRM, …); `sso_mode`, `base_url` |
+| `sys_user_system` | Which systems a user may enter (`user_id`, `system_id`, `is_default`) |
+
+Tickets live in **Redis**, not MySQL. RBAC tables unchanged.
+
+DDL: `sql/migrate_sys_system.sql`
+
 ## 7. Table Index
 
 | Table | Description | Module |
 |-------|-------------|--------|
+| `sys_system` | Business system registry | SSO |
+| `sys_user_system` | User–system access | SSO |
 | `sys_dept` | Department | System |
 | `sys_user` | User | System |
 | `sys_role` | Role | System |

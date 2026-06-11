@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 
 import java.util.HashMap;
@@ -83,14 +84,14 @@ public class DictController {
 
 
     @PostMapping("/type")
-    @RequiresPermissions(PermissionConstants.SYSTEM_DICT_LIST)
+    @RequiresPermissions(value = {PermissionConstants.SYSTEM_DICT_ADD, PermissionConstants.SYSTEM_DICT_LIST}, logical = Logical.AND)
     @ApiOperation(value = "添加字典类型", notes = "添加字典类型")
     public MoliResult<Boolean> insert(@RequestBody SysDictType dictType) {
         return MoliResult.success(dictTypeMapper.insert(dictType) > 0 ? Boolean.TRUE : Boolean.FALSE);
     }
 
     @PutMapping("/type")
-    @RequiresPermissions(PermissionConstants.SYSTEM_DICT_LIST)
+    @RequiresPermissions(value = {PermissionConstants.SYSTEM_DICT_EDIT, PermissionConstants.SYSTEM_DICT_LIST}, logical = Logical.AND)
     @ApiOperation(value = "更新字典类型", notes = "更新字典类型")
     public MoliResult<Boolean> update(@RequestBody SysDictType dictType) {
         return MoliResult.success(dictTypeMapper.updateById(dictType) > 0 ? Boolean.TRUE : Boolean.FALSE);
@@ -108,7 +109,7 @@ public class DictController {
      * 删除字典类型
      */
     @DeleteMapping("/type/{dictIds}")
-    @RequiresPermissions(PermissionConstants.SYSTEM_DICT_LIST)
+    @RequiresPermissions(value = {PermissionConstants.SYSTEM_DICT_REMOVE, PermissionConstants.SYSTEM_DICT_LIST}, logical = Logical.AND)
     public MoliResult delete(@PathVariable Long[] dictIds) {
         for (Long id : dictIds) {
             dictTypeMapper.deleteById(id);
@@ -188,7 +189,7 @@ public class DictController {
     }
 
     @PostMapping("/data")
-    @RequiresPermissions(PermissionConstants.SYSTEM_DICT_LIST)
+    @RequiresPermissions(value = {PermissionConstants.SYSTEM_DICT_ADD, PermissionConstants.SYSTEM_DICT_LIST}, logical = Logical.AND)
     @ApiOperation(value = "添加字典数据", notes = "添加字典数据")
     public MoliResult<Boolean> insertData(@RequestBody SysDictData dictData) {
         return MoliResult.success(dictDataMapper.insert(dictData) > 0 ? Boolean.TRUE : Boolean.FALSE);
@@ -198,7 +199,7 @@ public class DictController {
      * 修改字典数据
      */
     @PutMapping(value = "/data")
-    @RequiresPermissions(PermissionConstants.SYSTEM_DICT_LIST)
+    @RequiresPermissions(value = {PermissionConstants.SYSTEM_DICT_EDIT, PermissionConstants.SYSTEM_DICT_LIST}, logical = Logical.AND)
     public MoliResult<Boolean> getDictDataInfo(@RequestBody SysDictData dictData) {
 
         return MoliResult.success(dictDataMapper.updateById(dictData) > 0 ? Boolean.TRUE : Boolean.FALSE);
@@ -208,7 +209,7 @@ public class DictController {
      * 删除用户
      */
     @DeleteMapping("/data/{dictIds}")
-    @RequiresPermissions(PermissionConstants.SYSTEM_DICT_LIST)
+    @RequiresPermissions(value = {PermissionConstants.SYSTEM_DICT_REMOVE, PermissionConstants.SYSTEM_DICT_LIST}, logical = Logical.AND)
     public MoliResult deleteData(@PathVariable("dictIds") Long[] dataIds) {
         for (Long id : dataIds) {
             dictDataMapper.deleteById(id);

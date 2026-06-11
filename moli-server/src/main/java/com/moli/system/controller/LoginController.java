@@ -23,7 +23,9 @@ import com.moli.config.util.RedisUtil;
 import com.moli.config.util.ShiroUtils;
 import com.moli.system.mapper.SysLoginLogMapper;
 import com.moli.system.mapper.SysUserMapper;
+import com.moli.common.domain.vo.CapabilitiesVo;
 import com.moli.system.service.MenuService;
+import com.moli.system.service.PermissionService;
 import com.moli.system.service.SysSystemService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -66,6 +68,9 @@ public class LoginController {
 
     @Autowired
     private SysSystemService sysSystemService;
+
+    @Autowired
+    private PermissionService permissionService;
 
     @Autowired
     private SysUserMapper sysUserMapper;
@@ -138,6 +143,7 @@ public class LoginController {
         user.setSalt("");
         //用户信息
         loginVo.setUser(user);
+        loginVo.setFullPermission(CommonConstant.hasFullPermission(user.getUserName()));
         fillLoginContext(loginVo, user);
         result.setMsg("登录成功");
         result.setCode(ResponseCodeEnums.SUCCESS_CODE.getCode());
@@ -216,6 +222,7 @@ public class LoginController {
         loginVo.setSystemPortalEnabled(portalEnabled);
         if (!portalEnabled) {
             loginVo.setMenuVoList(resolveMenus(user));
+            applyCapabilities(loginVo, user);
             return;
         }
         List<SystemVo> systemList = sysSystemService.listByUserId(user.getId(), user.getUserName());
@@ -228,13 +235,15 @@ public class LoginController {
             SystemEnterVo enter = sysSystemService.enterSystem(user.getId(), user.getUserName(), systemList.get(0).getId());
             loginVo.setCurrentSystem(enter.getCurrentSystem());
             loginVo.setMenuVoList(enter.getMenuVoList());
+            loginVo.setPermissions(enter.getPermissions());
+            loginVo.setFullPermission(enter.getFullPermission());
             return;
         }
         loginVo.setMenuVoList(new ArrayList<>());
     }
 
     private List<MenuVo> resolveMenus(SysUser user) {
-        if (CommonConstant.isSuperAdmin(user.getUserName())) {
+        if (CommonConstant.hasFullPermission(user.getUserName())) {
             return menuService.getMenuTreeAll();
         }
         return menuService.selectMenuTreeByUserId(user.getId());
@@ -242,6 +251,12 @@ public class LoginController {
 
     private boolean isInternalSystem(SystemVo system) {
         return !SystemConstant.SSO_MODE_EXTERNAL.equalsIgnoreCase(system.getSsoMode());
+    }
+
+    private void applyCapabilities(LoginVo loginVo, SysUser user) {
+        CapabilitiesVo capabilities = permissionService.buildCapabilities(user.getId(), user.getUserName());
+        loginVo.setPermissions(capabilities.getPermissions());
+        loginVo.setFullPermission(capabilities.getFullPermission());
     }
 
     public void insertLoginLog(SysUser sysUser, String msg, Integer status) {

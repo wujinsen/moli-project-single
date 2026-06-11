@@ -13,8 +13,11 @@ public class MenuVo  extends BaseEntity {
     @ApiModelProperty(value = "菜单名称")
     private String menuName;
 
-    @ApiModelProperty(value = "路由名称")
+    @ApiModelProperty(value = "路由名称（Vue Router name，返回给前端路由）")
     private String name;
+
+    @ApiModelProperty(value = "路由名称配置（库表 route_name，菜单管理可编辑）")
+    private String routeName;
 
     @ApiModelProperty(value = "父级菜单ID")
     private Long parentId;

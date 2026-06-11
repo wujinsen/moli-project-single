@@ -36,7 +36,7 @@ X-Sso-Secret: <约定密钥>
 { "ticket": "...", "systemCode": "crm" }
 ```
 
-4. 用返回的 `userName` 映射本地用户，加载本地 RBAC。
+4. 用返回的 `userName` 映射本地用户，加载本地 RBAC；若 `fullPermission=true`（`superadmin`/`admin`），外部系统应授予本地最大权限。
 
 ## 4. 配置
 

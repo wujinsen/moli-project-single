@@ -44,4 +44,7 @@ public class SysRoleVo {
 
     private List<Long> menuIds;
 
+    @ApiModelProperty("动作权限码")
+    private List<String> actionCodes;
+
 }

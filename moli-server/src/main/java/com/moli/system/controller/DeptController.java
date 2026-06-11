@@ -16,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 
 import java.util.ArrayList;
@@ -28,7 +29,6 @@ import java.util.stream.Collectors;
 @RequestMapping("dept")
 @Api(tags = "部门管理")
 @Slf4j
-@RequiresPermissions(PermissionConstants.SYSTEM_DEPT_LIST)
 public class DeptController {
 
     @Autowired
@@ -38,6 +38,7 @@ public class DeptController {
     private DeptService deptService;
 
     @GetMapping("/list")
+    @RequiresPermissions(PermissionConstants.SYSTEM_DEPT_LIST)
     @ApiOperation(value = "部门列表", notes = "部门列表")
     public MoliResult<List<DeptVo>> list(SysDept dept) {
 
@@ -60,6 +61,7 @@ public class DeptController {
 
 
     @GetMapping("/getDeptTreeList")
+    @RequiresPermissions(PermissionConstants.SYSTEM_DEPT_LIST)
     @ApiOperation(value = "部门列表", notes = "部门列表")
     public MoliResult<List<DeptVo>> getDeptTreeList() {
 
@@ -77,6 +79,7 @@ public class DeptController {
 
 
     @PostMapping
+    @RequiresPermissions(value = {PermissionConstants.SYSTEM_DEPT_ADD, PermissionConstants.SYSTEM_DEPT_LIST}, logical = Logical.AND)
     @ApiOperation(value = "添加部门", notes = "添加部门")
     public MoliResult<Boolean> insert(@RequestBody SysDept dept) {
         deptMapper.insert(dept);
@@ -85,6 +88,7 @@ public class DeptController {
 
 
     @PutMapping
+    @RequiresPermissions(value = {PermissionConstants.SYSTEM_DEPT_EDIT, PermissionConstants.SYSTEM_DEPT_LIST}, logical = Logical.AND)
     @ApiOperation(value = "更新部门", notes = "更新部门")
     public MoliResult<Boolean> update(@RequestBody SysDept dept) {
         deptMapper.updateById(dept);
@@ -92,6 +96,7 @@ public class DeptController {
     }
 
     @GetMapping(value = "/{id}")
+    @RequiresPermissions(PermissionConstants.SYSTEM_DEPT_LIST)
     @ApiOperation(value = "查询单个部门", notes = "查询单个部门")
     public MoliResult<SysDept> getInfo(@PathVariable Long id) {
 
@@ -100,6 +105,7 @@ public class DeptController {
 
 
     @DeleteMapping("/{id}")
+    @RequiresPermissions(value = {PermissionConstants.SYSTEM_DEPT_REMOVE, PermissionConstants.SYSTEM_DEPT_LIST}, logical = Logical.AND)
     @ApiOperation(value = "删除单个部门", notes = "删除指定部门，并级联删除其下所有子部门")
     public MoliResult<Boolean> remove(@PathVariable("id") Long id) {
         return MoliResult.success(deptService.deleteWithChildren(id));

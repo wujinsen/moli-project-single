@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.moli.common.constant.CommonConstant;
 import com.moli.common.constant.SystemConstant;
+import com.moli.common.constant.SystemGroupConstant;
 import com.moli.common.domain.entity.SysSystem;
 import com.moli.common.domain.entity.SysUser;
 import com.moli.common.domain.entity.SysUserSystem;
@@ -16,7 +17,9 @@ import com.moli.config.util.ShiroUtils;
 import com.moli.system.mapper.SysSystemMapper;
 import com.moli.system.mapper.SysUserMapper;
 import com.moli.system.mapper.SysUserSystemMapper;
+import com.moli.common.domain.vo.CapabilitiesVo;
 import com.moli.system.service.MenuService;
+import com.moli.system.service.PermissionService;
 import com.moli.system.service.SsoService;
 import com.moli.system.service.SysSystemService;
 import lombok.extern.slf4j.Slf4j;
@@ -30,9 +33,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -53,6 +58,9 @@ public class SysSystemServiceImpl implements SysSystemService {
 
     @Autowired
     private SsoService ssoService;
+
+    @Autowired
+    private PermissionService permissionService;
 
     @Value("${sso.enabled:true}")
     private boolean ssoEnabled;
@@ -90,9 +98,8 @@ public class SysSystemServiceImpl implements SysSystemService {
         if (!isPortalEnabled() || systemId == null) {
             return false;
         }
-        if (CommonConstant.isSuperAdmin(userName)) {
-            SysSystem system = sysSystemMapper.selectById(systemId);
-            return system != null && SystemConstant.STATUS_ENABLED.equals(system.getStatus());
+        if (CommonConstant.hasFullPermission(userName)) {
+            return sysSystemMapper.selectById(systemId) != null;
         }
         Integer count = sysUserSystemMapper.selectCount(new LambdaQueryWrapper<SysUserSystem>()
                 .eq(SysUserSystem::getUserId, userId)
@@ -126,10 +133,13 @@ public class SysSystemServiceImpl implements SysSystemService {
             String ticket = ssoService.createTicket(user, system, result.getHubToken());
             result.setRedirectUrl(ssoService.buildRedirectUrl(system, ticket));
             result.setMenuVoList(Collections.emptyList());
+            result.setPermissions(Collections.emptyList());
+            result.setFullPermission(false);
             return result;
         }
 
         result.setMenuVoList(resolveMenus(user));
+        applyCapabilities(result, user);
         return result;
     }
 
@@ -147,6 +157,9 @@ public class SysSystemServiceImpl implements SysSystemService {
         if (query.getStatus() != null) {
             wrapper.eq(SysSystem::getStatus, query.getStatus());
         }
+        if (StringUtils.isNotBlank(query.getSystemGroup())) {
+            wrapper.eq(SysSystem::getSystemGroup, query.getSystemGroup());
+        }
         wrapper.orderByAsc(SysSystem::getSort).orderByDesc(SysSystem::getCreateTime);
         sysSystemMapper.selectPage(page, wrapper);
         result.setList(page.getRecords());
@@ -161,6 +174,9 @@ public class SysSystemServiceImpl implements SysSystemService {
         if (StringUtils.isBlank(system.getSystemCode())) {
             throw new BaseException("系统编码不能为空");
         }
+        if (StringUtils.isBlank(system.getSystemName())) {
+            throw new BaseException("系统名称不能为空");
+        }
         Integer exists = sysSystemMapper.selectCount(new LambdaQueryWrapper<SysSystem>()
                 .eq(SysSystem::getSystemCode, system.getSystemCode()));
         if (exists != null && exists > 0) {
@@ -169,15 +185,29 @@ public class SysSystemServiceImpl implements SysSystemService {
         if (system.getStatus() == null) {
             system.setStatus(SystemConstant.STATUS_ENABLED);
         }
-        if (StringUtils.isBlank(system.getSsoMode())) {
-            system.setSsoMode(SystemConstant.SSO_MODE_INTERNAL);
-        }
+        normalizeAndValidate(system, null);
         sysSystemMapper.insert(system);
         return Boolean.TRUE;
     }
 
     @Override
     public Boolean updateSystem(SysSystem system) {
+        if (system.getId() == null) {
+            throw new BaseException("系统 ID 不能为空");
+        }
+        SysSystem existing = sysSystemMapper.selectById(system.getId());
+        if (existing == null) {
+            throw new BaseException("系统不存在");
+        }
+        if (StringUtils.isNotBlank(system.getSystemCode())
+                && !system.getSystemCode().equals(existing.getSystemCode())) {
+            throw new BaseException("系统编码不可修改");
+        }
+        system.setSystemCode(existing.getSystemCode());
+        if (StringUtils.isBlank(system.getSystemName())) {
+            system.setSystemName(existing.getSystemName());
+        }
+        normalizeAndValidate(system, existing);
         sysSystemMapper.updateById(system);
         return Boolean.TRUE;
     }
@@ -187,13 +217,47 @@ public class SysSystemServiceImpl implements SysSystemService {
         if (CollectionUtils.isEmpty(ids)) {
             return Boolean.TRUE;
         }
+        for (Long id : ids) {
+            SysSystem system = sysSystemMapper.selectById(id);
+            if (system != null) {
+                assertDeletable(system);
+            }
+        }
         sysSystemMapper.deleteBatchIds(ids);
         sysUserSystemMapper.delete(new LambdaQueryWrapper<SysUserSystem>().in(SysUserSystem::getSystemId, ids));
         return Boolean.TRUE;
     }
 
+    private void normalizeAndValidate(SysSystem system, SysSystem existing) {
+        if (StringUtils.isBlank(system.getSsoMode())) {
+            system.setSsoMode(existing == null ? SystemConstant.SSO_MODE_INTERNAL : existing.getSsoMode());
+        }
+        if (StringUtils.isBlank(system.getSystemGroup())) {
+            system.setSystemGroup(existing == null ? SystemGroupConstant.DEFAULT : existing.getSystemGroup());
+        }
+        system.setSystemGroup(SystemGroupConstant.normalize(system.getSystemGroup()));
+        if (isExternal(system)) {
+            if (StringUtils.isBlank(system.getBaseUrl())) {
+                throw new BaseException("外部系统必须填写访问地址 baseUrl");
+            }
+            if (StringUtils.isBlank(system.getEntryPath())) {
+                system.setEntryPath("/sso/login");
+            }
+        }
+    }
+
+    private void assertDeletable(SysSystem system) {
+        if (SystemConstant.DEFAULT_SYSTEM_CODE.equals(system.getSystemCode())) {
+            throw new BaseException("默认系统 moli-admin 不可删除");
+        }
+    }
+
     @Override
     public List<Long> listSystemIdsByUserId(Long userId) {
+        SysUser user = sysUserMapper.selectById(userId);
+        if (user != null && CommonConstant.hasFullPermission(user.getUserName())) {
+            return listAllSystemIds();
+        }
         List<SysUserSystem> relations = sysUserSystemMapper.selectList(new LambdaQueryWrapper<SysUserSystem>()
                 .eq(SysUserSystem::getUserId, userId));
         if (CollectionUtils.isEmpty(relations)) {
@@ -203,8 +267,42 @@ public class SysSystemServiceImpl implements SysSystemService {
     }
 
     @Override
+    public List<Long> listUserIdsBySystemId(Long systemId) {
+        if (systemId == null) {
+            return Collections.emptyList();
+        }
+        Set<Long> userIds = new LinkedHashSet<>();
+        List<SysUserSystem> relations = sysUserSystemMapper.selectList(new LambdaQueryWrapper<SysUserSystem>()
+                .eq(SysUserSystem::getSystemId, systemId));
+        if (CollectionUtils.isNotEmpty(relations)) {
+            relations.stream().map(SysUserSystem::getUserId).forEach(userIds::add);
+        }
+        List<SysUser> fullPermissionUsers = sysUserMapper.selectList(new LambdaQueryWrapper<SysUser>()
+                .in(SysUser::getUserName, CommonConstant.SUPER_ADMIN, CommonConstant.LEGACY_SUPER_ADMIN)
+                .eq(SysUser::getIsDelete, CommonConstant.UN_DELETE));
+        if (CollectionUtils.isNotEmpty(fullPermissionUsers)) {
+            fullPermissionUsers.stream().map(SysUser::getId).forEach(userIds::add);
+        }
+        return new ArrayList<>(userIds);
+    }
+
+    private List<Long> listAllSystemIds() {
+        List<SysSystem> systems = sysSystemMapper.selectList(new LambdaQueryWrapper<SysSystem>()
+                .orderByAsc(SysSystem::getSort)
+                .orderByAsc(SysSystem::getId));
+        if (CollectionUtils.isEmpty(systems)) {
+            return Collections.emptyList();
+        }
+        return systems.stream().map(SysSystem::getId).collect(Collectors.toList());
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public void assignUserSystems(Long userId, List<Long> systemIds) {
+        SysUser user = sysUserMapper.selectById(userId);
+        if (user != null && CommonConstant.hasFullPermission(user.getUserName())) {
+            return;
+        }
         sysUserSystemMapper.delete(new LambdaQueryWrapper<SysUserSystem>().eq(SysUserSystem::getUserId, userId));
         if (CollectionUtils.isEmpty(systemIds)) {
             return;
@@ -226,12 +324,12 @@ public class SysSystemServiceImpl implements SysSystemService {
 
     private List<SysSystem> listAccessibleSystems(Long userId, String userName) {
         LambdaQueryWrapper<SysSystem> wrapper = new LambdaQueryWrapper<SysSystem>()
-                .eq(SysSystem::getStatus, SystemConstant.STATUS_ENABLED)
                 .orderByAsc(SysSystem::getSort)
                 .orderByAsc(SysSystem::getId);
-        if (CommonConstant.isSuperAdmin(userName)) {
+        if (CommonConstant.hasFullPermission(userName)) {
             return sysSystemMapper.selectList(wrapper);
         }
+        wrapper.eq(SysSystem::getStatus, SystemConstant.STATUS_ENABLED);
         List<Long> systemIds = listSystemIdsByUserId(userId);
         if (CollectionUtils.isEmpty(systemIds)) {
             return Collections.emptyList();
@@ -266,7 +364,7 @@ public class SysSystemServiceImpl implements SysSystemService {
     }
 
     private List<MenuVo> resolveMenus(SysUser user) {
-        if (CommonConstant.isSuperAdmin(user.getUserName())) {
+        if (CommonConstant.hasFullPermission(user.getUserName())) {
             return menuService.getMenuTreeAll();
         }
         return menuService.selectMenuTreeByUserId(user.getId());
@@ -274,6 +372,12 @@ public class SysSystemServiceImpl implements SysSystemService {
 
     private boolean isExternal(SysSystem system) {
         return SystemConstant.SSO_MODE_EXTERNAL.equalsIgnoreCase(system.getSsoMode());
+    }
+
+    private void applyCapabilities(SystemEnterVo result, SysUser user) {
+        CapabilitiesVo capabilities = permissionService.buildCapabilities(user.getId(), user.getUserName());
+        result.setPermissions(capabilities.getPermissions());
+        result.setFullPermission(capabilities.getFullPermission());
     }
 
     @Override

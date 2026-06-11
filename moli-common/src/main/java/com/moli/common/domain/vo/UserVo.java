@@ -80,6 +80,9 @@ public class UserVo extends BaseEntity {
     @ApiModelProperty(value = "角色id")
     private Long roleId;
 
+    @ApiModelProperty(value = "系统id（按系统查用户时使用）")
+    private Long systemId;
+
     @ApiModelProperty(value = "用户id集合")
     private List<Long> userIds;
 

@@ -31,6 +31,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -82,7 +83,7 @@ public class UserController {
     }
 
     @PostMapping
-    @RequiresPermissions(PermissionConstants.SYSTEM_USER_LIST)
+    @RequiresPermissions(value = {PermissionConstants.SYSTEM_USER_ADD, PermissionConstants.SYSTEM_USER_LIST}, logical = Logical.AND)
     @ApiOperation(value = "添加用户", notes = "添加用户")
     public MoliResult<Boolean> insert(@RequestBody UserVo userVo) {
         if (StringUtils.isBlank(userVo.getPassword())) {
@@ -101,7 +102,7 @@ public class UserController {
 
 
     @PutMapping
-    @RequiresPermissions(PermissionConstants.SYSTEM_USER_LIST)
+    @RequiresPermissions(value = {PermissionConstants.SYSTEM_USER_EDIT, PermissionConstants.SYSTEM_USER_LIST}, logical = Logical.AND)
     @ApiOperation(value = "更新用户", notes = "更新用户")
     public MoliResult<Boolean> update(@RequestBody SysUserVo req) {
         SysUser sysUser = new SysUser();
@@ -139,6 +140,7 @@ public class UserController {
 
 
     @GetMapping(value = "/getUserDetail/{id}")
+    @RequiresPermissions(PermissionConstants.SYSTEM_USER_LIST)
     @ApiOperation(value = "获取用户详情", notes = "获取用户详情")
     public MoliResult<SysUserVo> getUserDetail(@PathVariable Long id) {
         SysUser sysUser = sysUserMapper.selectById(id);
@@ -170,6 +172,14 @@ public class UserController {
             List<SysPost> postList = postMapper.selectList(new LambdaQueryWrapper<SysPost>().in(SysPost::getId, postIdList));
             sysUserVo.setPostNames(String.join(",",postList.stream().map(e->e.getPostName()).collect(Collectors.toList())));
         }
+        List<SysUserRole> userRoleList = sysUserRoleMapper.selectList(
+                new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getUserId, user.getId()));
+        if (CollectionUtils.isNotEmpty(userRoleList)) {
+            List<Long> roleIdList = userRoleList.stream().map(SysUserRole::getRoleId).collect(Collectors.toList());
+            List<SysRole> roleList = roleMapper.selectList(new LambdaQueryWrapper<SysRole>().in(SysRole::getId, roleIdList));
+            sysUserVo.setRoleList(roleList);
+            sysUserVo.setRoleNames(roleList.stream().map(SysRole::getRoleName).filter(StringUtils::isNotBlank).collect(Collectors.joining(", ")));
+        }
         return MoliResult.success(sysUserVo);
     }
 
@@ -188,7 +198,7 @@ public class UserController {
 
 
     @DeleteMapping("/{userIds}")
-    @RequiresPermissions(PermissionConstants.SYSTEM_USER_LIST)
+    @RequiresPermissions(value = {PermissionConstants.SYSTEM_USER_REMOVE, PermissionConstants.SYSTEM_USER_LIST}, logical = Logical.AND)
     @ApiOperation(value = "删除用户", notes = "删除用户")
     public MoliResult delete(@PathVariable Long[] userIds) {
         for (Long id : userIds) {
@@ -208,7 +218,7 @@ public class UserController {
     }
 
     @PutMapping("/changeStatus")
-    @RequiresPermissions(PermissionConstants.SYSTEM_USER_LIST)
+    @RequiresPermissions(value = {PermissionConstants.SYSTEM_USER_EDIT, PermissionConstants.SYSTEM_USER_LIST}, logical = Logical.AND)
     @ApiOperation(value = "开启关闭用户", notes = "开启关闭用户")
     public MoliResult changeStatus(@RequestBody SysUser user) {
         SysUser target = sysUserMapper.selectById(user.getId());
@@ -216,6 +226,10 @@ public class UserController {
             return MoliResult.errorMsg(ResponseCodeEnums.AUTHOR_ERROR_CODE.getCode(), "无权限操作该用户");
         }
         sysUserMapper.updateById(user);
+        if (target != null && user.getStatus() != null && user.getStatus() == 0) {
+            ShiroUtils.deleteCache(target.getUserName(), true);
+            PermissionAuthUtils.clearUserAuthorizationCache(target.getUserName());
+        }
         return MoliResult.success(Boolean.TRUE);
     }
 
@@ -241,7 +255,7 @@ public class UserController {
     }
 
     @PutMapping("/insertUserRole")
-    @RequiresPermissions(PermissionConstants.SYSTEM_USER_LIST)
+    @RequiresPermissions(value = {PermissionConstants.SYSTEM_USER_ASSIGN_ROLE, PermissionConstants.SYSTEM_USER_LIST}, logical = Logical.AND)
     @MoliLog(title = "用户角色授权", businessType = BusinessTypeEnum.UPDATE)
     @ApiOperation(value = "保存授权角色", notes = "覆盖保存：会清除该用户原有角色后再写入 roleIds")
     public MoliResult<Boolean> insertUserRole(@RequestBody UserRoleVo userRoleVo) {
@@ -276,15 +290,18 @@ public class UserController {
         userSystemVo.setUserId(userId);
         userSystemVo.setUser(user);
         userSystemVo.setSystemIds(sysSystemService.listSystemIdsByUserId(userId));
-        List<SysSystem> systemList = sysSystemMapper.selectList(new LambdaQueryWrapper<SysSystem>()
-                .eq(SysSystem::getStatus, SystemConstant.STATUS_ENABLED)
-                .orderByAsc(SysSystem::getSort));
-        userSystemVo.setSystemList(systemList);
+        LambdaQueryWrapper<SysSystem> systemWrapper = new LambdaQueryWrapper<SysSystem>()
+                .orderByAsc(SysSystem::getSort)
+                .orderByAsc(SysSystem::getId);
+        if (user == null || !CommonConstant.hasFullPermission(user.getUserName())) {
+            systemWrapper.eq(SysSystem::getStatus, SystemConstant.STATUS_ENABLED);
+        }
+        userSystemVo.setSystemList(sysSystemMapper.selectList(systemWrapper));
         return MoliResult.success(userSystemVo);
     }
 
     @PutMapping("/insertUserSystem")
-    @RequiresPermissions(PermissionConstants.SYSTEM_USER_LIST)
+    @RequiresPermissions(value = {PermissionConstants.SYSTEM_USER_ASSIGN_SYSTEM, PermissionConstants.SYSTEM_USER_LIST}, logical = Logical.AND)
     @MoliLog(title = "用户系统授权", businessType = BusinessTypeEnum.UPDATE)
     @ApiOperation(value = "保存用户可访问系统", notes = "moli-admin 配置系统准入；本系统内权限用 insertUserRole")
     public MoliResult<Boolean> insertUserSystem(@RequestBody UserSystemVo userSystemVo) {
@@ -292,12 +309,68 @@ public class UserController {
         if (!userService.canViewUser(user)) {
             return MoliResult.errorMsg(ResponseCodeEnums.AUTHOR_ERROR_CODE.getCode(), "无权限操作该用户");
         }
+        if (user != null && CommonConstant.hasFullPermission(user.getUserName())) {
+            return MoliResult.success(Boolean.TRUE, "超管账号默认可访问全部系统并拥有最大权限，无需分配");
+        }
         sysSystemService.assignUserSystems(userSystemVo.getUserId(), userSystemVo.getSystemIds());
         return MoliResult.success(Boolean.TRUE);
     }
 
+    @GetMapping("/getUserBySystem")
+    @RequiresPermissions(PermissionConstants.SYSTEM_USER_LIST)
+    @ApiOperation(value = "查询系统下已授权用户", notes = "含 sys_user_system 关联用户及超管账号；分页参数同 /user/list")
+    public MoliResult<PageRes<SysUser>> getUserBySystem(UserVo req) {
+        if (req.getSystemId() == null) {
+            return MoliResult.errorMsg(ResponseCodeEnums.PARAMS_EMPTY_ERROR_CODE.getCode(), "systemId 不能为空");
+        }
+        if (sysSystemMapper.selectById(req.getSystemId()) == null) {
+            return MoliResult.errorMsg(ResponseCodeEnums.PARAMS_ERROR_CODE.getCode(), "系统不存在");
+        }
+        List<Long> userIdList = sysSystemService.listUserIdsBySystemId(req.getSystemId());
+        if (CollectionUtils.isEmpty(userIdList)) {
+            return MoliResult.success(emptyUserPage(req));
+        }
+        LambdaQueryWrapper<SysUser> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        if (StringUtils.isNotBlank(req.getUserName())) {
+            lambdaQueryWrapper.like(SysUser::getUserName, req.getUserName());
+        }
+        if (StringUtils.isNotBlank(req.getTelephone())) {
+            lambdaQueryWrapper.like(SysUser::getTelephone, req.getTelephone());
+        }
+        lambdaQueryWrapper.in(SysUser::getId, userIdList);
+        lambdaQueryWrapper.eq(SysUser::getIsDelete, CommonConstant.UN_DELETE);
+        userService.applyPrivilegedUserVisibility(lambdaQueryWrapper);
+        return MoliResult.success(selectUserPage(req, lambdaQueryWrapper));
+    }
+
+    @GetMapping("/unauthorizedUsersBySystem")
+    @RequiresPermissions(PermissionConstants.SYSTEM_USER_LIST)
+    @ApiOperation(value = "查询系统未授权用户列表", notes = "排除已关联用户及超管账号")
+    public MoliResult<PageRes<SysUser>> unauthorizedUsersBySystem(UserVo req) {
+        if (req.getSystemId() == null) {
+            return MoliResult.errorMsg(ResponseCodeEnums.PARAMS_EMPTY_ERROR_CODE.getCode(), "systemId 不能为空");
+        }
+        if (sysSystemMapper.selectById(req.getSystemId()) == null) {
+            return MoliResult.errorMsg(ResponseCodeEnums.PARAMS_ERROR_CODE.getCode(), "系统不存在");
+        }
+        List<Long> assignedUserIds = sysSystemService.listUserIdsBySystemId(req.getSystemId());
+        LambdaQueryWrapper<SysUser> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        if (CollectionUtils.isNotEmpty(assignedUserIds)) {
+            lambdaQueryWrapper.notIn(SysUser::getId, assignedUserIds);
+        }
+        if (StringUtils.isNotBlank(req.getUserName())) {
+            lambdaQueryWrapper.like(SysUser::getUserName, req.getUserName());
+        }
+        if (StringUtils.isNotBlank(req.getTelephone())) {
+            lambdaQueryWrapper.like(SysUser::getTelephone, req.getTelephone());
+        }
+        lambdaQueryWrapper.eq(SysUser::getIsDelete, CommonConstant.UN_DELETE);
+        userService.applyPrivilegedUserVisibility(lambdaQueryWrapper);
+        return MoliResult.success(selectUserPage(req, lambdaQueryWrapper));
+    }
+
     @PutMapping("/addUserRole")
-    @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_LIST)
+    @RequiresPermissions(value = {PermissionConstants.SYSTEM_ROLE_EDIT, PermissionConstants.SYSTEM_ROLE_LIST}, logical = Logical.AND)
     @MoliLog(title = "角色批量授权用户", businessType = BusinessTypeEnum.UPDATE)
     @ApiOperation(value = "给角色新增用户", notes = "给角色新增用户")
     public MoliResult<Boolean> addUserRole(@RequestBody UserRoleVo userRoleVo) {
@@ -322,7 +395,11 @@ public class UserController {
         PageRes<SysUser> result = new PageRes<>();
         List<SysUserRole> userRoleList = sysUserRoleMapper.selectList(new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getRoleId, req.getRoleId()));
         if (CollectionUtils.isEmpty(userRoleList)) {
-            return MoliResult.success();
+            result.setList(Collections.emptyList());
+            result.setTotal(0);
+            result.setPageNum(req.getPageNum());
+            result.setPageSize(req.getPageSize());
+            return MoliResult.success(result);
         }
         List<Long> userIdList = userRoleList.stream().map(e -> e.getUserId()).collect(Collectors.toList());
 
@@ -348,7 +425,7 @@ public class UserController {
     }
 
     @PutMapping("/removeUsers")
-    @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_LIST)
+    @RequiresPermissions(value = {PermissionConstants.SYSTEM_ROLE_EDIT, PermissionConstants.SYSTEM_ROLE_LIST}, logical = Logical.AND)
     @MoliLog(title = "角色移除用户", businessType = BusinessTypeEnum.UPDATE)
     @ApiOperation(value = "批量移除角色下的用户", notes = "批量移除角色下的用户")
     public MoliResult removeUsers(@RequestBody UserRoleVo req) {
@@ -391,7 +468,7 @@ public class UserController {
     }
 
     @PutMapping("/resetPassword")
-    @RequiresPermissions(PermissionConstants.SYSTEM_USER_LIST)
+    @RequiresPermissions(value = {PermissionConstants.SYSTEM_USER_RESET_PWD, PermissionConstants.SYSTEM_USER_LIST}, logical = Logical.AND)
     @ApiOperation(value = "重置密码")
     public MoliResult<Boolean> resetPassword(@RequestBody SysUser sysUser) {
         SysUser target = sysUserMapper.selectById(sysUser.getId());
@@ -433,6 +510,28 @@ public class UserController {
             return userRoleVo.getUser().getId();
         }
         return null;
+    }
+
+    private PageRes<SysUser> emptyUserPage(UserVo req) {
+        PageRes<SysUser> result = new PageRes<>();
+        result.setTotal(0);
+        result.setList(Collections.emptyList());
+        result.setPageNum(req.getPageNum());
+        result.setPageSize(req.getPageSize());
+        return result;
+    }
+
+    private PageRes<SysUser> selectUserPage(UserVo req, LambdaQueryWrapper<SysUser> lambdaQueryWrapper) {
+        PageRes<SysUser> result = new PageRes<>();
+        Page page = new Page();
+        page.setCurrent(req.getPageNum());
+        page.setSize(req.getPageSize());
+        sysUserMapper.selectPage(page, lambdaQueryWrapper);
+        result.setTotal((int) page.getTotal());
+        result.setList(page.getRecords());
+        result.setPageNum(req.getPageNum());
+        result.setPageSize(req.getPageSize());
+        return result;
     }
 
 }

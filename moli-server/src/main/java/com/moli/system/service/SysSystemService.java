@@ -27,6 +27,8 @@ public interface SysSystemService {
 
     List<Long> listSystemIdsByUserId(Long userId);
 
+    List<Long> listUserIdsBySystemId(Long systemId);
+
     void assignUserSystems(Long userId, List<Long> systemIds);
 
     SystemVo getCurrentSystemVo();

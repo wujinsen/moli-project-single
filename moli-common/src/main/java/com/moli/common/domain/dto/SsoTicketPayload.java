@@ -17,4 +17,7 @@ public class SsoTicketPayload {
 
     private String hubToken;
 
+    /** 超管标记：外部系统可按此授予本地最大权限 */
+    private Boolean fullPermission;
+
 }

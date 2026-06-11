@@ -76,16 +76,6 @@ public class UserServiceImpl implements UserService {
 
         List<UserVo> list = new ArrayList<>();
 
-        SysUser currentUser = resolveCurrentUser();
-
-        String currentUserName = currentUser != null ? currentUser.getUserName() : null;
-
-        Long currentUserId = currentUser != null ? currentUser.getId() : null;
-
-        boolean currentIsPrivileged = PrivilegedUserUtils.isPrivilegedAccount(currentUserName);
-
-
-
         LambdaQueryWrapper<SysUser> lambdaQueryWrapper = new LambdaQueryWrapper<>();
 
         if (userVo.getDeptId() != null) {
@@ -98,15 +88,8 @@ public class UserServiceImpl implements UserService {
 
             deptService.findChildrenDeptIdTree(deptIdList, deptList, userVo.getDeptId());
 
-            if (currentIsPrivileged && currentUserId != null) {
-
-                lambdaQueryWrapper.and(w -> w.in(SysUser::getDeptId, deptIdList).or().eq(SysUser::getId, currentUserId));
-
-            } else {
-
-                lambdaQueryWrapper.in(SysUser::getDeptId, deptIdList);
-
-            }
+            // 按部门筛选时仅展示归属该部门（含子部门）的用户；无部门归属的特殊账号不在各部门列表中重复出现
+            lambdaQueryWrapper.in(SysUser::getDeptId, deptIdList);
 
         }
 

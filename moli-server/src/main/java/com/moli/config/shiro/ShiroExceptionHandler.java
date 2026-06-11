@@ -15,6 +15,6 @@ public class ShiroExceptionHandler {
     @ExceptionHandler({UnauthorizedException.class, AuthorizationException.class})
     public MoliResult<Boolean> handleUnauthorized(AuthorizationException e) {
         log.warn("permission denied: {}", e.getMessage());
-        return MoliResult.errorMsg(ResponseCodeEnums.AUTHOR_ERROR_CODE.getCode(), "无访问权限");
+        return MoliResult.errorMsg(ResponseCodeEnums.AUTHOR_ERROR_CODE.getCode(), "无权限操作");
     }
 }

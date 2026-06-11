@@ -3,6 +3,7 @@ package com.moli.system.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.moli.common.constant.CommonConstant;
+import com.moli.common.utils.MenuRouteNameUtils;
 import com.moli.common.domain.entity.SysMenu;
 import com.moli.common.domain.entity.SysRole;
 import com.moli.common.domain.entity.SysRoleMenu;
@@ -16,6 +17,7 @@ import com.moli.system.mapper.RoleMenuMapper;
 import com.moli.system.mapper.SysUserMapper;
 import com.moli.system.mapper.SysUserRoleMapper;
 import com.moli.system.service.MenuService;
+import com.moli.common.exception.BaseException;
 import com.moli.common.utils.I18nUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -24,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -31,6 +34,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class MenuServiceImpl implements MenuService {
+
+    private static final String MENU_TYPE_BUTTON = "F";
 
     @Autowired
     private SysUserMapper sysUserMapper;
@@ -50,25 +55,44 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     public Boolean insert(SysMenu menu) {
+        rejectButtonMenuType(menu);
+        ensureRouteName(menu);
         menuMapper.insert(menu);
         return Boolean.TRUE;
     }
 
     @Override
     public Boolean update(SysMenu menu) {
+        rejectButtonMenuType(menu);
+        ensureRouteName(menu);
         menuMapper.updateById(menu);
         return Boolean.TRUE;
     }
 
+    private void rejectButtonMenuType(SysMenu menu) {
+        if (menu != null && MENU_TYPE_BUTTON.equals(menu.getMenuType())) {
+            throw new BaseException("菜单类型「按钮」已废弃，请使用动作权限");
+        }
+    }
+
+    private void ensureRouteName(SysMenu menu) {
+        if (StringUtils.isBlank(menu.getRouteName())) {
+            menu.setRouteName(MenuRouteNameUtils.generate(menu.getPath(), menu.getComponent(), menu.getMenuType()));
+        }
+    }
+
     @Override
     public List<MenuVo> selectMenuTreeByUserId(Long userId) {
-
-        List<MenuVo> menuVoList = new ArrayList<>();
+        if (userId == null) {
+            return new ArrayList<>();
+        }
+        SysUser user = sysUserMapper.selectById(userId);
+        if (user != null && CommonConstant.hasFullPermission(user.getUserName())) {
+            return getMenuTreeAll();
+        }
         MenuVo menuVo = new MenuVo();
         menuVo.setUserId(userId);
-        menuVoList = this.selectMenuListByUserId(menuVo);
-        return createTree(menuVoList);
-
+        return createTree(selectMenuListByUserId(menuVo));
     }
 
     @Override
@@ -90,8 +114,10 @@ public class MenuServiceImpl implements MenuService {
     @Override
     public List<MenuVo> selectMenuListByUserId(MenuVo menuVo) {
         SysUser user = sysUserMapper.selectById(menuVo.getUserId());
-        //超级管理员
-        if (CommonConstant.isSuperAdmin(user.getUserName())) {
+        if (user == null) {
+            return new ArrayList<>();
+        }
+        if (CommonConstant.hasFullPermission(user.getUserName())) {
             List<SysMenu> menuList = menuMapper.selectList(new LambdaQueryWrapper<>());
             List<MenuVo> menuVoList = new ArrayList<>();
             menuList.forEach(e -> menuVoList.add(toMenuVo(e, true)));
@@ -159,9 +185,11 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     public List<MenuVo> getMenuTreeAll() {
-        List<SysMenu> menuList = menuMapper.selectList(new QueryWrapper<>());
+        List<SysMenu> menuList = menuMapper.selectList(new QueryWrapper<SysMenu>().orderByAsc("order_num"));
         List<MenuVo> menuVoList = new ArrayList<>();
-        menuList.forEach(e -> menuVoList.add(toMenuVo(e, true)));
+        menuList.stream()
+                .filter(menu -> !MENU_TYPE_BUTTON.equals(menu.getMenuType()))
+                .forEach(e -> menuVoList.add(toMenuVo(e, true)));
         return createTree(menuVoList);
     }
 
@@ -174,7 +202,7 @@ public class MenuServiceImpl implements MenuService {
                     menu.getMenuName(), menu.getMenuNameEn(), menu.getMenuNameJa(), lang));
         }
         menuVo.setHidden(!CommonConstant.YES.equals(menu.getStatus()));
-        menuVo.setName(getRouteName(menuVo));
+        menuVo.setName(MenuRouteNameUtils.resolve(menu.getRouteName(), menu.getPath(), menu.getComponent(), menu.getMenuType()));
         menuVo.setPath(getRouterPath(menuVo));
         menuVo.setComponent(getComponent(menuVo));
         menuVo.setRedirect(CommonConstant.NO_REDIRECT);
@@ -202,7 +230,12 @@ public class MenuServiceImpl implements MenuService {
                 treeNode.setMeta(menuMetaVo);
             }
         }
+        list.sort(menuOrderComparator());
         return list;
+    }
+
+    private static Comparator<MenuVo> menuOrderComparator() {
+        return Comparator.comparing(m -> m.getOrderNum() == null ? 0 : m.getOrderNum());
     }
 
     /**
@@ -220,6 +253,7 @@ public class MenuServiceImpl implements MenuService {
             }
         }
         if (CollectionUtils.isNotEmpty(childrenList)) {
+            childrenList.sort(menuOrderComparator());
             htgMenuVo.setChildren(childrenList);
             for (MenuVo menuVoTwo : childrenList) {
                 findChildrenTree(menuVoTwo, deptList);
@@ -249,17 +283,6 @@ public class MenuServiceImpl implements MenuService {
         return component;
     }
 
-
-    /**
-     * 获取路由名称
-     *
-     * @param menu 菜单信息
-     * @return 路由名称
-     */
-    private String getRouteName(MenuVo menu) {
-        String routerName = StringUtils.capitalize(menu.getPath());
-        return routerName;
-    }
 
     /**
      * 获取路由地址

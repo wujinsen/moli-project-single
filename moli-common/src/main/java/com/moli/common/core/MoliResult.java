@@ -41,7 +41,9 @@ public class MoliResult<T> implements Serializable {
     }
 
     public static <T> MoliResult<T> success() {
-        return new MoliResult(SUCCESS_CODE);
+        MoliResult<T> result = new MoliResult<>();
+        result.setCode(SUCCESS_CODE);
+        return result;
     }
 
 

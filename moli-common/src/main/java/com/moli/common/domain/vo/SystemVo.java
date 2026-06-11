@@ -30,4 +30,7 @@ public class SystemVo {
     @ApiModelProperty("是否默认系统")
     private Boolean isDefault;
 
+    @ApiModelProperty("门户分组：governance/business/ai/tech/ops/data/office")
+    private String systemGroup;
+
 }

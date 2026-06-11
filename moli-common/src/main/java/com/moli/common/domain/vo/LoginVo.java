@@ -27,4 +27,10 @@ public class LoginVo {
     @ApiModelProperty(value = "是否启用多系统门户")
     private Boolean systemPortalEnabled;
 
+    @ApiModelProperty(value = "是否超管（拥有全部接口权限与系统准入）")
+    private Boolean fullPermission;
+
+    @ApiModelProperty(value = "有效权限码（门户关闭 / 单系统自动进入时下发）")
+    private java.util.List<String> permissions;
+
 }

@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 
 import java.util.Arrays;
@@ -57,7 +58,7 @@ public class LogController {
     }
 
     @DeleteMapping("/loginLog/{ids}")
-    @RequiresPermissions(PermissionConstants.SYSTEM_LOGINLOG_LIST)
+    @RequiresPermissions(value = {PermissionConstants.SYSTEM_LOGINLOG_REMOVE, PermissionConstants.SYSTEM_LOGINLOG_LIST}, logical = Logical.AND)
     @ApiOperation(value = "删除登录日志")
     public MoliResult<Boolean> deleteLoginLog(@PathVariable String ids) {
         List<Long> idList = Arrays.stream(ids.split(","))
@@ -72,7 +73,7 @@ public class LogController {
     }
 
     @DeleteMapping("/loginLog/clean")
-    @RequiresPermissions(PermissionConstants.SYSTEM_LOGINLOG_LIST)
+    @RequiresPermissions(value = {PermissionConstants.SYSTEM_LOGINLOG_REMOVE, PermissionConstants.SYSTEM_LOGINLOG_LIST}, logical = Logical.AND)
     @ApiOperation(value = "清空登录日志")
     public MoliResult<Boolean> cleanLoginLog() {
         sysLoginLogMapper.delete(null);
@@ -112,7 +113,7 @@ public class LogController {
     }
 
     @DeleteMapping("/operationLog/{ids}")
-    @RequiresPermissions(PermissionConstants.SYSTEM_OPERLOG_LIST)
+    @RequiresPermissions(value = {PermissionConstants.SYSTEM_OPERLOG_REMOVE, PermissionConstants.SYSTEM_OPERLOG_LIST}, logical = Logical.AND)
     @ApiOperation(value = "删除操作日志")
     public MoliResult<Boolean> deleteOperationLog(@PathVariable String ids) {
         List<Long> idList = Arrays.stream(ids.split(","))
@@ -127,7 +128,7 @@ public class LogController {
     }
 
     @DeleteMapping("/operationLog/clean")
-    @RequiresPermissions(PermissionConstants.SYSTEM_OPERLOG_LIST)
+    @RequiresPermissions(value = {PermissionConstants.SYSTEM_OPERLOG_REMOVE, PermissionConstants.SYSTEM_OPERLOG_LIST}, logical = Logical.AND)
     @ApiOperation(value = "清空操作日志")
     public MoliResult<Boolean> cleanOperationLog() {
         sysOperationLogMapper.delete(null);

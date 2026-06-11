@@ -22,6 +22,11 @@ public final class PrivilegedUserUtils {
         return CommonConstant.SUPER_ADMIN.equals(userName);
     }
 
+    /** 是否拥有全部接口权限、系统准入与菜单 */
+    public static boolean hasFullPermission(String userName) {
+        return CommonConstant.hasFullPermission(userName);
+    }
+
     /**
      * 用户列表查询：非特殊账号登录时，隐藏 superadmin 与 admin。
      */

@@ -3,6 +3,7 @@ package com.moli.common.domain.vo;
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.moli.common.core.BaseEntity;
+import com.moli.common.domain.entity.SysRole;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -71,5 +72,9 @@ public class SysUserVo extends BaseEntity {
     private String postNames;
 
     private String deptName;
+
+    private String roleNames;
+
+    private List<SysRole> roleList;
 
 }

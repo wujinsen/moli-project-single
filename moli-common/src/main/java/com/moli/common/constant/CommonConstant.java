@@ -48,4 +48,11 @@ public class CommonConstant {
         return SUPER_ADMIN.equals(userName) || LEGACY_SUPER_ADMIN.equals(userName);
     }
 
+    /**
+     * 是否拥有全部接口权限（*:*:*）及全部系统准入、全部菜单。
+     */
+    public static boolean hasFullPermission(String userName) {
+        return isSuperAdmin(userName);
+    }
+
 }
