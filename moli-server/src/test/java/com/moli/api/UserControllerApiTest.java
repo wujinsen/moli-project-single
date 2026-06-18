@@ -96,11 +96,15 @@ public class UserControllerApiTest extends AbstractApiTest {
     }
 
     @Test
-    public void PUT_user_update() {
-        SysUserVo req = new SysUserVo();
-        req.setId(20L);
-        ControllerTestSupport.stubUpdate(sysUserMapper);
-        ControllerTestSupport.assertSuccess(controller.update(req));
+    public void PUT_user_update_selfProfile() {
+        try (MockedStatic<SecurityUtils> shiro = ShiroMockSupport.mockUser("operator", 20L)) {
+            SysUserVo req = new SysUserVo();
+            req.setId(20L);
+            req.setNickName("测试昵称");
+            req.setEmail("test@example.com");
+            ControllerTestSupport.stubUpdate(sysUserMapper);
+            ControllerTestSupport.assertSuccess(controller.update(req));
+        }
     }
 
     @Test
@@ -287,15 +291,17 @@ public class UserControllerApiTest extends AbstractApiTest {
     }
 
     @Test
-    public void PUT_user_resetPassword() {
-        SysUser user = operator();
-        when(sysUserMapper.selectById(20L)).thenReturn(user);
-        allowView(user);
-        SysUser req = new SysUser();
-        req.setId(20L);
-        req.setPassword("newpass");
-        ControllerTestSupport.stubUpdate(sysUserMapper);
-        ControllerTestSupport.assertSuccess(controller.resetPassword(req));
+    public void PUT_user_resetPassword_self() {
+        try (MockedStatic<SecurityUtils> shiro = ShiroMockSupport.mockUser("operator", 20L)) {
+            SysUser user = operator();
+            user.setPassword("oldhash");
+            when(sysUserMapper.selectById(20L)).thenReturn(user);
+            SysUser req = new SysUser();
+            req.setId(20L);
+            req.setPassword("newpass");
+            ControllerTestSupport.stubUpdate(sysUserMapper);
+            ControllerTestSupport.assertSuccess(controller.resetPassword(req));
+        }
     }
 
     @Test

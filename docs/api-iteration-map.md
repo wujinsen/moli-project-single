@@ -66,7 +66,7 @@
 - `GET /user/list`：分页用户列表（`UserVo` 查询参数）；`superadmin`（最大权限）与 `admin`（特殊管理员）对外隐藏，仅特殊账号登录时可见；**未选部门**时特殊账号可见，**按部门筛选**时仅展示 `dept_id` 落在该部门树内的用户（无部门归属的特殊账号不会出现于各部门子列表）
 - 用户查询/删除/改状态/重置密码等：非特殊账号访问 `superadmin`/`admin` 返回无权限（`10009`）
 - `POST /user`：新增用户；权限 `system:user:add` + `system:user:list`
-- `PUT /user`：更新用户；权限 `system:user:edit` + `system:user:list`
+- `PUT /user`：更新用户；**本人**仅可改昵称/联系方式等个人信息（仅需登录）；改他人需 `system:user:edit` + `system:user:list`
 - `GET /user/{id}`：查询用户
 - `GET /user/getUserDetail/{id}`：查询用户详情（含 postIds）
 - `GET /user/profile`：当前登录用户信息
@@ -78,7 +78,7 @@
 - `GET /user/getUserByRole`：查询角色下用户
 - `PUT /user/removeUsers`：移除角色下用户；成功后 `msg` 提示刷新页面；写入操作日志
 - `GET /user/unauthorizedUsers`：角色未授权用户列表
-- `PUT /user/resetPassword`：重置密码；权限 `system:user:resetPwd` + `system:user:list`
+- `PUT /user/resetPassword`：重置密码；**本人**可改自己密码（仅需登录，可选传 `oldPassword` 校验）；改他人需 `system:user:resetPwd` + `system:user:list`
 - `GET /user/getSystemByUserId/{userId}`：用户已授权系统
 - `PUT /user/insertUserSystem`：保存用户可访问系统；权限 `system:user:assignSystem` + `system:user:list`
 - `GET /user/getSystemByUserId/{userId}`：超管目标用户 `systemIds` 为全部系统，`systemList` 含停用系统

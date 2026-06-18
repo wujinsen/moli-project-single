@@ -31,6 +31,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import java.util.*;
@@ -102,9 +103,15 @@ public class UserController {
 
 
     @PutMapping
-    @RequiresPermissions(value = {PermissionConstants.SYSTEM_USER_EDIT, PermissionConstants.SYSTEM_USER_LIST}, logical = Logical.AND)
-    @ApiOperation(value = "更新用户", notes = "更新用户")
+    @ApiOperation(value = "更新用户", notes = "本人可改个人信息；改他人需 system:user:edit + list")
     public MoliResult<Boolean> update(@RequestBody SysUserVo req) {
+        SysUser current = ShiroUtils.getUserInfo();
+        if (current != null && req.getId() != null && req.getId().equals(current.getId())) {
+            return updateSelfProfile(req);
+        }
+        if (!hasUserManagePermission(PermissionConstants.SYSTEM_USER_EDIT)) {
+            return MoliResult.errorMsg(ResponseCodeEnums.AUTHOR_ERROR_CODE.getCode(), "无权限操作");
+        }
         SysUser sysUser = new SysUser();
         BeanUtils.copyProperties(req, sysUser);
         String rawPassword = sysUser.getPassword();
@@ -370,7 +377,7 @@ public class UserController {
     }
 
     @PutMapping("/addUserRole")
-    @RequiresPermissions(value = {PermissionConstants.SYSTEM_ROLE_EDIT, PermissionConstants.SYSTEM_ROLE_LIST}, logical = Logical.AND)
+    @RequiresPermissions(value = {PermissionConstants.SYSTEM_ROLE_ASSIGN_USER, PermissionConstants.SYSTEM_ROLE_LIST}, logical = Logical.AND)
     @MoliLog(title = "角色批量授权用户", businessType = BusinessTypeEnum.UPDATE)
     @ApiOperation(value = "给角色新增用户", notes = "给角色新增用户")
     public MoliResult<Boolean> addUserRole(@RequestBody UserRoleVo userRoleVo) {
@@ -425,7 +432,7 @@ public class UserController {
     }
 
     @PutMapping("/removeUsers")
-    @RequiresPermissions(value = {PermissionConstants.SYSTEM_ROLE_EDIT, PermissionConstants.SYSTEM_ROLE_LIST}, logical = Logical.AND)
+    @RequiresPermissions(value = {PermissionConstants.SYSTEM_ROLE_ASSIGN_USER, PermissionConstants.SYSTEM_ROLE_LIST}, logical = Logical.AND)
     @MoliLog(title = "角色移除用户", businessType = BusinessTypeEnum.UPDATE)
     @ApiOperation(value = "批量移除角色下的用户", notes = "批量移除角色下的用户")
     public MoliResult removeUsers(@RequestBody UserRoleVo req) {
@@ -463,16 +470,74 @@ public class UserController {
     }
 
     @PutMapping("/resetPassword")
-    @RequiresPermissions(value = {PermissionConstants.SYSTEM_USER_RESET_PWD, PermissionConstants.SYSTEM_USER_LIST}, logical = Logical.AND)
-    @ApiOperation(value = "重置密码")
+    @ApiOperation(value = "重置密码", notes = "本人可改自己密码；改他人需 system:user:resetPwd + list")
     public MoliResult<Boolean> resetPassword(@RequestBody SysUser sysUser) {
+        if (sysUser.getId() == null) {
+            return MoliResult.errorMsg(ResponseCodeEnums.ERROR.getCode(), "用户ID不能为空");
+        }
         SysUser target = sysUserMapper.selectById(sysUser.getId());
+        if (target == null) {
+            return MoliResult.errorMsg(ResponseCodeEnums.ERROR.getCode(), "用户不存在");
+        }
+        SysUser current = ShiroUtils.getUserInfo();
+        if (current != null && sysUser.getId().equals(current.getId())) {
+            return resetSelfPassword(target, sysUser);
+        }
+        if (!hasUserManagePermission(PermissionConstants.SYSTEM_USER_RESET_PWD)) {
+            return MoliResult.errorMsg(ResponseCodeEnums.AUTHOR_ERROR_CODE.getCode(), "无权限操作");
+        }
         if (!userService.canViewUser(target)) {
             return MoliResult.errorMsg(ResponseCodeEnums.AUTHOR_ERROR_CODE.getCode(), "无权限操作该用户");
         }
-        sysUser.setPassword(SHA256Util.sha256(sysUser.getPassword(), SHA256Util.SALT));
-        sysUserMapper.updateById(sysUser);
+        if (StringUtils.isBlank(sysUser.getPassword())) {
+            return MoliResult.errorMsg(ResponseCodeEnums.ERROR.getCode(), "密码不能为空");
+        }
+        SysUser update = new SysUser();
+        update.setId(sysUser.getId());
+        update.setSalt(SHA256Util.SALT);
+        update.setPassword(SHA256Util.sha256(sysUser.getPassword(), SHA256Util.SALT));
+        sysUserMapper.updateById(update);
         return MoliResult.success(Boolean.TRUE);
+    }
+
+    private MoliResult<Boolean> updateSelfProfile(SysUserVo req) {
+        SysUser patch = new SysUser();
+        patch.setId(req.getId());
+        patch.setNickName(req.getNickName());
+        patch.setSex(req.getSex());
+        patch.setTelephone(req.getTelephone());
+        patch.setEmail(req.getEmail());
+        patch.setAddress(req.getAddress());
+        patch.setAvatar(req.getAvatar());
+        patch.setLanguage(req.getLanguage());
+        patch.setIdentityCard(req.getIdentityCard());
+        patch.setWorkTime(req.getWorkTime());
+        sysUserMapper.updateById(patch);
+        return MoliResult.success(Boolean.TRUE);
+    }
+
+    private MoliResult<Boolean> resetSelfPassword(SysUser target, SysUser req) {
+        if (StringUtils.isBlank(req.getPassword())) {
+            return MoliResult.errorMsg(ResponseCodeEnums.ERROR.getCode(), "密码不能为空");
+        }
+        if (StringUtils.isNotBlank(req.getOldPassword())) {
+            String salt = StringUtils.defaultIfBlank(target.getSalt(), SHA256Util.SALT);
+            String oldHash = SHA256Util.sha256(req.getOldPassword(), salt);
+            if (!oldHash.equals(target.getPassword())) {
+                return MoliResult.errorMsg(ResponseCodeEnums.ERROR.getCode(), "原密码错误");
+            }
+        }
+        SysUser update = new SysUser();
+        update.setId(target.getId());
+        update.setSalt(SHA256Util.SALT);
+        update.setPassword(SHA256Util.sha256(req.getPassword(), SHA256Util.SALT));
+        sysUserMapper.updateById(update);
+        return MoliResult.success(Boolean.TRUE);
+    }
+
+    private boolean hasUserManagePermission(String actionPerm) {
+        return SecurityUtils.getSubject().isPermitted(actionPerm)
+                && SecurityUtils.getSubject().isPermitted(PermissionConstants.SYSTEM_USER_LIST);
     }
 
     private void clearAuthorizationCache(Long userId) {

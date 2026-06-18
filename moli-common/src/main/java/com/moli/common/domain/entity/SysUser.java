@@ -24,6 +24,10 @@ public class SysUser extends BaseEntity {
     @ApiModelProperty(value = "密码")
     private String password;
 
+    @TableField(exist = false)
+    @ApiModelProperty(value = "原密码（本人修改密码时可选校验）")
+    private String oldPassword;
+
     @ApiModelProperty(value = "身份证号码")
     private String identityCard;
 

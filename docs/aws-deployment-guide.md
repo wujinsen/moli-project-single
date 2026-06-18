@@ -402,8 +402,23 @@ server {
 
 若希望 `admin.wu-jinsen.com` 同时反代 API，在 admin 配置中追加：
 
+> **勿把 `/login` 放进反代规则**：前端路由也是 `/login`（浏览器 `GET`），而后端仅 `POST /login`。若反代 `/login`，直接访问或刷新登录页会得到 `500 Request method 'GET' not supported`。
+
 ```nginx
-location ~ ^/(login|logout|captchaImage|system|operation|chatgpt) {
+# 仅反代 API 路径；不要包含 login（与前端路由冲突）
+location ~ ^/(logout|captchaImage|sso|auth|system|user|menu|role|dept|post|dict|action|log|operation|chatgpt) {
+    proxy_pass http://127.0.0.1:8888;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+
+# 登录：GET 走前端路由，POST 走后端
+location = /login {
+    if ($request_method = GET) {
+        rewrite ^ /index.html last;
+    }
     proxy_pass http://127.0.0.1:8888;
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
@@ -412,7 +427,9 @@ location ~ ^/(login|logout|captchaImage|system|operation|chatgpt) {
 }
 ```
 
-前端 `VUE_APP_BASE_API` 设为空字符串即可。
+更推荐 **前后端分域**：`moli-ui` 只托管静态资源 + `try_files`，`POST /login` 走 `api.wu-jinsen.com`。
+
+前端 `VUE_APP_BASE_API` 设为 API 域名（如 `https://api.wu-jinsen.com`）。
 
 ### 9.5 启动 Nginx
 
@@ -475,7 +492,29 @@ sudo certbot --nginx -d admin.wu-jinsen.com -d api.wu-jinsen.com
 | `Access denied for user` | MySQL 账号密码错误 | 核对 `application-pro.yml` / 环境变量 |
 | `Public Key Retrieval is not allowed` | MySQL 8 默认 `caching_sha2_password`，JDBC 未允许取公钥 | JDBC URL 加 `allowPublicKeyRetrieval=true`（见 `application-pro.yml.example`），重启后端 |
 
-### 12.2 前端刷新 404
+### 12.2 前端 `/login` 返回 500 或 `GET not supported`
+
+直接访问 `https://moli-ui.xxx/login` 时，若 Nginx 把 `/login` 反代到后端，浏览器发的是 **GET**，后端只有 **POST /login**，会返回：
+
+```json
+{"code":500,"msg":"Request method 'GET' not supported"}
+```
+
+处理：
+
+1. **前端站点**（`moli-ui`）只保留静态资源回退，不要反代 `/login`：
+
+```nginx
+location / {
+    try_files $uri $uri/ /index.html;
+}
+```
+
+2. **API 请求**走独立域名 `api.xxx`，或同域反代时按 §9.4 拆分（`POST /login` 单独 location，GET 走 `index.html`）。
+
+3. 改完后 `sudo nginx -t && sudo systemctl reload nginx`，再访问 `/login` 应显示登录页而非 JSON。
+
+### 12.3 前端刷新 404
 
 Nginx 需配置：
 
@@ -483,13 +522,13 @@ Nginx 需配置：
 try_files $uri $uri/ /index.html;
 ```
 
-### 12.3 接口跨域
+### 12.4 接口跨域
 
 - 推荐：`admin` + `api` 分域，后端 `CORSConfiguration` 已允许 `*`
 - 更稳妥：生产将 `allowedOrigins` 收紧为 `https://admin.wu-jinsen.com`
 - 或使用同域反代，无需跨域
 
-### 12.4 导出接口文档给前端
+### 12.5 导出接口文档给前端
 
 开发环境开启 `swagger.show: true` 后：
 

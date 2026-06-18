@@ -35,6 +35,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.apache.shiro.SecurityUtils;
+import com.moli.common.enums.ResponseCodeEnums;
 import java.util.List;
 
 @RestController
@@ -112,10 +114,17 @@ public class RoleController {
 
 
     @PutMapping
-    @RequiresPermissions(value = {PermissionConstants.SYSTEM_ROLE_EDIT, PermissionConstants.SYSTEM_ROLE_LIST}, logical = Logical.AND)
+    @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_LIST)
     @MoliLog(title = "角色菜单授权", businessType = BusinessTypeEnum.UPDATE)
-    @ApiOperation(value = "更新角色", notes = "更新角色")
+    @ApiOperation(value = "更新角色", notes = "更新角色；保存 menuIds/actionCodes 需 system:role:assignPerm，否则需 system:role:edit")
     public MoliResult<Boolean> update(@RequestBody SysRoleVo roleVo) {
+        if (isRoleAuthPayload(roleVo)) {
+            if (!hasRoleManagePermission(PermissionConstants.SYSTEM_ROLE_ASSIGN_PERM)) {
+                return MoliResult.errorMsg(ResponseCodeEnums.AUTHOR_ERROR_CODE.getCode(), "无权限操作");
+            }
+        } else if (!hasRoleManagePermission(PermissionConstants.SYSTEM_ROLE_EDIT)) {
+            return MoliResult.errorMsg(ResponseCodeEnums.AUTHOR_ERROR_CODE.getCode(), "无权限操作");
+        }
         SysRole sysRole = new SysRole();
         BeanUtils.copyProperties(roleVo, sysRole);
         roleMapper.updateById(sysRole);
@@ -184,5 +193,14 @@ public class RoleController {
 
     }
 
+
+    private boolean isRoleAuthPayload(SysRoleVo roleVo) {
+        return roleVo != null && (roleVo.getMenuIds() != null || roleVo.getActionCodes() != null);
+    }
+
+    private boolean hasRoleManagePermission(String actionPerm) {
+        return SecurityUtils.getSubject().isPermitted(actionPerm)
+                && SecurityUtils.getSubject().isPermitted(PermissionConstants.SYSTEM_ROLE_LIST);
+    }
 
 }

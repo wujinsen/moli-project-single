@@ -70,6 +70,8 @@ INSERT INTO `sys_action` (`id`, `perm_code`, `resource`, `action`, `name`, `menu
 INSERT INTO `sys_action` (`id`, `perm_code`, `resource`, `action`, `name`, `menu_id`, `order_num`, `status`) VALUES (7, 'system:role:add', 'role', 'add', '新增角色', 3, 1, 1);
 INSERT INTO `sys_action` (`id`, `perm_code`, `resource`, `action`, `name`, `menu_id`, `order_num`, `status`) VALUES (8, 'system:role:edit', 'role', 'edit', '修改角色', 3, 2, 1);
 INSERT INTO `sys_action` (`id`, `perm_code`, `resource`, `action`, `name`, `menu_id`, `order_num`, `status`) VALUES (9, 'system:role:remove', 'role', 'remove', '删除角色', 3, 3, 1);
+INSERT INTO `sys_action` (`id`, `perm_code`, `resource`, `action`, `name`, `menu_id`, `order_num`, `status`) VALUES (75, 'system:role:assignPerm', 'role', 'assignPerm', '分配权限', 3, 4, 1);
+INSERT INTO `sys_action` (`id`, `perm_code`, `resource`, `action`, `name`, `menu_id`, `order_num`, `status`) VALUES (76, 'system:role:assignUser', 'role', 'assignUser', '分配用户', 3, 5, 1);
 INSERT INTO `sys_action` (`id`, `perm_code`, `resource`, `action`, `name`, `menu_id`, `order_num`, `status`) VALUES (10, 'system:menu:add', 'menu', 'add', '新增菜单', 4, 1, 1);
 INSERT INTO `sys_action` (`id`, `perm_code`, `resource`, `action`, `name`, `menu_id`, `order_num`, `status`) VALUES (11, 'system:menu:edit', 'menu', 'edit', '修改菜单', 4, 2, 1);
 INSERT INTO `sys_action` (`id`, `perm_code`, `resource`, `action`, `name`, `menu_id`, `order_num`, `status`) VALUES (12, 'system:menu:remove', 'menu', 'remove', '删除菜单', 4, 3, 1);
@@ -303,6 +305,8 @@ INSERT INTO `sys_role_action` (`role_id`, `perm_code`) VALUES (1, 'system:post:r
 INSERT INTO `sys_role_action` (`role_id`, `perm_code`) VALUES (1, 'system:role:add');
 INSERT INTO `sys_role_action` (`role_id`, `perm_code`) VALUES (1, 'system:role:edit');
 INSERT INTO `sys_role_action` (`role_id`, `perm_code`) VALUES (1, 'system:role:remove');
+INSERT INTO `sys_role_action` (`role_id`, `perm_code`) VALUES (1, 'system:role:assignPerm');
+INSERT INTO `sys_role_action` (`role_id`, `perm_code`) VALUES (1, 'system:role:assignUser');
 INSERT INTO `sys_role_action` (`role_id`, `perm_code`) VALUES (1, 'system:system:add');
 INSERT INTO `sys_role_action` (`role_id`, `perm_code`) VALUES (1, 'system:system:edit');
 INSERT INTO `sys_role_action` (`role_id`, `perm_code`) VALUES (1, 'system:system:remove');
@@ -324,6 +328,8 @@ INSERT INTO `sys_role_action` (`role_id`, `perm_code`) VALUES (3, 'system:post:r
 INSERT INTO `sys_role_action` (`role_id`, `perm_code`) VALUES (3, 'system:role:add');
 INSERT INTO `sys_role_action` (`role_id`, `perm_code`) VALUES (3, 'system:role:edit');
 INSERT INTO `sys_role_action` (`role_id`, `perm_code`) VALUES (3, 'system:role:remove');
+INSERT INTO `sys_role_action` (`role_id`, `perm_code`) VALUES (3, 'system:role:assignPerm');
+INSERT INTO `sys_role_action` (`role_id`, `perm_code`) VALUES (3, 'system:role:assignUser');
 INSERT INTO `sys_role_action` (`role_id`, `perm_code`) VALUES (3, 'system:user:add');
 INSERT INTO `sys_role_action` (`role_id`, `perm_code`) VALUES (3, 'system:user:assignRole');
 INSERT INTO `sys_role_action` (`role_id`, `perm_code`) VALUES (3, 'system:user:assignSystem');

@@ -21,6 +21,8 @@ public final class PermissionConstants {
     public static final String SYSTEM_ROLE_ADD = "system:role:add";
     public static final String SYSTEM_ROLE_EDIT = "system:role:edit";
     public static final String SYSTEM_ROLE_REMOVE = "system:role:remove";
+    public static final String SYSTEM_ROLE_ASSIGN_PERM = "system:role:assignPerm";
+    public static final String SYSTEM_ROLE_ASSIGN_USER = "system:role:assignUser";
     public static final String SYSTEM_MENU_LIST = "system:menu:list";
     public static final String SYSTEM_MENU_ADD = "system:menu:add";
     public static final String SYSTEM_MENU_EDIT = "system:menu:edit";
