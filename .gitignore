@@ -39,4 +39,4 @@ moli-server/src/main/resources/application-pro.yml
 
 # Local-only SQL at repo root (docs/sql baseline is versioned)
 /sql/
-moli.sql
+/moli.sql
