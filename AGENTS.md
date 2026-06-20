@@ -2,7 +2,7 @@
 
 ## 项目背景
 
-- 项目类型：Java 后台管理系统（Maven 多模块）
+- 项目类型：Java **茉莉管理系统** 后端（Maven 多模块）
 - 模块：
   - `moli-server`：业务服务与接口层
   - `moli-common`：公共实体、VO、常量与工具
@@ -24,6 +24,9 @@
 - 保持分页返回风格：`PageRes<T>`。
 - 遵循现有分层：controller -> service -> mapper。
 - 非必要不引入新框架。
+- 数据库基线: `docs/sql/00_schema.sql` + `01_baseline_data.sql`；变更后 `python scripts/export_db_baseline.py`
+- 单测回归: `mvn -pl moli-common,moli-server -am test`（见 `docs/api-test-report.md`）
+- 界面截图: `PIC/`（见 [README-zh.md](README-zh.md) 界面预览）
 
 ## 安全与配置边界
 

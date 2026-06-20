@@ -1,15 +1,16 @@
 # 数据库表关系图
 
-最后更新: 2026-06-10  
+最后更新: 2026-06-12  
 数据来源: `docs/sql/00_schema.sql` 与 `moli-common` 实体类  
 数据库名: `moli`（utf8mb4）
 
 ## 1. 说明
 
-- 共 **20** 张业务表：系统模块 **14** 张（含多系统 SSO **2** 张）、运维模块 **6** 张。
+- 共 **22** 张业务表：系统模块 **16** 张（含动作权限 **2** 张、多系统 SSO **2** 张）、运维模块 **6** 张。
 - 表间为 **逻辑关联**，DDL 中 **未声明数据库外键**（`FOREIGN_KEY_CHECKS = 0`），由应用层维护一致性。
-- 主键 `id` 由应用侧 `CustomIdGenerator` 赋值，非数据库自增。
-- 结构变更时请同步更新本文件，并执行 `python scripts/export_db_baseline.py` 重导出 `docs/sql/00_schema.sql`。
+- 主键 `id` 多数由应用侧 `CustomIdGenerator` 赋值；**例外**：`sys_action.id` 为数据库 **AUTO_INCREMENT**。
+- 权限模型：页面权限仍在 `sys_menu.perms`（C 菜单）；动作权限在 `sys_action` + `sys_role_action`（见 [action-permission-design.md](action-permission-design.md)）。
+- 结构变更时请同步更新本文件，并执行 `python scripts/export_db_baseline.py` 重导出 `docs/sql/`。
 
 ## 2. 总览
 
@@ -23,10 +24,14 @@ flowchart TB
         post[sys_post]
         ur[sys_user_role]
         rm[sys_role_menu]
+        sa[sys_action]
+        ra[sys_role_action]
         up[sys_user_post]
         dept --> user
         user --> ur --> role
         role --> rm --> menu
+        role --> ra --> sa
+        sa -.menu_id.-> menu
         user --> up --> post
         dept -.自关联.-> dept
         menu -.自关联.-> menu
@@ -108,7 +113,8 @@ erDiagram
 | 已有表 | 与 SSO 的关系 |
 |--------|----------------|
 | `sys_user` | `sys_user_system.user_id` → 谁被分配了哪些系统 |
-| `sys_user_role` / `sys_role_menu` / `sys_menu` | **不变**；管 moli-admin **内部**菜单按钮权限 |
+| `sys_user_role` / `sys_role_menu` / `sys_menu` | **不变**；管 moli-admin **内部**页面导航 |
+| `sys_action` / `sys_role_action` | **新增**；管写操作动作（add/edit/remove 等），与 C 菜单 `list` 并集下发 |
 | `operation_platform_info` | **无关**；运维外部平台账号，不是 SSO 业务系统 |
 
 DDL：已合并进 `docs/sql/00_schema.sql`（含 `sys_system` / `sys_user_system`）。
@@ -141,8 +147,22 @@ erDiagram
     sys_menu {
         bigint id PK "主键"
         bigint parent_id "父菜单ID"
-        varchar menu_type "M目录 C菜单 F按钮"
-        varchar perms "权限标识"
+        varchar menu_type "M目录 C页面（F已废弃）"
+        varchar perms "页面 list 权限标识"
+    }
+
+    sys_action {
+        bigint id PK "自增"
+        varchar perm_code UK "如 system:user:add"
+        varchar resource "资源 user/role/..."
+        varchar action "add/edit/remove/..."
+        bigint menu_id "关联 C 页面 UI 分组"
+        tinyint status "1启用 0停用"
+    }
+
+    sys_role_action {
+        bigint role_id PK "角色ID"
+        varchar perm_code PK "动作权限码"
     }
 
     sys_post {
@@ -175,6 +195,9 @@ erDiagram
     sys_role ||--o{ sys_user_role : "role_id"
     sys_role ||--o{ sys_role_menu : "role_id"
     sys_menu ||--o{ sys_role_menu : "menu_id"
+    sys_role ||--o{ sys_role_action : "role_id"
+    sys_action ||--o{ sys_role_action : "perm_code"
+    sys_menu ||--o{ sys_action : "menu_id"
     sys_menu ||--o{ sys_menu : "parent_id 树形"
     sys_user ||--o{ sys_user_post : "user_id"
     sys_post ||--o{ sys_user_post : "post_id"
@@ -313,7 +336,9 @@ erDiagram
 | `sys_dept` | 部门 | 系统 |
 | `sys_user` | 用户 | 系统 |
 | `sys_role` | 角色 | 系统 |
-| `sys_menu` | 菜单 | 系统 |
+| `sys_menu` | 菜单（M/C；F 已废弃） | 系统 |
+| `sys_action` | 动作目录 | 系统 · 权限 |
+| `sys_role_action` | 角色-动作 | 系统 · 权限 |
 | `sys_post` | 岗位 | 系统 |
 | `sys_user_role` | 用户-角色 | 系统 |
 | `sys_role_menu` | 角色-菜单 | 系统 |

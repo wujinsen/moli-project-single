@@ -1,15 +1,16 @@
 # Database Schema Diagram
 
-Last updated: 2026-06-10  
+Last updated: 2026-06-12  
 Source: `docs/sql/00_schema.sql`, `moli-common` entities  
 Database: `moli` (utf8mb4)
 
 ## 1. Notes
 
-- **20** business tables: **14** system (incl. **2** multi-system SSO) + **6** operations.
+- **22** business tables: **16** system (incl. **2** action permission + **2** SSO) + **6** operations.
 - Relationships are **logical only** — no database foreign keys in DDL.
-- Primary keys are assigned by the application (`CustomIdGenerator`), not DB auto-increment.
-- Keep this file in sync with `docs/sql/00_schema.sql` when the schema changes; re-export via `python scripts/export_db_baseline.py`.
+- Most PKs use application `CustomIdGenerator`; **`sys_action.id` is AUTO_INCREMENT**.
+- Page perms: `sys_menu.perms`; action perms: `sys_action` + `sys_role_action` (see [action-permission-design.en.md](action-permission-design.en.md)).
+- Keep this file in sync with `docs/sql/00_schema.sql`; re-export via `python scripts/export_db_baseline.py`.
 
 ## 2. Overview
 

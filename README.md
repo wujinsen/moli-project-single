@@ -1,10 +1,33 @@
-[English](./README.md) | [中文](./README-zh.md) | [日本語](./README-ja.md)
+[中文](./README-zh.md) | [English](./README.md) | [日本語](./README-ja.md)
 
 # Moli Admin (moli-project-single)
 
-A **Java admin backend** for the **Tangyu Management System** (棠羽管理系统). Built with Spring Boot as a Maven multi-module project, it exposes REST APIs with unified `MoliResult<T>` / `PageRes<T>` responses, **RBAC** (role-based access control), Shiro session auth, and Swagger2 documentation.
+A **Java admin backend** for the **Moli Management System** (茉莉管理系统). Built with Spring Boot as a Maven multi-module project, it exposes REST APIs with unified `MoliResult<T>` / `PageRes<T>` responses, **RBAC** (role-based access control), Shiro session auth, and Swagger2 documentation.
 
-> This repository contains the **backend only**. Pair it with a separate Vue admin frontend (e.g. vue-element-admin style).
+> This repository is the **backend API**. Screenshots below are from the companion Vue admin UI (`meiling-ui`), integrated via REST + Shiro Session.
+
+## Screenshots
+
+| Login | Multi-system portal |
+|:---:|:---:|
+| ![Login](./PIC/01-login.png) | ![System portal](./PIC/02-system-portal.png) |
+| Single sign-on entry with i18n | Grouped portal listing accessible systems (38 in demo seed) |
+
+| Dashboard | User management |
+|:---:|:---:|
+| ![Dashboard](./PIC/03-dashboard.png) | ![User management](./PIC/04-user-management.png) |
+| Workbench after entering moli-admin | Dept tree filter, role/system assignment, password reset |
+
+| Role management | Menu management |
+|:---:|:---:|
+| ![Role management](./PIC/05-role-management.png) | ![Menu management](./PIC/06-menu-management.png) |
+| Roles, user assignment, menu + action grants | Tree editor for directories and page menus |
+
+![Action catalog](./PIC/07-action-catalog.png)
+
+Action catalog (P4): maintain write-action codes such as `system:user:add` for role grants and button-level auth.
+
+> Assets live in `PIC/`. Replace files in place when the UI changes.
 
 ## Features
 

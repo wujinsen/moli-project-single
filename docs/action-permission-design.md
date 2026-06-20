@@ -623,7 +623,7 @@ sequenceDiagram
 | **P1** | 建表 + 种子 + `PermissionService` + **`LoginVo`/`SystemEnterVo` 增 `permissions`** + `fillLoginContext` 拷贝 + **`enter`/`switch` 内嵌 permissions** + `/auth/capabilities`（辅）+ 用户模块接口拆分 + Shiro 路径 10009 文案（§5.3）+ 写接口 list 前提（§5.2.1）+ 前端 `usePermissions`（§6.6） | 张三场景（§2.1）；门户关 / 单系统自动进登录路径 permissions 非空 |
 | **P2** | 角色 `actionCodes` API + meiling-ui 角色页/用户页改造 + 去 F | 角色可配、按钮常显点击拦截 |
 | **P3** | 角色/菜单/运维等模块动作种子与注解拆分 | 各模块写操作独立 perm |
-| **P4** | （可选）动作管理 CRUD 后台页 | 不改代码可增动作 |
+| **P4** | 动作管理 CRUD 后台页 + `ActionController` | **已落地**（权限复用 `system:menu:list/edit`） |
 
 **本期不做：** 数据权限、`sys_menu` F 维护、外部 SSO 系统动作下发。
 

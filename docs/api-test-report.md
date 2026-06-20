@@ -1,15 +1,15 @@
 # API 单元测试用例报告（不连库）
 
-> 生成时间：2026-06-07  
+> 生成时间：2026-06-12  
 > 模块：`moli-server`  
-> 执行命令：`mvn test -pl moli-server surefire-report:report`
+> 执行命令：`mvn -pl moli-common,moli-server -am test`
 
 ## 1. 执行摘要
 
 | 指标 | 结果 |
 |------|------|
-| 测试用例总数 | **119** |
-| 通过 | **119** |
+| 测试用例总数 | **128** |
+| 通过 | **128** |
 | 失败 | 0 |
 | 跳过 | 0 |
 | 执行方式 | Mockito 注入 Controller，Mock Mapper/Service，**不启动 Spring、不连 MySQL/Redis** |
@@ -32,7 +32,8 @@
 | Controller | 路径前缀 | 活跃接口数 | 已测接口数 | 覆盖率 |
 |------------|----------|-----------|-----------|--------|
 | LoginController | `/login` 等 | 3 | 3 | 100%（成功登录路径见 §5） |
-| UserController | `/user` | 20 | 20 | 100% |
+| UserController | `/user` | 20 | 20 | 100%（含本人 profile/改密） |
+| ActionController | `/action` | 7 | 7 | 100% |
 | SystemController | `/system` | 7 | 7 | 100% |
 | SsoController | `/sso` | 1 | 1 | 100% |
 | MenuController | `/menu` | 8 | 8 | 100% |

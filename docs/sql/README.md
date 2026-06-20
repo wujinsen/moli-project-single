@@ -29,7 +29,7 @@ mysql -u root -p moli < docs/sql/01_baseline_data.sql
 | `operation_server_component` | 10 | 是 |
 | `operation_server_info` | 6 | 是 |
 | `operation_server_project` | 6 | 是 |
-| `sys_action` | 38 | 是 |
+| `sys_action` | 40 | 是 |
 | `sys_dept` | 34 | 是 |
 | `sys_dict_data` | 35 | 是 |
 | `sys_dict_type` | 12 | 是 |

@@ -1,10 +1,35 @@
-[English](./README.md) | [中文](./README-zh.md) | [日本語](./README-ja.md)
+[中文](./README-zh.md) | [English](./README.md) | [日本語](./README-ja.md)
 
 # 茉莉后台管理系统（moli-project-single）
 
-**棠羽管理系统** 的后端服务，基于 **Spring Boot** 的 Java 后台 API 工程，采用 **Maven 多模块** 组织。接口统一返回 `MoliResult<T>`、`PageRes<T>`，内置 **RBAC 权限模型**、**Shiro** 会话鉴权，并提供 **Swagger2** 文档。
+**茉莉管理系统** 的后端服务，基于 **Spring Boot** 的 Java 后台 API 工程，采用 **Maven 多模块** 组织。接口统一返回 `MoliResult<T>`、`PageRes<T>`，内置 **RBAC 权限模型**、**Shiro** 会话鉴权，并提供 **Swagger2** 文档。
 
-> 本仓库仅包含**后端**代码，需配合独立的 Vue 管理端前端（如 vue-element-admin 体系）使用。
+> 本仓库为**后端 API**；界面截图来自配套 Vue 管理端（`meiling-ui`），与后端通过 REST + Shiro Session 联调。
+
+## 界面预览
+
+配套前端（茉莉系统）主要页面如下：
+
+| 登录 | 多系统门户 |
+|:---:|:---:|
+| ![登录页](./PIC/01-login.png) | ![多系统门户](./PIC/02-system-portal.png) |
+| 统一账号登录，支持中/英/日语言切换 | SSO 门户：按分组展示可进入的业务系统（演示环境 38 个系统） |
+
+| 工作台 | 用户管理 |
+|:---:|:---:|
+| ![工作台](./PIC/03-dashboard.png) | ![用户管理](./PIC/04-user-management.png) |
+| 进入 moli-admin 后的首页仪表盘 | 按部门树筛选用户，支持角色/系统分配与重置密码 |
+
+| 角色管理 | 菜单管理 |
+|:---:|:---:|
+| ![角色管理](./PIC/05-role-management.png) | ![菜单管理](./PIC/06-menu-management.png) |
+| 角色 CRUD、分配用户、分配权限（菜单 + 动作） | 树形维护目录/页面菜单与权限标识 |
+
+![动作目录](./PIC/07-action-catalog.png)
+
+动作目录（P4）：维护 `system:user:add` 等写操作权限码，与角色授权、按钮级鉴权联动。
+
+> 截图目录：`PIC/`。更新界面后请替换同名文件并同步 README。
 
 ## 功能概览
 

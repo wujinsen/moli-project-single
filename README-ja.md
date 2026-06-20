@@ -2,7 +2,7 @@
 
 # Moli 管理バックエンド（moli-project-single）
 
-**棠羽管理システム**向けの **Spring Boot** ベース **Java 管理用 API** です。**Maven マルチモジュール**構成で、API は `MoliResult<T>` / `PageRes<T>` で統一し、**RBAC**、**Shiro** セッション認証、**Swagger2** を提供します。
+**茉莉管理システム**向けの **Spring Boot** ベース **Java 管理用 API** です。**Maven マルチモジュール**構成で、API は `MoliResult<T>` / `PageRes<T>` で統一し、**RBAC**、**Shiro** セッション認証、**Swagger2** を提供します。
 
 > 本リポジトリは**バックエンドのみ**です。Vue 系の管理画面フロントエンドと組み合わせて利用します。
 

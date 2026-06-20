@@ -60,11 +60,17 @@ public class RoleControllerApiTest extends AbstractApiTest {
 
     @Test
     public void PUT_role_update() {
-        ControllerTestSupport.stubUpdate(roleMapper);
-        ControllerTestSupport.stubSelectListEmpty(sysUserRoleMapper);
-        SysRoleVo vo = new SysRoleVo();
-        vo.setId(1L);
-        ControllerTestSupport.assertSuccess(controller.update(vo));
+        try (org.mockito.MockedStatic<org.apache.shiro.SecurityUtils> shiro =
+                     org.mockito.Mockito.mockStatic(org.apache.shiro.SecurityUtils.class)) {
+            org.apache.shiro.subject.Subject subject = org.mockito.Mockito.mock(org.apache.shiro.subject.Subject.class);
+            org.mockito.Mockito.when(subject.isPermitted(org.mockito.ArgumentMatchers.anyString())).thenReturn(true);
+            shiro.when(org.apache.shiro.SecurityUtils::getSubject).thenReturn(subject);
+            ControllerTestSupport.stubUpdate(roleMapper);
+            ControllerTestSupport.stubSelectListEmpty(sysUserRoleMapper);
+            SysRoleVo vo = new SysRoleVo();
+            vo.setId(1L);
+            ControllerTestSupport.assertSuccess(controller.update(vo));
+        }
     }
 
     @Test

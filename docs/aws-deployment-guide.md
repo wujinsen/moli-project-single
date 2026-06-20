@@ -1,6 +1,6 @@
 # AWS 部署指南（MySQL + Nginx + Redis）
 
-适用项目：**moli-project-single**（棠羽管理系统后端）+ 独立 Vue 前端。
+适用项目：**moli-project-single**（茉莉管理系统后端）+ 独立 Vue 前端。
 
 本文以 **单台 EC2 自建 MySQL / Redis / Nginx** 为推荐方案，成本低、与 Shiro + Jedis 兼容性好。生产规模扩大后可再拆分为 RDS + ElastiCache。
 

@@ -1,6 +1,6 @@
 # 项目迭代基线（Moli 后台）
 
-最后更新: 2026-06-11
+最后更新: 2026-06-12
 维护方式: 每次迭代后更新本文件，作为需求/技术/风险的单一基准事实来源
 
 ## 1. 项目概览
@@ -11,7 +11,7 @@
   - `moli-server`: Spring Boot 主服务，包含 controller/service/mapper/config
   - `moli-common`: 公共实体、VO、常量、工具、异常、返回结构
 - 启动类: `moli-server/src/main/java/com/moli/MoliApplication.java`
-- 默认端口: `1125`（`moli-server/src/main/resources/application.yml`）
+- 默认端口: `8888`（`moli-server/src/main/resources/application.yml`）
 
 ## 2. 技术栈与关键依赖
 
@@ -36,7 +36,7 @@
 
 ### 3.1 主要包分层（`moli-server`）
 
-- `com.moli.system.controller`: 登录、用户、角色、菜单、部门、岗位、字典、日志
+- `com.moli.system.controller`: 登录、用户、角色、菜单、部门、岗位、字典、日志、系统门户、动作目录、鉴权能力
 - `com.moli.operation.controller`: 平台/服务器/项目/组件等运维类接口
 - `com.moli.system.service` + `impl`: 业务服务层
 - `com.moli.system.mapper`、`com.moli.operation.mapper`: 持久层 Mapper
@@ -55,6 +55,10 @@
   - `system/controller/PostController.java`
   - `system/controller/DictController.java`
   - `system/controller/LogController.java`
+  - `system/controller/SystemController.java`（门户 / 系统注册 / `/auth/capabilities`）
+  - `system/controller/SsoController.java`
+  - `system/controller/ActionController.java`（动作目录 CRUD）
+  - `system/controller/AuthController.java`
 - 运维域:
   - `operation/controller/OperationPlatformController.java`
   - `operation/controller/OperationServerController.java`
@@ -71,7 +75,8 @@
   - 其余: `/** -> authc`
 - Session 存储: Redis（`RedisSessionDAO`）
 - Cache: Redis（`RedisCacheManager`，主键字段 `userName`）
-- 登录接口: `LoginController#login`，返回 token（sessionId）+ 用户信息 + 菜单树
+- 多端登录: `shiro.single-session: false`（默认不互踢；见 §11）
+- 登录接口: `LoginController#login`，返回 token（sessionId）+ 用户信息 + 菜单树 / 门户上下文
 
 ### 3.4 公共模型与响应
 
@@ -91,19 +96,24 @@
 
 当前显性配置要点:
 
-- profile 默认: `dev`
-- MySQL/Redis/MinIO 连接信息写在 yml 中
+- profile 默认: `dev`；生产使用 `pro` + `application-pro.yml`（gitignore）或环境变量
+- MySQL JDBC 需 `allowPublicKeyRetrieval=true`（MySQL 8，见 `application-pro.yml.example`）
+- Redis/MinIO 连接信息通过 yml 或 `scripts/linux/moli-server.env.example` 注入
 - swagger 开关在不同环境有差异（如 `pro` 为 `false`）
+- 数据库初始化: `docs/sql/00_schema.sql` + `01_baseline_data.sql`（见 `docs/sql/README.md`）
 
 ## 5. 测试、质量与工程化现状
 
-- 单测目录存在: `moli-server/src/test/java`
-- 已有测试以集成/实验性为主，覆盖有限（User/Post/Redis）
-- Maven 打包默认跳过测试（存在回归风险）
+- 单测目录: `moli-server/src/test/java`（Mockito，**不连库**）
+- API 单测: `com/moli/api/*ApiTest.java`（约 **128** 用例，覆盖主要 Controller）
+- 公共支撑: `testsupport/ControllerTestSupport`、`ShiroMockSupport`、`AbstractApiTest`
+- 旧集成测试: `moli-server/legacy-integration-test/`（不参与默认 `mvn test`）
+- 测试报告: `docs/api-test-report.md`；HTML: `moli-server/target/site/surefire-report.html`
+- Maven 父 POM 可能仍配置 skipTests，本地回归建议: `mvn -pl moli-common,moli-server -am test`
 - 仓库中未见 CI 配置（未发现 `.github/workflows`）
-- 未发现前端工程、Node 构建或前端 lint/test 配置
-- AWS 单机部署步骤见 `docs/aws-deployment-guide.md`（MySQL/Nginx/Redis 自建；Redis 勿用 Serverless）
-- 数据库表关系图见 `docs/database-schema-diagram.md`（Mermaid ER 图，对应 `docs/sql/00_schema.sql`）
+- 前端工程在独立仓库 `meiling-ui`；生产域名示例 `moli-ui.wu-jinsen.com`（同机 Nginx 反代）
+- AWS 单机部署: `docs/aws-deployment-guide.md`（MySQL/Nginx/Redis 自建；同域 `/login` GET/POST 拆分）
+- 数据库表关系图: `docs/database-schema-diagram.md`（**22 张表**，含 `sys_action` / `sys_role_action`）
 - 多系统 SSO：在 **moli-admin**（本仓库，模块目录 `moli-server`）做登录、系统门户、用户-系统分配；其他系统各自 RBAC。见 `docs/multi-system-sso-design.md`
 - Linux 部署脚本：`scripts/linux/moli-server.sh`（启停）、`moli-server.env.example`、`moli-server.service`（systemd）
 
@@ -159,7 +169,7 @@
 
 - 模型: `sys_action` + `sys_role_action`；页面 list 仍在 C 菜单 `perms`；废弃菜单 F
 - **P3**：字典/系统注册/日志/运维四模块动作种子 + Controller 写接口 `add/edit/remove` + `list` 双重鉴权；前端各管理页 `guardAction`
-- **P4**：`GET /action/page` 等动作目录 CRUD（权限复用 `system:menu:list` / `edit`）；`ActionManageView` + `patch_sys_menu_action_manage.sql`
+- **P4**：`GET /action/page` 等动作目录 CRUD（权限复用 `system:menu:list` / `edit`）；动作目录菜单已含于 `docs/sql` 基线
 - 后端: `PermissionService` 并集页面+动作；`GET /auth/capabilities`、`GET /action/list`、`GET /role/{id}/auth`
 - 下发: `LoginVo` / `SystemEnterVo` 含 `permissions`；`fillLoginContext` 门户关/单系统自动进已拷贝
 - 前端（meiling-ui）: `constants/permissions.ts`、`guardAction`、角色页动作勾选、按钮常显点击拦截
@@ -171,7 +181,19 @@
 - 配置 `shiro.single-session`（`application.yml`）：`false`（默认）= 同一用户多端登录互不影响；`true` = 新登录踢掉旧会话
 - 实现：`ShiroRealm` 仅在单端模式登录前 `deleteCache`；多端模式用 Redis Set 记录各 Session，退出只移除当前 Session；停用用户仍 `deleteCache` 清理全部 Session
 
-## 12. 最近一次修复记录（2026-05-06）
+## 12. 个人中心与会话（2026-06-12）
+
+- **本人改资料/密码**：`PUT /user`、`PUT /user/resetPassword` 在 `id=当前用户` 时仅需登录；改他人仍要 `system:user:edit` / `resetPwd` + `list`
+- **角色授权动作拆分**：新增 `system:role:assignPerm`、`system:role:assignUser`；`PUT /role` 保存 `menuIds/actionCodes` 需 `assignPerm`；`addUserRole`/`removeUsers` 需 `assignUser`
+- **用户列表**：按部门筛选时不再把 `superadmin` 注入每个部门（`UserServiceImpl.list`）
+
+## 13. 部署与运维文档（2026-06-12）
+
+- 生产前端域名示例: `moli-ui.wu-jinsen.com`（同机部署，无独立 `api` 子域）
+- Nginx: 同域反代时 **`/login` 不可整段 proxy**；GET 走 `index.html`，POST 走 `8888`（见 `aws-deployment-guide.md` §9.4、§12.2）
+- MySQL 8: JDBC 加 `allowPublicKeyRetrieval=true`；Redis 6 客户端为 `redis6-cli`
+
+## 14. 最近一次修复记录（2026-05-06）
 
 - 修复 `DictController#deleteData`:
   - 路径变量显式绑定为 `@PathVariable("dictIds")`
@@ -181,7 +203,7 @@
   - 开启时生成验证码图片并写入 Redis；关闭时返回关闭提示
 - 当前阻塞: 已解除（本机已配置 Maven，2026-06-11 编译通过）
 
-## 13. AI 迭代基础设施（2026-05-06）
+## 15. AI 迭代基础设施（2026-05-06）
 
 - 已新增项目级 AI 协作基线文件:
   - `.cursor/skills/bugfix-triage/SKILL.md`

@@ -1,12 +1,12 @@
 # 后台接口迭代地图
 
-最后更新: 2026-06-11  
+最后更新: 2026-06-12  
 适用范围: `moli-server` 当前代码中的 Controller 接口
 
 ## 1. 基本结论
 
-- 控制器数量: 15
-- HTTP 接口数量: 约 70（`GET/POST/PUT/DELETE` 注解统计）
+- 控制器数量: 16（含 `ActionController`、`AuthController`、`SystemController`、`SsoController`）
+- HTTP 接口数量: 约 100+（`GET/POST/PUT/DELETE` 注解统计）
 - 统一返回: `MoliResult<T>`
 - 分页返回: `PageRes<T>`
 - 鉴权方式: Shiro Session（token 实际为 sessionId）
@@ -43,8 +43,7 @@
 - `GET /action/list?menuId=`：页面可分配动作（角色授权 UI）
 - **P4 动作目录**：`GET /action/page`、`GET /action/{id}`、`POST/PUT/DELETE /action`、`PUT /action/changeStatus`；权限与菜单管理一致（读 `system:menu:list`，写 `system:menu:edit` + `list`）
 - `GET/POST/PUT/DELETE /system`：系统注册维护（权限 `system:system:list`；增删改另需 `superadmin`/`admin`）；`SysSystem.systemGroup` 支持 `governance`/`business`/`ai`/`tech`/`ops`/`data`/`office`；`GET /system/list` 可按 `systemGroup` 筛选
-- SQL：`patch_sys_system_group` 已合并至 `docs/sql` 基线（`sys_system.group_code` 等）
-- 侧栏菜单：`path=system`，`component=system/system/index`，`route_name=SystemRegistry`，`perms=system:system:list`（先执行 `patch_sys_menu_route_name.sql`）
+- 系统注册菜单、分组字段已含于 `docs/sql` 基线（`00_schema.sql` + `01_baseline_data.sql`）
 
 ### `SsoController`（前缀 `/sso`）
 
@@ -61,7 +60,7 @@
 
 ## 3. 系统管理域接口
 
-### 用户管理 `UserController`（前缀 `/user`，13个）
+### 用户管理 `UserController`（前缀 `/user`）
 
 - `GET /user/list`：分页用户列表（`UserVo` 查询参数）；`superadmin`（最大权限）与 `admin`（特殊管理员）对外隐藏，仅特殊账号登录时可见；**未选部门**时特殊账号可见，**按部门筛选**时仅展示 `dept_id` 落在该部门树内的用户（无部门归属的特殊账号不会出现于各部门子列表）
 - 用户查询/删除/改状态/重置密码等：非特殊账号访问 `superadmin`/`admin` 返回无权限（`10009`）
@@ -69,7 +68,8 @@
 - `PUT /user`：更新用户；**本人**仅可改昵称/联系方式等个人信息（仅需登录）；改他人需 `system:user:edit` + `system:user:list`
 - `GET /user/{id}`：查询用户
 - `GET /user/getUserDetail/{id}`：查询用户详情（含 postIds）
-- `GET /user/profile`：当前登录用户信息
+- `GET /user/profile`：当前登录用户信息（仅需登录）
+- `PUT /user/language`：更新界面语言（仅需登录）
 - `DELETE /user/{userIds}`：批量删除；权限 `system:user:remove` + `system:user:list`
 - `PUT /user/changeStatus`：用户启停；权限 `system:user:edit` + `system:user:list`
 - `GET /user/getRoleByUserId/{userId}`：用户角色信息
@@ -84,20 +84,19 @@
 - `GET /user/getSystemByUserId/{userId}`：超管目标用户 `systemIds` 为全部系统，`systemList` 含停用系统
 - `GET /user/getUserBySystem`：按系统查已授权用户（query：`systemId`、分页、`userName`/`telephone`）；含 `sys_user_system` 关联及超管
 - `GET /user/unauthorizedUsersBySystem`：按系统查未授权用户（参数同上；排除已授权与超管）
-- 侧栏菜单「系统用户分配」：`path=system-user`，`component=system/system-user/index`，`route_name=SystemUserAssign`，`perms=system:user:list`（`patch_sys_menu_system_user_assign.sql`）
-- 菜单顶层分组（方案 1）：`patch_sys_menu_grouping.sql` — 「多系统」(`path=portal`)、「审计日志」(`path=audit`)；角色仅勾子菜单时后端自动补齐父级，无需改 `sys_role_menu`
+- 侧栏「系统用户分配」菜单、`多系统/审计日志` 分组已含于 `docs/sql` 基线
 
-### 角色管理 `RoleController`（前缀 `/role`，8个）
+### 角色管理 `RoleController`（前缀 `/role`）
 
 - `GET /role/list`：分页列表；权限 `system:role:list`
 - `POST /role`：新增角色（`menuIds` + `actionCodes`）；权限 `system:role:add` + `system:role:list`
-- `PUT /role`：更新角色（`menuIds` + `actionCodes`）；强制「有动作必先有页面」；权限 `system:role:edit` + `system:role:list`
+- `PUT /role`：更新角色；**保存 `menuIds`/`actionCodes`** 需 `system:role:assignPerm` + `list`；**仅改角色字段**需 `system:role:edit` + `list`；强制「有动作必先有页面」
 - `GET /role/{id}/auth`：授权回显 `{ menuIds, actionCodes }`；权限 `system:role:list`
 - `GET /role/{id}`：查询角色；权限 `system:role:list`
 - `DELETE /role/{ids}`：删除角色（含关系）；权限 `system:role:remove` + `system:role:list`
 - `PUT /role/changeStatus`：角色状态变更；权限 `system:role:edit` + `system:role:list`
 - `GET /role/getRoleAll`：获取有效角色列表；权限 `system:role:list`
-- 用户模块 `PUT /user/addUserRole`、`PUT /user/removeUsers`：权限 `system:role:edit` + `system:role:list`
+- 用户模块 `PUT /user/addUserRole`、`PUT /user/removeUsers`：权限 `system:role:assignUser` + `system:role:list`
 
 ### 菜单管理 `MenuController`（前缀 `/menu`，8个）
 
@@ -186,7 +185,9 @@
 - 已调整（2026-06-08）: 系统/运维 Controller 补充 `@RequiresPermissions`，与菜单 perms 对齐
 - 已调整（2026-06-08）: 角色授权接口返回刷新提示；授权后清除 Shiro 授权缓存
 - 已调整（2026-06-08）: 操作/登录日志菜单 perms 已含于 `docs/sql` 基线
-- 控制器层已覆盖主要管理接口权限注解；`/menu/getRouters`、`/dict/data/type/{dictType}`、`/user/profile` 等仍仅要求登录
+- 已调整（2026-06-12）: 本人 `PUT /user` / `PUT /user/resetPassword` 仅需登录；角色 `assignPerm` / `assignUser` 动作拆分
+- 已调整（2026-06-12）: 生产同域 Nginx `/login` GET 须回 `index.html`（见 `aws-deployment-guide.md`）
+- 控制器层已覆盖主要管理接口权限注解；`/menu/getRouters`、`/dict/data/type/{dictType}`、`/user/profile`、`PUT /user`（本人）等仍仅要求登录
 - 多数接口直接接收 Entity 作为入参，需评估字段越权更新风险
 
 ## 6. 建议的下一步（接口维度）
@@ -206,6 +207,14 @@
 - 返回结构变更: `insertUserRole` / `addUserRole` / `removeUsers` 成功时 `msg` 含刷新提示
 - 前端联调影响: 无权限时 `code=10009`；角色授权成功需展示 `msg` 并建议用户刷新
 - 回归验证: 非授权角色访问管理接口应被拒绝；授权后刷新可见新菜单
+
+### 2026-06-12 个人中心、角色动作、部署
+
+- 变更接口: `PUT /user`（本人改资料）、`PUT /user/resetPassword`（本人改密）、`PUT /role`（assignPerm 分支）、`PUT /user/addUserRole`/`removeUsers`（assignUser）
+- 鉴权变更: 新增 `system:role:assignPerm`、`system:role:assignUser` 种子与校验
+- 数据库: `sys_action` 增至 **40** 条（含角色分配权限）；基线见 `docs/sql/01_baseline_data.sql`
+- 部署: `moli-ui.wu-jinsen.com` 同域反代时 `/login` GET/POST 拆分
+- 回归验证: test 用户个人中心可保存；直接访问 `/login` 不出现 JSON 500
 
 ### [日期-迭代号]
 
