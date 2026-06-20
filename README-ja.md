@@ -4,7 +4,14 @@
 
 **茉莉管理システム**向けの **Spring Boot** ベース **Java 管理用 API** です。**Maven マルチモジュール**構成で、API は `MoliResult<T>` / `PageRes<T>` で統一し、**RBAC**、**Shiro** セッション認証、**Swagger2** を提供します。
 
-> 本リポジトリは**バックエンドのみ**です。Vue 系の管理画面フロントエンドと組み合わせて利用します。
+> 本リポジトリは**バックエンド API** です。管理画面は別リポジトリ **[meiling-ui](https://github.com/wujinsen/meiling-ui)**（Vue）で、REST + Shiro Session で連携します。
+
+## リポジトリ構成
+
+| リポジトリ | URL | 役割 |
+|------------|-----|------|
+| バックエンド（本リポジトリ） | [moli-project-single](https://github.com/wujinsen/moli-project-single) | Spring Boot API |
+| フロントエンド | **[meiling-ui](https://github.com/wujinsen/meiling-ui)** | Vue 管理画面 |
 
 ## 機能概要
 
@@ -84,6 +91,7 @@ mvn -pl moli-common,moli-server -am -DskipTests package
 
 ## ドキュメント
 
+- [フロントエンド meiling-ui（GitHub）](https://github.com/wujinsen/meiling-ui)
 - [AWS デプロイガイド（MySQL + Nginx + Redis）](docs/aws-deployment-guide.en.md)
 - [API イテレーションマップ](docs/api-iteration-map.md)
 - [プロジェクトイテレーション基線](docs/project-iteration-baseline.md)

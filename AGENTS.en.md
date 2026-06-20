@@ -2,7 +2,8 @@
 
 ## Project Context
 
-- Project type: Java backend admin system (Maven multi-module)
+- Project type: Java backend for **Moli Management System** (Maven multi-module)
+- **Companion frontend** (separate repo): [meiling-ui](https://github.com/wujinsen/meiling-ui) — Vue admin UI, integrated via REST + Shiro Session
 - Modules:
   - `moli-server`: business service and API
   - `moli-common`: shared entity, VO, constants, and utilities

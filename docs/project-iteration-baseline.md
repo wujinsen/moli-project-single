@@ -5,8 +5,9 @@
 
 ## 1. 项目概览
 
-- 仓库: `moli-project-single`
-- 类型: Java Maven 多模块后端项目（当前仓库未包含前端管理端代码）
+- 仓库: `moli-project-single`（后端）
+- **配套前端**: [meiling-ui](https://github.com/wujinsen/meiling-ui)（Vue 管理端，独立仓库）
+- 类型: Java Maven 多模块后端项目（前端代码不在本仓库）
 - 模块:
   - `moli-server`: Spring Boot 主服务，包含 controller/service/mapper/config
   - `moli-common`: 公共实体、VO、常量、工具、异常、返回结构
@@ -111,7 +112,7 @@
 - 测试报告: `docs/api-test-report.md`；HTML: `moli-server/target/site/surefire-report.html`
 - Maven 父 POM 可能仍配置 skipTests，本地回归建议: `mvn -pl moli-common,moli-server -am test`
 - 仓库中未见 CI 配置（未发现 `.github/workflows`）
-- 前端工程在独立仓库 `meiling-ui`；生产域名示例 `moli-ui.wu-jinsen.com`（同机 Nginx 反代）
+- 前端工程: 独立仓库 **[meiling-ui](https://github.com/wujinsen/meiling-ui)**；生产域名示例 `moli-ui.wu-jinsen.com`（同机 Nginx 反代）
 - AWS 单机部署: `docs/aws-deployment-guide.md`（MySQL/Nginx/Redis 自建；同域 `/login` GET/POST 拆分）
 - 数据库表关系图: `docs/database-schema-diagram.md`（**22 张表**，含 `sys_action` / `sys_role_action`）
 - 多系统 SSO：在 **moli-admin**（本仓库，模块目录 `moli-server`）做登录、系统门户、用户-系统分配；其他系统各自 RBAC。见 `docs/multi-system-sso-design.md`
@@ -162,8 +163,8 @@
   - 登录响应 `LoginVo.fullPermission`
 - 配置: `sso.enabled`、`SSO_SHARED_SECRET`（见 `application.yml` 与 `scripts/linux/moli-server.env.example`）
 - 验证: `mvn -pl moli-common,moli-server -am -DskipTests package` 编译通过；需执行 SQL 后联调登录与 `/system/enter`
-- 遗留: 「系统注册」菜单已含于基线种子；前端 `meiling-ui` 在独立仓库联调
-- 前端开发文档: `meiling-ui/docs/sso-frontend-dev-guide.md`、`meiling-ui/AGENTS.md`
+- 遗留: 「系统注册」菜单已含于基线种子；前端在 [meiling-ui](https://github.com/wujinsen/meiling-ui) 仓库联调
+- 前端开发文档: [meiling-ui/docs/](https://github.com/wujinsen/meiling-ui/tree/main/docs)（如 SSO 联调指南）、[meiling-ui/AGENTS.md](https://github.com/wujinsen/meiling-ui/blob/main/AGENTS.md)
 
 ## 10. 动作权限（P1–P4 已落地，2026-06-11）
 

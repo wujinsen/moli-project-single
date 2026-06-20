@@ -4,7 +4,25 @@
 
 A **Java admin backend** for the **Moli Management System** (茉莉管理系统). Built with Spring Boot as a Maven multi-module project, it exposes REST APIs with unified `MoliResult<T>` / `PageRes<T>` responses, **RBAC** (role-based access control), Shiro session auth, and Swagger2 documentation.
 
-> This repository is the **backend API**. Screenshots below are from the companion Vue admin UI (`meiling-ui`), integrated via REST + Shiro Session.
+> This repository is the **backend API**. The full admin UI lives in the separate frontend repo **[meiling-ui](https://github.com/wujinsen/meiling-ui)**, integrated via REST + Shiro Session. Screenshots below are from that frontend.
+
+## Project composition
+
+The Moli Management System spans **two repositories** — clone and run each separately:
+
+| Repo | URL | Role |
+|------|-----|------|
+| **Backend (this repo)** | [wujinsen/moli-project-single](https://github.com/wujinsen/moli-project-single) | Spring Boot API: login, RBAC, multi-system portal, operations |
+| **Frontend (companion)** | **[wujinsen/meiling-ui](https://github.com/wujinsen/meiling-ui)** | Vue admin UI: login, portal, user/role/menu/action catalog pages |
+
+**Integration:**
+
+- Frontend `VUE_APP_BASE_API` points at this backend (local default `http://localhost:8888`)
+- After login, the client stores the Shiro `token` (session ID) and sends it on subsequent requests
+- Routes and button-level auth (`permissions` / `guardAction`) come from the backend
+- Production: Nginx serves static frontend and reverse-proxies API paths to port `8888` — see [AWS deployment guide](docs/aws-deployment-guide.en.md)
+
+For frontend setup, see the **[meiling-ui README](https://github.com/wujinsen/meiling-ui)** and its `docs/` / `AGENTS.md`.
 
 ## Screenshots
 
@@ -197,7 +215,18 @@ See `docs/sql/README.md`. Re-export after schema/seed changes: `python scripts/e
    cd moli-server && mvn -Dmaven.test.skip=true spring-boot:run
    ```
 
-6. **Swagger** (when `swagger.show: true`): `http://localhost:<port>/swagger-ui.html` — port is defined in `application.yml` (default in repo may vary).
+6. **Swagger** (when `swagger.show: true`): `http://localhost:<port>/swagger-ui.html` — default port `8888` in `application.yml`.
+
+7. **Run the companion frontend** (separate terminal; Node.js required):
+
+   ```bash
+   git clone https://github.com/wujinsen/meiling-ui.git
+   cd meiling-ui
+   # Set VUE_APP_BASE_API=http://localhost:8888 in .env.development
+   npm install && npm run dev
+   ```
+
+   Open the dev URL from meiling-ui docs and log in with a seed account to exercise the full stack.
 
 ## API response convention
 
@@ -213,6 +242,7 @@ Paginated lists use `PageRes<T>` (`records`, `total`, `pageNum`, `pageSize`).
 
 ## Documentation
 
+- [Companion frontend meiling-ui (GitHub)](https://github.com/wujinsen/meiling-ui)
 - [AWS deployment guide (MySQL + Nginx + Redis)](docs/aws-deployment-guide.en.md)
 - [Database schema diagram](docs/database-schema-diagram.en.md)
 - [API iteration map](docs/api-iteration-map.md)

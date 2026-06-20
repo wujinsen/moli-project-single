@@ -1,6 +1,6 @@
 # AWS Deployment Guide (MySQL + Nginx + Redis)
 
-For **moli-project-single** (Moli admin backend) with a separate Vue frontend.
+For **moli-project-single** (Moli admin backend [GitHub](https://github.com/wujinsen/moli-project-single)) with companion Vue frontend **[meiling-ui](https://github.com/wujinsen/meiling-ui)**.
 
 This guide recommends a **single EC2** with self-hosted MySQL, Redis, and Nginx. It is cost-effective and compatible with Shiro + Jedis. Scale out to RDS and standard ElastiCache later if needed.
 

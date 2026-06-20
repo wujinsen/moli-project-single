@@ -4,7 +4,25 @@
 
 **茉莉管理系统** 的后端服务，基于 **Spring Boot** 的 Java 后台 API 工程，采用 **Maven 多模块** 组织。接口统一返回 `MoliResult<T>`、`PageRes<T>`，内置 **RBAC 权限模型**、**Shiro** 会话鉴权，并提供 **Swagger2** 文档。
 
-> 本仓库为**后端 API**；界面截图来自配套 Vue 管理端（`meiling-ui`），与后端通过 REST + Shiro Session 联调。
+> 本仓库为**后端 API**；完整管理界面在独立前端仓库 **[meiling-ui](https://github.com/wujinsen/meiling-ui)**，与后端通过 REST + Shiro Session 联调。下文截图均来自该前端。
+
+## 项目组成
+
+茉莉管理系统由**前后端两个仓库**组成，需分别克隆、分别启动：
+
+| 仓库 | 地址 | 说明 |
+|------|------|------|
+| **后端（本仓库）** | [wujinsen/moli-project-single](https://github.com/wujinsen/moli-project-single) | Spring Boot API：登录、RBAC、多系统门户、运维等 |
+| **前端（配套）** | **[wujinsen/meiling-ui](https://github.com/wujinsen/meiling-ui)** | Vue 管理端：登录页、系统门户、用户/角色/菜单/动作目录等页面 |
+
+**联调关系：**
+
+- 前端通过 `VUE_APP_BASE_API` 指向后端（本地默认 `http://localhost:8888`）
+- 登录后前端保存 Shiro `token`（Session ID），后续请求在 Header 中携带
+- 菜单路由、按钮级权限（`permissions` / `guardAction`）由后端下发，前端按码渲染与预检
+- 生产环境常见部署：Nginx 同域托管前端静态资源，并将 API 路径反代到 `8888`（见 [AWS 部署指南](docs/aws-deployment-guide.md)）
+
+前端开发、目录结构与本地启动详见 **[meiling-ui 仓库 README](https://github.com/wujinsen/meiling-ui)** 及其 `docs/`、`AGENTS.md`。
 
 ## 界面预览
 
@@ -199,7 +217,18 @@ mysql -u root -p moli < docs/sql/01_baseline_data.sql
    cd moli-server && mvn -Dmaven.test.skip=true spring-boot:run
    ```
 
-6. **Swagger**（`swagger.show: true` 时）：`http://localhost:<端口>/swagger-ui.html`，端口见 `application.yml`。
+6. **Swagger**（`swagger.show: true` 时）：`http://localhost:<端口>/swagger-ui.html`，端口见 `application.yml`（默认 `8888`）。
+
+7. **启动配套前端**（另开终端，需 Node.js）：
+
+   ```bash
+   git clone https://github.com/wujinsen/meiling-ui.git
+   cd meiling-ui
+   # 配置 .env.development 中 VUE_APP_BASE_API=http://localhost:8888
+   npm install && npm run dev
+   ```
+
+   浏览器访问前端开发地址（以 meiling-ui 文档为准），使用基线种子中的账号登录即可联调。
 
 ## 接口返回规范
 
@@ -215,6 +244,7 @@ mysql -u root -p moli < docs/sql/01_baseline_data.sql
 
 ## 相关文档
 
+- [配套前端 meiling-ui（GitHub）](https://github.com/wujinsen/meiling-ui)
 - [AWS 部署指南（MySQL + Nginx + Redis）](docs/aws-deployment-guide.md)
 - [接口迭代地图](docs/api-iteration-map.md)
 - [项目迭代基线](docs/project-iteration-baseline.md)

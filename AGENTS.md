@@ -3,6 +3,7 @@
 ## 项目背景
 
 - 项目类型：Java **茉莉管理系统** 后端（Maven 多模块）
+- **配套前端**（独立仓库）：[meiling-ui](https://github.com/wujinsen/meiling-ui) — Vue 管理端，与本仓库 REST + Shiro Session 联调
 - 模块：
   - `moli-server`：业务服务与接口层
   - `moli-common`：公共实体、VO、常量与工具
