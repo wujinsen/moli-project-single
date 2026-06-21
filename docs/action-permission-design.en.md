@@ -122,6 +122,7 @@ Clear Shiro cache on role changes (existing `PermissionAuthUtils`).
 | POST | `system:user:add` |
 | PUT | `system:user:edit` |
 | DELETE | `system:user:remove` |
+| PUT changePassword | login only (self) |
 | PUT resetPassword | `system:user:resetPwd` |
 
 #### 5.2.1 Mutating user APIs: dual check (decided §13 #2)

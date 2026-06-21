@@ -207,6 +207,7 @@ Java 常量扩展在 `PermissionConstants`；`sys_action.perm_code` 与常量、
 | POST | `/user` | `system:user:add` |
 | PUT | `/user` | `system:user:edit` |
 | DELETE | `/user/{userIds}` | `system:user:remove` |
+| PUT | `/user/changePassword` | 仅登录（本人） |
 | PUT | `/user/resetPassword` | `system:user:resetPwd` |
 | PUT | `/user/changeStatus` | `system:user:edit`（或独立 `status`，二期定） |
 

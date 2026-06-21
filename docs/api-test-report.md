@@ -89,6 +89,7 @@
 | `GET_user_getUserByRole` | `GET /user/getUserByRole` |
 | `PUT_user_removeUsers` | `PUT /user/removeUsers` |
 | `GET_user_unauthorizedUsers` | `GET /user/unauthorizedUsers` |
+| `PUT_user_changePassword` | `PUT /user/changePassword` |
 | `PUT_user_resetPassword` | `PUT /user/resetPassword` |
 | `GET_user_getSystemByUserId_deniesSuperadminForNormalViewer` | 超管可见性：普通用户不可查 superadmin 系统 |
 | `PUT_user_insertUserSystem_skipsSuperadmin` | 分配系统时跳过 superadmin |

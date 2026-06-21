@@ -9,6 +9,7 @@ import com.moli.common.domain.vo.*;
 import com.moli.common.enums.ResponseCodeEnums;
 import com.moli.common.page.PageRes;
 import com.moli.common.utils.PrivilegedUserUtils;
+import com.moli.config.util.SHA256Util;
 import com.moli.config.util.ShiroUtils;
 import com.moli.system.controller.UserController;
 import com.moli.system.mapper.*;
@@ -291,17 +292,31 @@ public class UserControllerApiTest extends AbstractApiTest {
     }
 
     @Test
-    public void PUT_user_resetPassword_self() {
+    public void PUT_user_changePassword_self() {
         try (MockedStatic<SecurityUtils> shiro = ShiroMockSupport.mockUser("operator", 20L)) {
             SysUser user = operator();
-            user.setPassword("oldhash");
+            user.setPassword(SHA256Util.sha256("123456", SHA256Util.SALT));
+            user.setSalt(SHA256Util.SALT);
             when(sysUserMapper.selectById(20L)).thenReturn(user);
             SysUser req = new SysUser();
-            req.setId(20L);
+            req.setOldPassword("123456");
             req.setPassword("newpass");
             ControllerTestSupport.stubUpdate(sysUserMapper);
-            ControllerTestSupport.assertSuccess(controller.resetPassword(req));
+            ControllerTestSupport.assertSuccess(controller.changePassword(req));
         }
+    }
+
+    @Test
+    public void PUT_user_resetPassword_admin() {
+        SysUser target = operator();
+        target.setId(30L);
+        when(sysUserMapper.selectById(30L)).thenReturn(target);
+        when(userService.canViewUser(target)).thenReturn(true);
+        SysUser req = new SysUser();
+        req.setId(30L);
+        req.setPassword("admin123");
+        ControllerTestSupport.stubUpdate(sysUserMapper);
+        ControllerTestSupport.assertSuccess(controller.resetPassword(req));
     }
 
     @Test

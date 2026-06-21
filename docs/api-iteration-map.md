@@ -1,6 +1,6 @@
 # 后台接口迭代地图
 
-最后更新: 2026-06-12  
+最后更新: 2026-06-21  
 适用范围: `moli-server` 当前代码中的 Controller 接口
 
 ## 1. 基本结论
@@ -78,7 +78,8 @@
 - `GET /user/getUserByRole`：查询角色下用户
 - `PUT /user/removeUsers`：移除角色下用户；成功后 `msg` 提示刷新页面；写入操作日志
 - `GET /user/unauthorizedUsers`：角色未授权用户列表
-- `PUT /user/resetPassword`：重置密码；**本人**可改自己密码（仅需登录，可选传 `oldPassword` 校验）；改他人需 `system:user:resetPwd` + `system:user:list`
+- `PUT /user/changePassword`：个人中心修改密码；**仅本人**，须传 `oldPassword` + `password`（仅需登录）
+- `PUT /user/resetPassword`：用户管理重置密码；需 `system:user:resetPwd` + `system:user:list`，无需原密码，未传 `password` 则随机生成
 - `GET /user/getSystemByUserId/{userId}`：用户已授权系统
 - `PUT /user/insertUserSystem`：保存用户可访问系统；权限 `system:user:assignSystem` + `system:user:list`
 - `GET /user/getSystemByUserId/{userId}`：超管目标用户 `systemIds` 为全部系统，`systemList` 含停用系统
@@ -185,7 +186,7 @@
 - 已调整（2026-06-08）: 系统/运维 Controller 补充 `@RequiresPermissions`，与菜单 perms 对齐
 - 已调整（2026-06-08）: 角色授权接口返回刷新提示；授权后清除 Shiro 授权缓存
 - 已调整（2026-06-08）: 操作/登录日志菜单 perms 已含于 `docs/sql` 基线
-- 已调整（2026-06-12）: 本人 `PUT /user` / `PUT /user/resetPassword` 仅需登录；角色 `assignPerm` / `assignUser` 动作拆分
+- 已调整（2026-06-12）: 本人 `PUT /user` 仅需登录；`PUT /user/changePassword` 与 `PUT /user/resetPassword` 拆分；角色 `assignPerm` / `assignUser` 动作拆分
 - 已调整（2026-06-12）: 生产同域 Nginx `/login` GET 须回 `index.html`（见 `aws-deployment-guide.md`）
 - 控制器层已覆盖主要管理接口权限注解；`/menu/getRouters`、`/dict/data/type/{dictType}`、`/user/profile`、`PUT /user`（本人）等仍仅要求登录
 - 多数接口直接接收 Entity 作为入参，需评估字段越权更新风险
@@ -210,7 +211,7 @@
 
 ### 2026-06-12 个人中心、角色动作、部署
 
-- 变更接口: `PUT /user`（本人改资料）、`PUT /user/resetPassword`（本人改密）、`PUT /role`（assignPerm 分支）、`PUT /user/addUserRole`/`removeUsers`（assignUser）
+- 变更接口: `PUT /user`（本人改资料）、`PUT /user/changePassword`（本人改密）、`PUT /user/resetPassword`（管理员重置）、`PUT /role`（assignPerm 分支）、`PUT /user/addUserRole`/`removeUsers`（assignUser）
 - 鉴权变更: 新增 `system:role:assignPerm`、`system:role:assignUser` 种子与校验
 - 数据库: `sys_action` 增至 **40** 条（含角色分配权限）；基线见 `docs/sql/01_baseline_data.sql`
 - 部署: `moli-ui.wu-jinsen.com` 同域反代时 `/login` GET/POST 拆分

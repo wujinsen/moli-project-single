@@ -17,6 +17,7 @@ import com.moli.common.enums.BusinessTypeEnum;
 import com.moli.common.log.MoliLog;
 import com.moli.common.page.PageRes;
 import com.moli.config.util.PermissionAuthUtils;
+import com.moli.config.util.GenerateRandom;
 import com.moli.config.util.SHA256Util;
 import com.moli.config.util.ShiroUtils;
 import com.moli.common.utils.I18nUtils;
@@ -469,9 +470,26 @@ public class UserController {
         return MoliResult.success(selectUserPage(req, lambdaQueryWrapper));
     }
 
+    @PutMapping("/changePassword")
+    @MoliLog(title = "修改密码", businessType = BusinessTypeEnum.UPDATE)
+    @ApiOperation(value = "修改密码", notes = "个人中心：仅本人，须传 oldPassword 与 password")
+    public MoliResult<String> changePassword(@RequestBody SysUser sysUser) {
+        SysUser current = ShiroUtils.getUserInfo();
+        if (current == null) {
+            return MoliResult.errorMsg(ResponseCodeEnums.AUTHOR_ERROR_CODE.getCode(), "未登录");
+        }
+        SysUser target = sysUserMapper.selectById(current.getId());
+        if (target == null) {
+            return MoliResult.errorMsg(ResponseCodeEnums.ERROR.getCode(), "用户不存在");
+        }
+        return resetSelfPassword(target, sysUser);
+    }
+
     @PutMapping("/resetPassword")
-    @ApiOperation(value = "重置密码", notes = "本人可改自己密码；改他人需 system:user:resetPwd + list")
-    public MoliResult<Boolean> resetPassword(@RequestBody SysUser sysUser) {
+    @RequiresPermissions(value = {PermissionConstants.SYSTEM_USER_RESET_PWD, PermissionConstants.SYSTEM_USER_LIST}, logical = Logical.AND)
+    @MoliLog(title = "重置用户密码", businessType = BusinessTypeEnum.UPDATE)
+    @ApiOperation(value = "重置密码", notes = "用户管理：需 system:user:resetPwd + list，无需原密码；未传 password 则随机生成")
+    public MoliResult<String> resetPassword(@RequestBody SysUser sysUser) {
         if (sysUser.getId() == null) {
             return MoliResult.errorMsg(ResponseCodeEnums.ERROR.getCode(), "用户ID不能为空");
         }
@@ -479,25 +497,29 @@ public class UserController {
         if (target == null) {
             return MoliResult.errorMsg(ResponseCodeEnums.ERROR.getCode(), "用户不存在");
         }
-        SysUser current = ShiroUtils.getUserInfo();
-        if (current != null && sysUser.getId().equals(current.getId())) {
-            return resetSelfPassword(target, sysUser);
-        }
-        if (!hasUserManagePermission(PermissionConstants.SYSTEM_USER_RESET_PWD)) {
-            return MoliResult.errorMsg(ResponseCodeEnums.AUTHOR_ERROR_CODE.getCode(), "无权限操作");
-        }
         if (!userService.canViewUser(target)) {
             return MoliResult.errorMsg(ResponseCodeEnums.AUTHOR_ERROR_CODE.getCode(), "无权限操作该用户");
         }
-        if (StringUtils.isBlank(sysUser.getPassword())) {
-            return MoliResult.errorMsg(ResponseCodeEnums.ERROR.getCode(), "密码不能为空");
+        return resetPasswordByAdmin(sysUser);
+    }
+
+    private MoliResult<String> resetPasswordByAdmin(SysUser sysUser) {
+        String plainPassword = StringUtils.trimToEmpty(sysUser.getPassword());
+        if (StringUtils.isBlank(plainPassword)) {
+            plainPassword = GenerateRandom.name(10);
+        }
+        if (plainPassword.length() < 5 || plainPassword.length() > 20) {
+            return MoliResult.errorMsg(ResponseCodeEnums.ERROR.getCode(), "密码长度需在5-20位之间");
         }
         SysUser update = new SysUser();
         update.setId(sysUser.getId());
         update.setSalt(SHA256Util.SALT);
-        update.setPassword(SHA256Util.sha256(sysUser.getPassword(), SHA256Util.SALT));
-        sysUserMapper.updateById(update);
-        return MoliResult.success(Boolean.TRUE);
+        update.setPassword(SHA256Util.sha256(plainPassword, SHA256Util.SALT));
+        int rows = sysUserMapper.updateById(update);
+        if (rows <= 0) {
+            return MoliResult.errorMsg(ResponseCodeEnums.ERROR.getCode(), "密码更新失败，请刷新后重试");
+        }
+        return MoliResult.success(plainPassword);
     }
 
     private MoliResult<Boolean> updateSelfProfile(SysUserVo req) {
@@ -516,23 +538,31 @@ public class UserController {
         return MoliResult.success(Boolean.TRUE);
     }
 
-    private MoliResult<Boolean> resetSelfPassword(SysUser target, SysUser req) {
+    private MoliResult<String> resetSelfPassword(SysUser target, SysUser req) {
         if (StringUtils.isBlank(req.getPassword())) {
             return MoliResult.errorMsg(ResponseCodeEnums.ERROR.getCode(), "密码不能为空");
         }
-        if (StringUtils.isNotBlank(req.getOldPassword())) {
-            String salt = StringUtils.defaultIfBlank(target.getSalt(), SHA256Util.SALT);
-            String oldHash = SHA256Util.sha256(req.getOldPassword(), salt);
-            if (!oldHash.equals(target.getPassword())) {
-                return MoliResult.errorMsg(ResponseCodeEnums.ERROR.getCode(), "原密码错误");
-            }
+        if (StringUtils.isBlank(req.getOldPassword())) {
+            return MoliResult.errorMsg(ResponseCodeEnums.ERROR.getCode(), "请输入原密码");
+        }
+        String salt = StringUtils.defaultIfBlank(target.getSalt(), SHA256Util.SALT);
+        String oldHash = SHA256Util.sha256(req.getOldPassword(), salt);
+        if (!oldHash.equals(target.getPassword())) {
+            return MoliResult.errorMsg(ResponseCodeEnums.ERROR.getCode(), "原密码错误");
+        }
+        String plainPassword = req.getPassword().trim();
+        if (plainPassword.length() < 5 || plainPassword.length() > 20) {
+            return MoliResult.errorMsg(ResponseCodeEnums.ERROR.getCode(), "密码长度需在5-20位之间");
         }
         SysUser update = new SysUser();
         update.setId(target.getId());
         update.setSalt(SHA256Util.SALT);
-        update.setPassword(SHA256Util.sha256(req.getPassword(), SHA256Util.SALT));
-        sysUserMapper.updateById(update);
-        return MoliResult.success(Boolean.TRUE);
+        update.setPassword(SHA256Util.sha256(plainPassword, SHA256Util.SALT));
+        int rows = sysUserMapper.updateById(update);
+        if (rows <= 0) {
+            return MoliResult.errorMsg(ResponseCodeEnums.ERROR.getCode(), "密码更新失败，请刷新后重试");
+        }
+        return MoliResult.success("");
     }
 
     private boolean hasUserManagePermission(String actionPerm) {

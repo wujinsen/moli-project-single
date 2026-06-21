@@ -184,7 +184,7 @@
 
 ## 12. 个人中心与会话（2026-06-12）
 
-- **本人改资料/密码**：`PUT /user`、`PUT /user/resetPassword` 在 `id=当前用户` 时仅需登录；改他人仍要 `system:user:edit` / `resetPwd` + `list`
+- **本人改资料/密码**：`PUT /user` 在 `id=当前用户` 时仅需登录；改密用 `PUT /user/changePassword`（须原密码）；`PUT /user/resetPassword` 仅管理员（`resetPwd` + `list`）
 - **角色授权动作拆分**：新增 `system:role:assignPerm`、`system:role:assignUser`；`PUT /role` 保存 `menuIds/actionCodes` 需 `assignPerm`；`addUserRole`/`removeUsers` 需 `assignUser`
 - **用户列表**：按部门筛选时不再把 `superadmin` 注入每个部门（`UserServiceImpl.list`）
 
