@@ -50,7 +50,7 @@ public class MenuController {
     @ApiOperation(value = "获取菜单列表", notes = "获取菜单列表")
     public MoliResult list(String menuName, Integer status) {
         MenuVo menuVo = new MenuVo();
-        menuVo.setName(menuName);
+        menuVo.setMenuName(menuName);
         menuVo.setStatus(status);
         List<MenuVo> menuVoList = menuService.selectMenuList(menuVo);
         return MoliResult.success(menuVoList);
