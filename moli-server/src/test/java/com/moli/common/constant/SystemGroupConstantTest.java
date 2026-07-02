@@ -7,13 +7,11 @@ public class SystemGroupConstantTest {
 
     @Test
     public void isValid_acceptsAllPortalGroups() {
-        Assert.assertTrue(SystemGroupConstant.isValid(SystemGroupConstant.GOVERNANCE));
+        Assert.assertTrue(SystemGroupConstant.isValid(SystemGroupConstant.PLATFORM));
         Assert.assertTrue(SystemGroupConstant.isValid(SystemGroupConstant.BUSINESS));
-        Assert.assertTrue(SystemGroupConstant.isValid(SystemGroupConstant.AI));
+        Assert.assertTrue(SystemGroupConstant.isValid(SystemGroupConstant.DATA));
         Assert.assertTrue(SystemGroupConstant.isValid(SystemGroupConstant.TECH));
         Assert.assertTrue(SystemGroupConstant.isValid(SystemGroupConstant.OPS));
-        Assert.assertTrue(SystemGroupConstant.isValid(SystemGroupConstant.DATA));
-        Assert.assertTrue(SystemGroupConstant.isValid(SystemGroupConstant.OFFICE));
     }
 
     @Test
@@ -22,12 +20,15 @@ public class SystemGroupConstantTest {
         Assert.assertFalse(SystemGroupConstant.isValid(""));
         Assert.assertFalse(SystemGroupConstant.isValid("unknown"));
         Assert.assertFalse(SystemGroupConstant.isValid("devops"));
+        Assert.assertFalse(SystemGroupConstant.isValid("governance"));
+        Assert.assertFalse(SystemGroupConstant.isValid("ai"));
+        Assert.assertFalse(SystemGroupConstant.isValid("office"));
     }
 
     @Test
     public void normalize_returnsInputWhenValid() {
-        Assert.assertEquals(SystemGroupConstant.AI, SystemGroupConstant.normalize("ai"));
-        Assert.assertEquals(SystemGroupConstant.GOVERNANCE, SystemGroupConstant.normalize("governance"));
+        Assert.assertEquals(SystemGroupConstant.TECH, SystemGroupConstant.normalize("tech"));
+        Assert.assertEquals(SystemGroupConstant.PLATFORM, SystemGroupConstant.normalize("platform"));
     }
 
     @Test

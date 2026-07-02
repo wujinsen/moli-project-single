@@ -6,19 +6,19 @@ Last updated: 2026-06-11
 
 | `system_group` | Label | Examples |
 |----------------|-------|----------|
-| `governance` | Governance | `moli-admin` |
-| `business` | Business apps | `crm-demo` |
-| `ai` | AI apps | LLM assistants, Copilot, agents |
-| `tech` | Technical platforms | API portal, low-code |
+| `platform` | Platform & governance | `moli-admin` |
+| `business` | Business apps | `crm-demo`, e-commerce, member, OA |
+| `data` | Data platforms | BI, metrics, warehouse, governance (not AI apps) |
+| `tech` | Technical platforms | API gateway/portal, low-code, CI/CD, AI Copilot |
 | `ops` | Operations | `moli-ops` |
-| `data` | Data platforms | BI, reports (not AI apps) |
-| `office` | Workplace (optional) | OA |
+
+Display order: `platform` → `business` → `data` → `tech` → `ops` (empty groups hidden).
 
 ## API
 
 - `GET /system/my` → `SystemVo.systemGroup`
 - `POST/PUT /system` → `SysSystem.systemGroup`
-- SQL: `docs/sql/00_schema.sql` + `01_baseline_data.sql`
+- SQL: `scripts/moli.sql` (full schema + data snapshot)
 
 ## Frontend (meiling-ui)
 

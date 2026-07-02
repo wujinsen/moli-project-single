@@ -32,14 +32,17 @@ public class ShiroConfig {
     private String host;
     @Value("${spring.redis.port}")
     private int port;
-    @Value("${spring.redis.timeout}")
-    private int timeout;
+    @Value("${spring.redis.timeout:3000}")
+    private int redisTimeout;
 
     @Value("${spring.redis.password}")
     private String password;
 
     @Value("${spring.redis.database}")
     private int database;
+
+    @Value("${shiro.session-expire-seconds:86400}")
+    private int sessionExpireSeconds;
 
     /**
      * 开启Shiro-aop注解支持
@@ -143,7 +146,7 @@ public class ShiroConfig {
         RedisManager redisManager = new RedisManager();
         redisManager.setHost(host);
         redisManager.setPort(port);
-        redisManager.setTimeout(timeout);
+        redisManager.setTimeout(redisTimeout);
         redisManager.setPassword(password);
         redisManager.setDatabase(database);
         return redisManager;
@@ -177,7 +180,7 @@ public class ShiroConfig {
         redisSessionDAO.setRedisManager(redisManager());
         redisSessionDAO.setSessionIdGenerator(sessionIdGenerator());
         redisSessionDAO.setKeyPrefix(SESSION_KEY);
-        redisSessionDAO.setExpire(timeout);
+        redisSessionDAO.setExpire(sessionExpireSeconds);
         return redisSessionDAO;
     }
 
@@ -202,7 +205,7 @@ public class ShiroConfig {
     public SessionManager sessionManager() {
         ShiroSessionManager shiroSessionManager = new ShiroSessionManager();
         shiroSessionManager.setSessionDAO(redisSessionDAO());
-        shiroSessionManager.setGlobalSessionTimeout(timeout * 1000L);
+        shiroSessionManager.setGlobalSessionTimeout(sessionExpireSeconds * 1000L);
         return shiroSessionManager;
     }
 

@@ -2,11 +2,11 @@
 
 > 选系统页按 `sys_system.system_group` 展示。  
 > 前端改造：`meiling-ui/docs/portal-system-group-ui.md`  
-> 展示顺序：`governance` → `business` → `ai` → `tech` → `ops` → `data` → `office`（空组不显示）
+> 展示顺序：`platform` → `business` → `data` → `tech` → `ops`（空组不显示）
 
 ---
 
-## 1. 管理与治理 `governance`
+## 1. 平台与治理 `platform`
 
 **放什么：** 平台级管理后台、统一身份与权限、系统注册与审计入口。
 
@@ -21,7 +21,7 @@
 
 ## 2. 业务应用 `business`
 
-**放什么：** 面向业务人员的条线系统、交易与运营类应用（**电商、会员、客服、用户增长** 均在此类）。
+**放什么：** 面向业务人员的条线系统、交易与运营类应用（**电商、会员、客服、用户增长、办公协同** 均在此类）。
 
 | 状态 | 系统 |
 |------|------|
@@ -35,40 +35,49 @@
 | ✅ 已注册 | **points-center** 积分中心 |
 | ✅ 已注册 | **cs-ticket** 客服系统 |
 | ✅ 已注册 | **user-growth** 用户增长平台 |
+| ✅ 已注册 | **oa-office** OA 办公协同 |
+| ✅ 已注册 | **moli-knowledge** 企业知识库（Moli 微服务，网关 `/KnowledgeServer`） |
 
 **用户增长归 `business`：** 拉新、留存、活动、投放、A/B 等 **运营业务系统**；若仅是增长分析看板 → `data`。
 
-**不归此类：** 纯 BI 报表 → `data`；大模型助手 → `ai`。
+**办公协同归 `business`：** OA 审批、邮件、日程等内部办公应用并入业务应用，不再单设分组。
+
+**不归此类：** 纯 BI 报表 → `data`；大模型助手 → `tech`。
 
 ---
 
-## 3. AI 应用 `ai`
+## 3. 数据平台 `data`
 
-**放什么：** 大模型、Copilot、智能体、AIGC 等 **以 AI 能力为主入口** 的产品。
+**放什么：** 看数、用数、管数；含 BI、数仓、指标与 **大数据开发分析** 类产品。
 
 | 状态 | 系统 |
 |------|------|
-| ✅ 已注册 | **ai-copilot**（AI 智能助手，EXTERNAL，演示） |
-| 常见 | ChatGPT / 企业版 GPT 门户、内部 Copilot、智能客服机器人、代码助手、AIGC 创作台、Agent 编排平台 |
+| ✅ 已注册 | **bi-report** BI 报表中心 |
+| ✅ 已注册 | **metric-platform** 指标平台 |
+| ✅ 已注册 | **data-map** 数据地图 |
+| ✅ 已注册 | **user-cdp** 用户画像 CDP |
+| ✅ 已注册 | **data-dev-platform** 大数据开发平台（离线数仓 + 实时计算 + 湖仓一体，合并原 data-warehouse/data-dev/flink-studio/realtime-lake） |
+| ✅ 已注册 | **data-quality** 数据质量 |
+| ✅ 已注册 | **data-governance** 数据治理 |
 
-**不归此类：** 传统 BI 报表 → `data`；API 网关、MLOps 训练平台（偏研发）→ `tech`。
+**不归此类：** 大模型对话/Copilot → `tech`；Hadoop/Yarn 集群运维 → `ops`；增长活动运营 → `business`。
 
 ---
 
 ## 4. 技术类平台 `tech`
 
-**放什么：** 研发与集成用的技术中台、工程效能类平台。
+**放什么：** 研发与集成用的技术中台、工程效能与 AI 能力类平台。
 
 | 状态 | 系统 |
 |------|------|
-| ✅ 已注册 | **api-portal** API 开放平台 |
-| ✅ 已注册 | **api-gateway** API 网关 |
+| ✅ 已注册 | **api-portal** API 网关 / 开放平台（合并原 api-gateway） |
 | ✅ 已注册 | **ms-governance** 微服务治理 |
 | ✅ 已注册 | **svc-registry** 注册配置中心 |
 | ✅ 已注册 | **lowcode-studio** 低代码平台 |
 | ✅ 已注册 | **devops-cicd** CI/CD 流水线 |
 | ✅ 已注册 | **artifact-repo** 制品库 |
 | ✅ 已注册 | **code-repo** 代码仓库 |
+| ✅ 已注册 | **ai-copilot** AI 智能助手（大模型 / Copilot，并入技术类平台） |
 
 **不归此类：** 监控告警、日志检索、发布运维台 → `ops`；SQL/指标开发 → `data`。
 
@@ -88,54 +97,18 @@
 | ✅ 已注册 | **trace-platform** 链路追踪平台 |
 | ✅ 已注册 | **k8s-console** 容器云管控 |
 
-**不归此类：** Flink/SQL 数据开发台 → `data`；微服务治理/API 网关 → `tech`。
+**不归此类：** 大数据开发台 → `data`；微服务治理/API 网关 → `tech`。
 
 ---
 
-## 6. 数据平台 `data`
-
-**放什么：** 看数、用数、管数；含 BI、数仓、指标与 **大数据开发分析** 类产品。
-
-| 状态 | 系统 |
-|------|------|
-| ✅ 已注册 | **bi-report** BI 报表中心 |
-| ✅ 已注册 | **metric-platform** 指标平台 |
-| ✅ 已注册 | **data-map** 数据地图 |
-| ✅ 已注册 | **user-cdp** 用户画像 CDP |
-| ✅ 已注册 | **data-warehouse** 离线数仓 |
-| ✅ 已注册 | **data-dev** 数据开发平台 |
-| ✅ 已注册 | **flink-studio** Flink 实时开发 |
-| ✅ 已注册 | **data-quality** 数据质量 |
-| ✅ 已注册 | **data-governance** 数据治理 |
-| ✅ 已注册 | **realtime-lake** 实时湖仓 |
-
-**不归此类：** 大模型对话 → `ai`；Hadoop/Yarn 集群运维 → `ops`；增长活动运营 → `business`。
-
----
-
-## 7. 办公协同 `office`
-
-**放什么：** 日常办公协作，与具体业务条线弱相关。
-
-| 状态 | 系统 |
-|------|------|
-| ✅ 已注册 | **oa-office**（OA 办公协同，EXTERNAL，演示） |
-| 常见 | OA 审批、企业邮件、日历/会议室、钉钉/飞书类门户、文档协作、HR 自助（请假考勤） |
-
-**不归此类：** 业务 CRM、管理后台 → 各归其类。
-
----
-
-## 当前演示数据（`docs/sql/01_baseline_data.sql` 基线）
+## 当前演示数据（`scripts/moli.sql` 基线）
 
 | 分组 | 数量 | 系统 |
 |------|------|------|
-| 管理与治理 | 1 | moli-admin |
-| **业务应用** | **10** | crm-demo、ecom-mall、ecom-order、ecom-product、ecom-inventory、ecom-payment、member-center、points-center、cs-ticket、user-growth |
-| AI 应用 | 1 | ai-copilot |
-| **技术类平台** | **8** | api-portal、api-gateway、ms-governance、svc-registry、lowcode-studio、devops-cicd、artifact-repo、code-repo |
+| 平台与治理 | 1 | moli-admin |
+| **业务应用** | **12** | crm-demo、ecom-mall、ecom-order、ecom-product、ecom-inventory、ecom-payment、member-center、points-center、cs-ticket、user-growth、oa-office、moli-knowledge |
+| **数据平台** | **7** | bi-report、metric-platform、data-map、user-cdp、data-dev-platform、data-quality、data-governance |
+| **技术类平台** | **8** | api-portal、ms-governance、svc-registry、lowcode-studio、devops-cicd、artifact-repo、code-repo、ai-copilot |
 | **运维与保障** | **7** | moli-ops、monitor-alert、log-platform、release-platform、cmdb-platform、trace-platform、k8s-console |
-| **数据平台** | **10** | bi-report、metric-platform、data-map、user-cdp、data-warehouse、data-dev、flink-studio、data-quality、data-governance、realtime-lake |
-| 办公协同 | 1 | oa-office |
 
-共 **38** 个系统；superadmin 选系统页 **7 个分组标题** 下共 **38 张卡片**（除 moli-admin 外均为外链演示）。
+共 **35** 个系统；superadmin 选系统页 **5 个分组标题** 下共 **35 张卡片**（除 moli-admin 外均为外链演示）。

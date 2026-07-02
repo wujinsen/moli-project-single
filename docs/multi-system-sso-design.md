@@ -54,15 +54,13 @@ flowchart LR
 
 | system_group | 含义 | 示例 |
 |--------------|------|------|
-| `governance` | 管理与治理 | `moli-admin` |
-| `business` | 业务应用 | `crm-demo` |
-| `ai` | AI 应用 | 大模型、Copilot、智能体 |
-| `tech` | 技术类平台 | API 门户 |
+| `platform` | 平台与治理 | `moli-admin` |
+| `business` | 业务应用 | `crm-demo`、电商、会员、OA 办公 |
+| `data` | 数据平台 | BI、指标、数仓、数据治理 |
+| `tech` | 技术类平台 | API 网关/开放平台、低代码、CI/CD、AI Copilot |
 | `ops` | 运维与保障 | `moli-ops` |
-| `data` | 数据平台 | BI、报表 |
-| `office` | 办公协同 | OA |
 
-迁移：已合并至 `docs/sql/00_schema.sql` + `01_baseline_data.sql`。
+迁移：已合并至全库快照 `scripts/moli.sql`。
 
 ## 4. 流程简述
 

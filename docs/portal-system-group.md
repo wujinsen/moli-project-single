@@ -18,30 +18,28 @@
 
 | `system_group` | 中文 | 说明 | 示例 |
 |----------------|------|------|------|
-| `governance` | 管理与治理 | 管理后台、IAM、配置审计入口 | `moli-admin` |
-| `business` | 业务应用 | CRM、ERP、订单、营销 | `crm-demo` |
-| `ai` | AI 应用 | 大模型助手、Copilot、智能体、AIGC 工具 | ChatGPT、内部 AI 门户 |
-| `tech` | 技术类平台 | 开放平台、API 网关、低代码、CI/CD | （待注册） |
+| `platform` | 平台与治理 | 平台管理后台、IAM、配置审计入口 | `moli-admin` |
+| `business` | 业务应用 | CRM、电商、会员、客服、用户增长、OA 办公协同 | `crm-demo` |
+| `data` | 数据平台 | BI、指标、数仓、大数据开发、数据治理等（不含 AI 应用） | `bi-report` |
+| `tech` | 技术类平台 | API 网关/开放平台、低代码、CI/CD、AI Copilot | `api-portal` |
 | `ops` | 运维与保障 | 监控、日志、发布、资源 | `moli-ops` |
-| `data` | 数据平台 | BI、指标、数仓、Flink、数据治理等大数据平台（不含 AI 应用） | 见 `seed_sys_system_portal_demo.sql` |
-| `office` | 办公协同 | OA、邮件、日程 | （可选） |
 
 **默认分组**：未填时后端归一为 `business`。
 
 **展示顺序**（前端固定）：
 
-`governance` → `business` → `ai` → `tech` → `ops` → `data` → `office`
+`platform` → `business` → `data` → `tech` → `ops`
 
 某分组下无系统时不显示该分组标题。
 
-**演示数据：** `docs/sql/01_baseline_data.sql` 已含门户演示系统；详见 [portal-system-group-catalog.md](portal-system-group-catalog.md)。
+**演示数据：** `scripts/moli.sql` 已含门户演示系统；详见 [portal-system-group-catalog.md](portal-system-group-catalog.md)。
 
 ## 3. 数据库
 
-执行：
+执行（全库快照，含结构 + 数据）：
 
 ```bash
-mysql -u root -p moli < docs/sql/00_schema.sql && mysql -u root -p moli < docs/sql/01_baseline_data.sql
+mysql -u root -p moli < scripts/moli.sql
 ```
 
 新增列：
@@ -85,7 +83,7 @@ INSERT INTO sys_system (
 ) VALUES (
   (SELECT COALESCE(MAX(id),0)+1 FROM sys_system s),
   1, NOW(), 1, NOW(),
-  'api-portal', 'API 开放平台', 'https://api.example.com', 'code', 10, 1, 'EXTERNAL', '/sso/login',
+  'api-portal', 'API 网关 / 开放平台', 'https://api.example.com', 'code', 10, 1, 'EXTERNAL', '/sso/login',
   '技术类平台示例', 'tech'
 );
 ```

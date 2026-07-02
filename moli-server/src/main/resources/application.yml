@@ -15,6 +15,7 @@ captcha:
 # true=同一用户新登录踢掉旧会话；false=多端并存（互不影响）
 shiro:
   single-session: false
+  session-expire-seconds: 86400
 
 # 多系统门户与 SSO（系统级访问控制，菜单仍走全局 RBAC）
 sso:

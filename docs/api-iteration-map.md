@@ -42,7 +42,7 @@
 - `GET /auth/capabilities`：当前系统上下文 `{ permissions, fullPermission }`；F5 / 缓存缺失时补拉
 - `GET /action/list?menuId=`：页面可分配动作（角色授权 UI）
 - **P4 动作目录**：`GET /action/page`、`GET /action/{id}`、`POST/PUT/DELETE /action`、`PUT /action/changeStatus`；权限与菜单管理一致（读 `system:menu:list`，写 `system:menu:edit` + `list`）
-- `GET/POST/PUT/DELETE /system`：系统注册维护（权限 `system:system:list`；增删改另需 `superadmin`/`admin`）；`SysSystem.systemGroup` 支持 `governance`/`business`/`ai`/`tech`/`ops`/`data`/`office`；`GET /system/list` 可按 `systemGroup` 筛选
+- `GET/POST/PUT/DELETE /system`：系统注册维护（权限 `system:system:list`；增删改另需 `superadmin`/`admin`）；`SysSystem.systemGroup` 支持 `platform`/`business`/`data`/`tech`/`ops`；`GET /system/list` 可按 `systemGroup` 筛选
 - 系统注册菜单、分组字段已含于 `docs/sql` 基线（`00_schema.sql` + `01_baseline_data.sql`）
 
 ### `SsoController`（前缀 `/sso`）

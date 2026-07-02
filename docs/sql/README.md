@@ -1,23 +1,14 @@
 # Moli 数据库基线 SQL
 
-自本地 `moli` 库导出（`application-dev.yml`），日期：2026-06-11。
-
-## 文件说明
-
-| 文件 | 说明 |
-|------|------|
-| `00_schema.sql` | 全库表结构（22 张表） |
-| `01_baseline_data.sql` | 基线种子数据（不含登录/操作日志） |
+> **新环境请用 [`scripts/moli.sql`](../../scripts/moli.sql)**（全库快照：结构 + 数据）。  
+> 早期拆分脚本 `00_schema.sql` / `01_baseline_data.sql` 已删除（被 `scripts/moli.sql` 取代）。
 
 ## 新环境初始化
 
 ```bash
 mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS moli DEFAULT CHARSET utf8mb4;"
-mysql -u root -p moli < docs/sql/00_schema.sql
-mysql -u root -p moli < docs/sql/01_baseline_data.sql
+mysql -u root -p moli < scripts/moli.sql
 ```
-
-无 `mysql` 客户端时可用：`python scripts/export_db_baseline.py` 重新导出。
 
 ## 表行数（导出时快照）
 
@@ -40,10 +31,10 @@ mysql -u root -p moli < docs/sql/01_baseline_data.sql
 | `sys_role` | 10 | 是 |
 | `sys_role_action` | 56 | 是 |
 | `sys_role_menu` | 45 | 是 |
-| `sys_system` | 38 | 是 |
+| `sys_system` | 35 | 是 |
 | `sys_user` | 33 | 是 |
 | `sys_user_post` | 1 | 是 |
 | `sys_user_role` | 31 | 是 |
-| `sys_user_system` | 72 | 是 |
+| `sys_user_system` | 70 | 是 |
 
-历史增量脚本（`patch_*.sql`、`migrate_sys_action.sql`）已合并进本基线，新环境无需再执行旧 patch。
+历史增量脚本（`patch_*.sql`、`migrate_sys_action.sql`）已合并进 `scripts/moli.sql`，新环境无需再执行旧 patch。

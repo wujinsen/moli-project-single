@@ -1,6 +1,7 @@
 package com.moli.config;
 
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
+import com.moli.common.domain.entity.SysUser;
 import com.moli.config.util.ShiroUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.reflection.MetaObject;
@@ -16,7 +17,10 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
         log.info("start insert fill ....");
         this.strictInsertFill(metaObject, "isDelete", () -> 0, Integer.class);
         this.strictInsertFill(metaObject, "createTime", () -> new Date(), Date.class);
-        this.strictInsertFill(metaObject, "createId", () -> ShiroUtils.getUserInfo().getId(), Long.class);
+        SysUser current = ShiroUtils.getUserInfo();
+        if (current != null) {
+            this.strictInsertFill(metaObject, "createId", () -> current.getId(), Long.class);
+        }
     }
 
     @Override

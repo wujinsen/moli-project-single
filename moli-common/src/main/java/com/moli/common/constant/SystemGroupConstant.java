@@ -13,18 +13,16 @@ public final class SystemGroupConstant {
     private SystemGroupConstant() {
     }
 
-    public static final String GOVERNANCE = "governance";
+    public static final String PLATFORM = "platform";
     public static final String BUSINESS = "business";
-    public static final String AI = "ai";
+    public static final String DATA = "data";
     public static final String TECH = "tech";
     public static final String OPS = "ops";
-    public static final String DATA = "data";
-    public static final String OFFICE = "office";
 
     public static final String DEFAULT = BUSINESS;
 
     private static final Set<String> ALLOWED = Collections.unmodifiableSet(new LinkedHashSet<>(Arrays.asList(
-            GOVERNANCE, BUSINESS, AI, TECH, OPS, DATA, OFFICE
+            PLATFORM, BUSINESS, DATA, TECH, OPS
     )));
 
     public static boolean isValid(String group) {
